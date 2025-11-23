@@ -42,7 +42,8 @@ export function SearchConversationsDialog({
 	}, [conversations, searchQuery]);
 
 	// 格式化时间
-	const formatTime = (date: Date) => {
+	const formatTime = (timestamp: number) => {
+		const date = new Date(timestamp);
 		const now = new Date();
 		const diffInMs = now.getTime() - date.getTime();
 		const diffInHours = diffInMs / (1000 * 60 * 60);
@@ -111,7 +112,7 @@ export function SearchConversationsDialog({
 							</div>
 							<div className="flex items-center gap-2 text-xs text-muted-foreground shrink-0 ml-2">
 								<Clock size={12} strokeWidth={2} aria-hidden="true" />
-								<span>{formatTime(conversation.updatedAt)}</span>
+								<span>{formatTime(conversation.timestamp)}</span>
 							</div>
 						</CommandItem>
 					))}

@@ -7,3 +7,4 @@ export { KnowledgeList } from "./KnowledgeList";
 export { KnowledgePagination } from "./KnowledgePagination";
 export { DocumentCard } from "./DocumentCard";
 export { DocumentList } from "./DocumentList";
+export { UploadDocumentDialog } from "./UploadDocumentDialog";

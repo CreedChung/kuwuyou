@@ -67,11 +67,12 @@ export async function GET(request: NextRequest) {
 		});
 
 		if (!validationResult.success) {
-			console.log("❌ 参数验证失败:", validationResult.error.errors);
+			console.log("❌ 参数验证失败:", validationResult.error.issues);
+			const firstError = validationResult.error.issues[0];
 			return NextResponse.json(
 				{
 					code: 400,
-					message: validationResult.error.errors[0].message,
+					message: firstError?.message || "参数验证失败",
 				},
 				{ status: 400 }
 			);

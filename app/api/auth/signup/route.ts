@@ -18,8 +18,9 @@ export async function POST(request: NextRequest) {
 		// 验证请求数据
 		const validationResult = signupSchema.safeParse(body);
 		if (!validationResult.success) {
+			const firstError = validationResult.error.issues[0];
 			return NextResponse.json(
-				{ error: validationResult.error.errors[0].message },
+				{ error: firstError?.message || "请求数据格式不正确" },
 				{ status: 400 }
 			);
 		}

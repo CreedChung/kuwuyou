@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { KnowledgeDocument } from "@/components/knowledge/DocumentTypes";
 import { DocumentList } from "@/components/knowledge/DocumentList";
 import { KnowledgePagination } from "@/components/knowledge";
+import { UploadDocumentDialog } from "@/components/knowledge/UploadDocumentDialog";
 
 export default function KnowledgeDocumentsPage() {
 	const params = useParams();
@@ -25,6 +26,7 @@ export default function KnowledgeDocumentsPage() {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [total, setTotal] = useState(0);
 	const [knowledgeName, setKnowledgeName] = useState("");
+	const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
 
 	// 获取文档列表
 	const fetchDocuments = async (page: number = 1, word: string = "") => {
@@ -93,6 +95,11 @@ export default function KnowledgeDocumentsPage() {
 		fetchDocuments(1, searchQuery);
 	};
 
+	// 上传成功后刷新列表
+	const handleUploadSuccess = () => {
+		fetchDocuments(currentPage, searchQuery);
+	};
+
 	// 过滤文档（本地过滤，用于即时反馈）
 	const filteredDocuments = documents;
 
@@ -129,7 +136,10 @@ export default function KnowledgeDocumentsPage() {
 							<Badge variant="secondary" className="h-10 px-4">
 								共 {total} 个文档
 							</Badge>
-							<Button className="gap-2">
+							<Button
+								className="gap-2"
+								onClick={() => setUploadDialogOpen(true)}
+							>
 								<Plus className="h-4 w-4" />
 								上传文档
 							</Button>
@@ -160,6 +170,14 @@ export default function KnowledgeDocumentsPage() {
 					/>
 				)}
 			</div>
+
+			{/* 上传对话框 */}
+			<UploadDocumentDialog
+				open={uploadDialogOpen}
+				onOpenChange={setUploadDialogOpen}
+				knowledgeId={knowledgeId}
+				onUploadSuccess={handleUploadSuccess}
+			/>
 		</div>
 	);
 }

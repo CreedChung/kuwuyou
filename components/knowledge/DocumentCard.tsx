@@ -76,7 +76,7 @@ export function DocumentCard({ document, onClick }: DocumentCardProps) {
 				</div>
 			</CardHeader>
 			<CardContent className="pt-0">
-				{hasError && (
+				{hasError && document.failInfo && (
 					<div className="mb-3 p-2 bg-red-100 border border-red-200 rounded-lg flex items-start gap-2">
 						<AlertCircle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
 						<div className="flex-1 min-w-0">

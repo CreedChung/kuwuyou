@@ -5,7 +5,7 @@ import type { Message as MessageType } from "./types";
 
 interface ChatAreaProps {
 	messages: MessageType[];
-	onSendMessage: (content: string) => void;
+	onSendMessage: (content: string, options?: { showThinking?: boolean; showReferences?: boolean }) => void;
 	isGenerating?: boolean;
 	onStopGenerating?: () => void;
 }

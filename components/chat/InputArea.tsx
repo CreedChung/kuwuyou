@@ -12,7 +12,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSpeechInput } from "../../hooks/useSpeechInput";
 
 interface InputAreaProps {
-	onSendMessage: (content: string) => void;
+	onSendMessage: (content: string, options?: { showThinking?: boolean; showReferences?: boolean }) => void;
 	isGenerating?: boolean;
 	onStopGenerating?: () => void;
 }
@@ -90,7 +90,11 @@ export function InputArea({
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 		if (inputValue.trim() && !isGenerating) {
-			onSendMessage(inputValue.trim());
+			// 传递显示选项（API 始终调用知识库和思维链）
+			onSendMessage(inputValue.trim(), {
+				showThinking: thinkActive,      // 控制是否显示思考过程
+				showReferences: deepSearchActive, // 控制是否显示知识库引用
+			});
 			setInputValue("");
 			resetTranscript();
 		}
@@ -352,14 +356,14 @@ export function InputArea({
 										</motion.span>
 									</motion.button>
 
-									{/* Deep Search Toggle */}
+									{/* Knowledge Base Toggle */}
 									<motion.button
 										className={`flex items-center py-2 rounded-full font-medium whitespace-nowrap overflow-hidden justify-start ${
 											deepSearchActive
 												? "bg-blue-600/10 outline outline-blue-600/60 text-blue-950 dark:text-blue-100"
 												: "bg-accent text-foreground hover:bg-accent/80"
 										}`}
-										title="无忧搜索"
+										title="显示知识库引用"
 										type="button"
 										onClick={(e) => {
 											e.stopPropagation();
@@ -367,7 +371,7 @@ export function InputArea({
 										}}
 										initial={false}
 										animate={{
-											width: deepSearchActive ? 110 : 36,
+											width: deepSearchActive ? 150 : 36,
 											paddingLeft: deepSearchActive ? 16 : 9,
 											paddingRight: deepSearchActive ? 16 : 9,
 										}}
@@ -390,7 +394,7 @@ export function InputArea({
 												width: { type: "spring", stiffness: 400, damping: 30 },
 											}}
 										>
-											无忧搜索
+											显示知识库引用
 										</motion.span>
 									</motion.button>
 								</div>

@@ -1,6 +1,13 @@
-import { AlertCircle, Loader2, User } from "lucide-react";
+import { AlertCircle, BookOpen, CheckCheck, ChevronDown, ChevronUp, Copy, Lightbulb, Loader2, User } from "lucide-react";
 import Image from "next/image";
+import { useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeHighlight from "rehype-highlight";
+import rehypeRaw from "rehype-raw";
 import type { Message as MessageType } from "./types";
+import { Button } from "@/components/ui/button";
+import "highlight.js/styles/github-dark.css";
 
 interface MessageProps {
 	message: MessageType;
@@ -10,6 +17,20 @@ export function Message({ message }: MessageProps) {
 	const isUser = message.role === "user";
 	const hasError = !!message.error;
 	const isStreaming = message.isStreaming;
+	const [showThinking, setShowThinking] = useState(true);
+	const [showReferences, setShowReferences] = useState(true);
+	const [copiedSection, setCopiedSection] = useState<string | null>(null);
+
+	// 复制文本到剪贴板
+	const copyToClipboard = async (text: string, section: string) => {
+		try {
+			await navigator.clipboard.writeText(text);
+			setCopiedSection(section);
+			setTimeout(() => setCopiedSection(null), 2000);
+		} catch (err) {
+			console.error("复制失败:", err);
+		}
+	};
 
 	return (
 		<div
@@ -42,7 +63,7 @@ export function Message({ message }: MessageProps) {
 					)}
 				</div>
 			</div>
-			<div className="flex-1 space-y-2 min-w-0">
+			<div className="flex-1 space-y-3 min-w-0">
 				<div className="flex items-center gap-2">
 					<div className="font-semibold text-sm text-foreground">
 						{isUser ? "你" : "库无忧助手"}
@@ -66,12 +87,218 @@ export function Message({ message }: MessageProps) {
 						</div>
 					</div>
 				) : (
-					<div className="prose prose-sm max-w-none text-foreground/90 whitespace-pre-wrap break-words">
-						{message.content}
-						{isStreaming && message.content && (
-							<span className="inline-block w-2 h-4 ml-1 bg-primary animate-pulse" />
+					<>
+						{/* 思考过程 */}
+						{!isUser && message.thinking && (
+							<div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 overflow-hidden">
+								<button
+									onClick={() => setShowThinking(!showThinking)}
+									className="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-amber-900 dark:text-amber-100 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors"
+								>
+									<div className="flex items-center gap-2">
+										<Lightbulb className="h-4 w-4" />
+										<span>思考过程</span>
+									</div>
+									<div className="flex items-center gap-2">
+										<Button
+											variant="ghost"
+											size="sm"
+											className="h-6 px-2"
+											onClick={(e) => {
+												e.stopPropagation();
+												copyToClipboard(message.thinking!, "thinking");
+											}}
+										>
+											{copiedSection === "thinking" ? (
+												<CheckCheck className="h-3 w-3" />
+											) : (
+												<Copy className="h-3 w-3" />
+											)}
+										</Button>
+										{showThinking ? (
+											<ChevronUp className="h-4 w-4" />
+										) : (
+											<ChevronDown className="h-4 w-4" />
+										)}
+									</div>
+								</button>
+								{showThinking && (
+									<div className="px-4 pb-3 text-sm text-amber-800 dark:text-amber-200 prose prose-sm max-w-none dark:prose-invert">
+										<ReactMarkdown
+											remarkPlugins={[remarkGfm]}
+											rehypePlugins={[rehypeHighlight, rehypeRaw]}
+										>
+											{message.thinking}
+										</ReactMarkdown>
+									</div>
+								)}
+							</div>
 						)}
-					</div>
+
+						{/* 知识库引用 */}
+						{!isUser && message.references && message.references.length > 0 && (
+							<div className="rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30 overflow-hidden">
+								<button
+									onClick={() => setShowReferences(!showReferences)}
+									className="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-blue-900 dark:text-blue-100 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+								>
+									<div className="flex items-center gap-2">
+										<BookOpen className="h-4 w-4" />
+										<span>查找到 {message.references.length} 个知识片段</span>
+									</div>
+									<div className="flex items-center gap-2">
+										<Button
+											variant="ghost"
+											size="sm"
+											className="h-6 px-2"
+											onClick={(e) => {
+												e.stopPropagation();
+												const refText = message.references!
+													.map((ref, i) => `[${i + 1}] ${ref.source ? `文件：${ref.source}\n` : ""}${ref.content}`)
+													.join("\n\n");
+												copyToClipboard(refText, "references");
+											}}
+										>
+											{copiedSection === "references" ? (
+												<CheckCheck className="h-3 w-3" />
+											) : (
+												<Copy className="h-3 w-3" />
+											)}
+										</Button>
+										{showReferences ? (
+											<ChevronUp className="h-4 w-4" />
+										) : (
+											<ChevronDown className="h-4 w-4" />
+										)}
+									</div>
+								</button>
+								{showReferences && (
+									<div className="px-4 pb-3 space-y-2">
+										{/* 显示查找的文件列表 */}
+										{(() => {
+											const uniqueSources = Array.from(
+												new Set(message.references.map(ref => ref.source).filter(Boolean))
+											);
+											return uniqueSources.length > 0 && (
+												<div className="mb-3 p-2 bg-blue-100/50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800">
+													<div className="text-xs font-medium text-blue-700 dark:text-blue-300 mb-1">
+														📁 查找的文件：
+													</div>
+													<div className="flex flex-wrap gap-1">
+														{uniqueSources.map((source, idx) => (
+															<span
+																key={idx}
+																className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200"
+															>
+																{source}
+															</span>
+														))}
+													</div>
+												</div>
+											);
+										})()}
+										
+										{/* 知识片段列表 */}
+										{message.references.map((ref, index) => (
+											<div
+												key={index}
+												className="text-sm text-blue-800 dark:text-blue-200 p-3 rounded bg-white/50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800"
+											>
+												<div className="flex items-start justify-between gap-2 mb-2">
+													<div className="flex items-center gap-2">
+														<span className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-500 dark:bg-blue-600 text-white text-xs flex items-center justify-center font-medium">
+															{index + 1}
+														</span>
+														<div className="font-medium text-xs text-blue-600 dark:text-blue-400">
+															{ref.source || "知识库"}
+														</div>
+													</div>
+													<Button
+														variant="ghost"
+														size="sm"
+														className="h-5 px-1.5 -mt-1"
+														onClick={() => copyToClipboard(ref.content, `ref-${index}`)}
+													>
+														{copiedSection === `ref-${index}` ? (
+															<CheckCheck className="h-3 w-3" />
+														) : (
+															<Copy className="h-3 w-3" />
+														)}
+													</Button>
+												</div>
+												<div className="text-xs prose prose-xs max-w-none dark:prose-invert break-words leading-relaxed">
+													<ReactMarkdown
+														remarkPlugins={[remarkGfm]}
+														rehypePlugins={[rehypeHighlight, rehypeRaw]}
+													>
+														{ref.content}
+													</ReactMarkdown>
+												</div>
+											</div>
+										))}
+									</div>
+								)}
+							</div>
+						)}
+
+						{/* 主要回答内容 */}
+						<div className="relative group">
+							<div className="prose prose-sm max-w-none dark:prose-invert">
+								<ReactMarkdown
+									remarkPlugins={[remarkGfm]}
+									rehypePlugins={[rehypeHighlight, rehypeRaw]}
+								>
+									{message.content}
+								</ReactMarkdown>
+								{isStreaming && message.content && (
+									<span className="inline-block w-2 h-4 ml-1 bg-primary animate-pulse" />
+								)}
+							</div>
+							{!isUser && message.content && !isStreaming && (
+								<Button
+									variant="ghost"
+									size="sm"
+									className="absolute -right-2 -top-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 px-2"
+									onClick={() => copyToClipboard(message.content, "content")}
+								>
+									{copiedSection === "content" ? (
+										<>
+											<CheckCheck className="h-3 w-3 mr-1" />
+											<span className="text-xs">已复制</span>
+										</>
+									) : (
+										<>
+											<Copy className="h-3 w-3 mr-1" />
+											<span className="text-xs">复制</span>
+										</>
+									)}
+								</Button>
+							)}
+						</div>
+
+						{/* Token使用统计 */}
+						{!isUser && message.usage && message.usage.length > 0 && (
+							<div className="text-xs text-muted-foreground pt-2 border-t border-border/50">
+								<details className="cursor-pointer">
+									<summary className="hover:text-foreground transition-colors">
+										Token 使用统计
+									</summary>
+									<div className="mt-2 space-y-1 pl-4">
+										{message.usage.map((usage, index) => (
+											<div key={index} className="flex items-center gap-2">
+												<span className="font-medium">{usage.nodeName || usage.model}:</span>
+												<span>输入 {usage.inputTokenCount}</span>
+												<span>·</span>
+												<span>输出 {usage.outputTokenCount}</span>
+												<span>·</span>
+												<span>总计 {usage.totalTokenCount}</span>
+											</div>
+										))}
+									</div>
+								</details>
+							</div>
+						)}
+					</>
 				)}
 			</div>
 		</div>
