@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1763883811544,
+      "tag": "0000_blue_mephisto",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1763884269193,
+      "tag": "0001_misty_blizzard",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1763885341585,
+      "tag": "0002_magenta_spirit",
+      "breakpoints": true
+    }
+  ]
+}

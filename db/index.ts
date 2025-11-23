@@ -1,24 +1,26 @@
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
+import { drizzle } from "drizzle-orm/libsql";
+import { createClient } from "@libsql/client";
 import * as schema from "./schema";
 
-// 从 Supabase URL 构建 PostgreSQL 连接字符串
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+// 检查必需的环境变量
+if (!process.env.TURSO_DATABASE_URL) {
+	throw new Error("TURSO_DATABASE_URL 环境变量未设置");
+}
 
-// 从 Supabase URL 提取项目引用
-// 格式: https://xxxxx.supabase.co
-const projectRef = supabaseUrl
-	.replace("https://", "")
-	.replace(".supabase.co", "");
+if (!process.env.TURSO_AUTH_TOKEN) {
+	throw new Error("TURSO_AUTH_TOKEN 环境变量未设置");
+}
 
-// 构建 PostgreSQL 连接字符串
-// 使用 Supabase 的 PostgreSQL 直连端口
-const connectionString = `postgresql://postgres.${projectRef}:${supabaseKey}@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres`;
+console.log("数据库连接配置:", {
+	hasUrl: !!process.env.TURSO_DATABASE_URL,
+	hasToken: !!process.env.TURSO_AUTH_TOKEN,
+	urlPrefix: process.env.TURSO_DATABASE_URL?.substring(0, 30) + "...",
+});
 
-// 创建 postgres 客户端
-const client = postgres(connectionString, {
-	prepare: false,
+// 创建 Turso (LibSQL) 客户端
+const client = createClient({
+	url: process.env.TURSO_DATABASE_URL,
+	authToken: process.env.TURSO_AUTH_TOKEN,
 });
 
 // 创建 drizzle 实例

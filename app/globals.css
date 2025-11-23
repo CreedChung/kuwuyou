@@ -154,4 +154,17 @@ code {
 	.delay-700 {
 		animation-delay: 700ms;
 	}
+
+	/* 交互式缩放动画 */
+	.interactive-scale {
+		@apply transition-transform duration-150 ease-in-out;
+	}
+
+	.interactive-scale:active {
+		@apply scale-95;
+	}
+
+	.interactive-scale-sm:active {
+		@apply scale-98;
+	}
 }

@@ -1,3 +1,4 @@
+
 "use client";
 
 export const dynamic = "force-dynamic";
@@ -14,8 +15,9 @@ import {
 	Save,
 	Trophy,
 	User,
+	Loader2,
 } from "lucide-react";
-import { useId, useState } from "react";
+import { useId, useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,6 +31,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { getProfile, updateProfile, updateAvatar, type ProfileData, type StatsData, type AchievementData } from "@/services/profile";
+import { useAuthStore } from "@/stores/authStore";
+import { useRouter } from "next/navigation";
 
 type ProfileSection = "basic" | "stats" | "achievements" | "activity";
 
@@ -49,22 +55,99 @@ export default function ProfilePage() {
 	const emailId = useId();
 	const bioId = useId();
 	const locationId = useId();
+	const { toast } = useToast();
+	const router = useRouter();
+	const { user, initialized, initialize } = useAuthStore();
+	
 	const [activeSection, setActiveSection] = useState<ProfileSection>("basic");
 	const [isEditing, setIsEditing] = useState(false);
-	const [profile, setProfile] = useState({
+	const [loading, setLoading] = useState(true);
+	const [saving, setSaving] = useState(false);
+	
+	const [profile, setProfile] = useState<ProfileData>({
+		id: "",
 		username: "用户",
 		email: "user@example.com",
-		bio: "这是一段个人简介，可以介绍一下自己。",
-		location: "中国",
+		avatarUrl: "",
 		joinDate: "2024-01-01",
-		avatar: "",
 	});
+
+	const [stats, setStats] = useState<StatsData>({
+		conversationCount: 0,
+		messageCount: 0,
+		activeDays: 0,
+	});
+
+	const [achievements, setAchievements] = useState<AchievementData[]>([]);
 
 	const [editedProfile, setEditedProfile] = useState(profile);
 
-	const handleSave = () => {
-		setProfile(editedProfile);
-		setIsEditing(false);
+	// 初始化认证状态
+	useEffect(() => {
+		if (!initialized) {
+			initialize();
+		}
+	}, [initialized, initialize]);
+
+	// 加载用户数据
+	useEffect(() => {
+		const loadProfile = async () => {
+			// 等待认证状态初始化完成
+			if (!initialized) {
+				return;
+			}
+
+			// 认证状态已初始化,检查用户是否登录
+			if (!user) {
+				router.push("/auth/login");
+				return;
+			}
+
+			setLoading(true);
+			const data = await getProfile();
+			
+			if (data) {
+				setProfile(data.profile);
+				setEditedProfile(data.profile);
+				setStats(data.stats);
+				setAchievements(data.achievements);
+			} else {
+				toast({
+					title: "加载失败",
+					description: "无法加载用户资料",
+					variant: "destructive",
+				});
+			}
+			
+			setLoading(false);
+		};
+
+		loadProfile();
+	}, [user, initialized, router, toast]);
+
+	const handleSave = async () => {
+		setSaving(true);
+		
+		const result = await updateProfile({
+			username: editedProfile.username,
+		});
+
+		if (result.success) {
+			setProfile(editedProfile);
+			setIsEditing(false);
+			toast({
+				title: "保存成功",
+				description: "您的资料已更新",
+			});
+		} else {
+			toast({
+				title: "保存失败",
+				description: result.error || "更新资料失败",
+				variant: "destructive",
+			});
+		}
+		
+		setSaving(false);
 	};
 
 	const handleCancel = () => {
@@ -72,11 +155,58 @@ export default function ProfilePage() {
 		setIsEditing(false);
 	};
 
-	const stats = [
-		{ label: "对话数", value: "128" },
-		{ label: "消息数", value: "1,234" },
-		{ label: "使用天数", value: "45" },
-	];
+	const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+
+		// 检查文件类型
+		if (!file.type.startsWith("image/")) {
+			toast({
+				title: "文件类型错误",
+				description: "请选择图片文件",
+				variant: "destructive",
+			});
+			return;
+		}
+
+		// 检查文件大小 (最大 2MB)
+		if (file.size > 2 * 1024 * 1024) {
+			toast({
+				title: "文件过大",
+				description: "图片大小不能超过 2MB",
+				variant: "destructive",
+			});
+			return;
+		}
+
+		const result = await updateAvatar(file);
+
+		if (result.success && result.url) {
+			setProfile({ ...profile, avatarUrl: result.url });
+			setEditedProfile({ ...editedProfile, avatarUrl: result.url });
+			toast({
+				title: "上传成功",
+				description: "头像已更新",
+			});
+		} else {
+			toast({
+				title: "上传失败",
+				description: result.error || "更新头像失败",
+				variant: "destructive",
+			});
+		}
+	};
+
+	if (loading) {
+		return (
+			<div className="flex h-screen items-center justify-center bg-background">
+				<div className="flex flex-col items-center gap-4">
+					<Loader2 className="h-8 w-8 animate-spin text-primary" />
+					<p className="text-sm text-muted-foreground">加载中...</p>
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<div className="flex h-screen bg-background">
@@ -145,12 +275,21 @@ export default function ProfilePage() {
 									</Button>
 								) : (
 									<div className="flex gap-2">
-										<Button onClick={handleCancel} variant="outline" size="sm">
+										<Button onClick={handleCancel} variant="outline" size="sm" disabled={saving}>
 											取消
 										</Button>
-										<Button onClick={handleSave} size="sm" className="gap-2">
-											<Save className="h-4 w-4" />
-											保存
+										<Button onClick={handleSave} size="sm" className="gap-2" disabled={saving}>
+											{saving ? (
+												<>
+													<Loader2 className="h-4 w-4 animate-spin" />
+													保存中...
+												</>
+											) : (
+												<>
+													<Save className="h-4 w-4" />
+													保存
+												</>
+											)}
 										</Button>
 									</div>
 								)}
@@ -170,7 +309,7 @@ export default function ProfilePage() {
 										<div className="relative group">
 											<Avatar className="h-20 w-20 border-4 border-primary/20">
 												<AvatarImage
-													src={profile.avatar}
+													src={profile.avatarUrl || ""}
 													alt={profile.username}
 												/>
 												<AvatarFallback className="text-2xl bg-gradient-to-br from-primary to-primary/60">
@@ -178,20 +317,38 @@ export default function ProfilePage() {
 												</AvatarFallback>
 											</Avatar>
 											{isEditing && (
-												<button
-													type="button"
-													className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+												<label
+													htmlFor="avatar-upload"
+													className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
 												>
 													<Camera className="h-5 w-5 text-white" />
-												</button>
+													<input
+														id="avatar-upload"
+														type="file"
+														accept="image/*"
+														className="hidden"
+														onChange={handleAvatarChange}
+													/>
+												</label>
 											)}
 										</div>
 										<div className="flex-1">
 											{isEditing ? (
-												<Button variant="outline" size="sm" className="gap-2">
-													<Camera className="h-4 w-4" />
-													更换头像
-												</Button>
+												<label htmlFor="avatar-upload-btn">
+													<Button variant="outline" size="sm" className="gap-2" type="button" asChild>
+														<span className="cursor-pointer">
+															<Camera className="h-4 w-4" />
+															更换头像
+														</span>
+													</Button>
+													<input
+														id="avatar-upload-btn"
+														type="file"
+														accept="image/*"
+														className="hidden"
+														onChange={handleAvatarChange}
+													/>
+												</label>
 											) : (
 												<div>
 													<p className="text-sm font-medium">头像</p>
@@ -223,30 +380,13 @@ export default function ProfilePage() {
 													<p className="text-sm font-medium">{profile.email}</p>
 												</div>
 												<div>
-													<p className="text-xs text-muted-foreground mb-1">
-														个人简介
+													<p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+														<Calendar className="h-3 w-3" />
+														加入日期
 													</p>
-													<p className="text-sm">{profile.bio}</p>
-												</div>
-												<div className="flex gap-6">
-													<div>
-														<p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-															<MapPin className="h-3 w-3" />
-															位置
-														</p>
-														<p className="text-sm font-medium">
-															{profile.location}
-														</p>
-													</div>
-													<div>
-														<p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-															<Calendar className="h-3 w-3" />
-															加入日期
-														</p>
-														<p className="text-sm font-medium">
-															{profile.joinDate}
-														</p>
-													</div>
+													<p className="text-sm font-medium">
+														{profile.joinDate}
+													</p>
 												</div>
 											</div>
 										</div>
@@ -279,48 +419,9 @@ export default function ProfilePage() {
 													id={emailId}
 													type="email"
 													value={editedProfile.email}
-													onChange={(e) =>
-														setEditedProfile({
-															...editedProfile,
-															email: e.target.value,
-														})
-													}
-													className="h-11"
-												/>
-											</div>
-											<div className="space-y-2">
-												<Label htmlFor={bioId} className="text-sm font-medium">
-													个人简介
-												</Label>
-												<Textarea
-													id={bioId}
-													value={editedProfile.bio}
-													onChange={(e) =>
-														setEditedProfile({
-															...editedProfile,
-															bio: e.target.value,
-														})
-													}
-													rows={3}
-												/>
-											</div>
-											<div className="space-y-2">
-												<Label
-													htmlFor={locationId}
-													className="text-sm font-medium"
-												>
-													位置
-												</Label>
-												<Input
-													id={locationId}
-													value={editedProfile.location}
-													onChange={(e) =>
-														setEditedProfile({
-															...editedProfile,
-															location: e.target.value,
-														})
-													}
-													className="h-11"
+													disabled
+													className="h-11 bg-muted"
+													title="邮箱不可修改"
 												/>
 											</div>
 										</div>
@@ -350,19 +451,30 @@ export default function ProfilePage() {
 								</CardHeader>
 								<CardContent>
 									<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-										{stats.map((stat) => (
-											<div
-												key={stat.label}
-												className="text-center p-6 rounded-lg bg-primary/5 border border-primary/10"
-											>
-												<div className="text-3xl font-bold text-primary">
-													{stat.value}
-												</div>
-												<div className="text-sm text-muted-foreground mt-2">
-													{stat.label}
-												</div>
+										<div className="text-center p-6 rounded-lg bg-primary/5 border border-primary/10">
+											<div className="text-3xl font-bold text-primary">
+												{stats.conversationCount.toLocaleString()}
 											</div>
-										))}
+											<div className="text-sm text-muted-foreground mt-2">
+												对话数
+											</div>
+										</div>
+										<div className="text-center p-6 rounded-lg bg-primary/5 border border-primary/10">
+											<div className="text-3xl font-bold text-primary">
+												{stats.messageCount.toLocaleString()}
+											</div>
+											<div className="text-sm text-muted-foreground mt-2">
+												消息数
+											</div>
+										</div>
+										<div className="text-center p-6 rounded-lg bg-primary/5 border border-primary/10">
+											<div className="text-3xl font-bold text-primary">
+												{stats.activeDays}
+											</div>
+											<div className="text-sm text-muted-foreground mt-2">
+												使用天数
+											</div>
+										</div>
 									</div>
 								</CardContent>
 							</Card>
@@ -383,55 +495,34 @@ export default function ProfilePage() {
 										<Trophy className="h-5 w-5" />
 										我的成就
 									</CardTitle>
-									<CardDescription>已解锁 4 个成就</CardDescription>
+									<CardDescription>已解锁 {achievements.length} 个成就</CardDescription>
 								</CardHeader>
 								<CardContent>
-									<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-										<div className="p-4 rounded-lg bg-muted/50 border border-border/50">
-											<div className="flex items-center gap-3">
-												<div className="text-2xl">🎉</div>
-												<div className="flex-1">
-													<p className="text-sm font-medium">新手上路</p>
-													<p className="text-xs text-muted-foreground">
-														完成首次对话
-													</p>
+									{achievements.length > 0 ? (
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+											{achievements.map((achievement) => (
+												<div key={achievement.id} className="p-4 rounded-lg bg-muted/50 border border-border/50">
+													<div className="flex items-center gap-3">
+														<div className="text-2xl">{achievement.icon}</div>
+														<div className="flex-1">
+															<p className="text-sm font-medium">{achievement.name}</p>
+															<p className="text-xs text-muted-foreground">
+																{achievement.description}
+															</p>
+														</div>
+													</div>
 												</div>
-											</div>
+											))}
 										</div>
-										<div className="p-4 rounded-lg bg-muted/50 border border-border/50">
-											<div className="flex items-center gap-3">
-												<div className="text-2xl">💬</div>
-												<div className="flex-1">
-													<p className="text-sm font-medium">健谈者</p>
-													<p className="text-xs text-muted-foreground">
-														发送超过 100 条消息
-													</p>
-												</div>
-											</div>
+									) : (
+										<div className="text-center py-12">
+											<Trophy className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+											<p className="text-sm text-muted-foreground">暂无成就</p>
+											<p className="text-xs text-muted-foreground mt-1">
+												继续使用来解锁更多成就
+											</p>
 										</div>
-										<div className="p-4 rounded-lg bg-muted/50 border border-border/50">
-											<div className="flex items-center gap-3">
-												<div className="text-2xl">⭐</div>
-												<div className="flex-1">
-													<p className="text-sm font-medium">早期用户</p>
-													<p className="text-xs text-muted-foreground">
-														加入早期体验计划
-													</p>
-												</div>
-											</div>
-										</div>
-										<div className="p-4 rounded-lg bg-muted/50 border border-border/50">
-											<div className="flex items-center gap-3">
-												<div className="text-2xl">🔥</div>
-												<div className="flex-1">
-													<p className="text-sm font-medium">连续使用 7 天</p>
-													<p className="text-xs text-muted-foreground">
-														保持活跃使用
-													</p>
-												</div>
-											</div>
-										</div>
-									</div>
+									)}
 								</CardContent>
 							</Card>
 						</div>
@@ -442,3 +533,4 @@ export default function ProfilePage() {
 		</div>
 	);
 }
+						

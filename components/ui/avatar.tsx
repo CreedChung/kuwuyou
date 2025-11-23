@@ -5,12 +5,13 @@ import { cn } from "../../lib/utils";
 
 const Avatar = React.forwardRef<
 	React.ElementRef<typeof AvatarPrimitive.Root>,
-	React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
->(({ className, ...props }, ref) => (
+	React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root> & { interactive?: boolean }
+>(({ className, interactive, ...props }, ref) => (
 	<AvatarPrimitive.Root
 		ref={ref}
 		className={cn(
 			"relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full",
+			interactive && "cursor-pointer transition-transform duration-150 ease-in-out active:scale-95",
 			className,
 		)}
 		{...props}

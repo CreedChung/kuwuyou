@@ -66,9 +66,9 @@ export function Sidebar({
 	const router = useRouter();
 
 	// 从用户数据中提取信息
-	const userName = user?.user_metadata?.username || user?.email?.split('@')[0] || '用户';
+	const userName = user?.username || user?.email?.split('@')[0] || '用户';
 	const userHandle = user?.email ? `@${user.email.split('@')[0]}` : '@user';
-	const userAvatar = user?.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=random`;
+	const userAvatar = user?.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=random`;
 
 	const handleLogout = async () => {
 		setLogoutDialogOpen(false);

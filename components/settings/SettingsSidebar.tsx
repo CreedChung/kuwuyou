@@ -3,6 +3,7 @@ import {
 	ArrowLeft,
 	Bell,
 	Database,
+	Key,
 	Palette,
 	Settings,
 	Shield,
@@ -15,6 +16,7 @@ export type SettingSection =
 	| "general"
 	| "notifications"
 	| "personalization"
+	| "connections"
 	| "data"
 	| "security"
 	| "account";
@@ -29,6 +31,7 @@ const sidebarItems: SidebarItem[] = [
 	{ id: "general", label: "常规", icon: Settings },
 	{ id: "notifications", label: "通知", icon: Bell },
 	{ id: "personalization", label: "个性化", icon: Palette },
+	{ id: "connections", label: "API 连接", icon: Key },
 	{ id: "data", label: "数据管理", icon: Database },
 	{ id: "security", label: "安全", icon: Shield },
 	{ id: "account", label: "账户", icon: UserCircle },

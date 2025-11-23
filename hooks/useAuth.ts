@@ -10,7 +10,6 @@ export function useAuth() {
 
 	return {
 		user: store.user,
-		session: store.session,
 		loading: store.loading,
 		signUp: (email: string, password: string, username: string) =>
 			store.signUp(email, password, username, toast),

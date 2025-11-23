@@ -64,11 +64,13 @@ export function Header() {
 		>
 			<nav className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between px-4">
 				<div className="flex items-center gap-5">
-					<img
-						src="/logo.jpg"
-						alt="库无忧助手"
-						className="h-8 object-contain"
-					/>
+					<Link href="/" className="flex items-center">
+						<img
+							src="/logo.jpg"
+							alt="库无忧助手"
+							className="h-8 object-contain cursor-pointer hover:opacity-80 transition-opacity"
+						/>
+					</Link>
 
 					<NavigationMenu className="hidden md:flex">
 						<NavigationMenuList>
@@ -281,12 +283,12 @@ const companyLinks: LinkItem[] = [
 const companyLinks2: LinkItem[] = [
 	{
 		title: "服务条款",
-		href: "#",
+		href: "/terms",
 		icon: FileText,
 	},
 	{
 		title: "隐私政策",
-		href: "#",
+		href: "/privacy",
 		icon: Shield,
 	},
 ];
