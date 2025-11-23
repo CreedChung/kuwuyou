@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { profiles, userStats } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import bcrypt from "bcryptjs";
 
 // 注册请求验证 schema
 const signupSchema = z.object({
@@ -55,11 +56,8 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		// 使用 Bun 的内置密码哈希
-		const hashedPassword = await Bun.password.hash(password, {
-			algorithm: "bcrypt",
-			cost: 10,
-		});
+		// 使用 bcrypt 哈希密码
+		const hashedPassword = await bcrypt.hash(password, 10);
 
 		// 创建用户
 		const userId = crypto.randomUUID();

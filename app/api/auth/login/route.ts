@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { profiles } from "@/db/schema";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
+import bcrypt from "bcryptjs";
 
 // 登录请求验证 schema
 const loginSchema = z.object({
@@ -43,7 +44,7 @@ export async function POST(request: NextRequest) {
 		const user = users[0];
 
 		// 验证密码
-		const isPasswordValid = await Bun.password.verify(password, user.password);
+		const isPasswordValid = await bcrypt.compare(password, user.password);
 
 		if (!isPasswordValid) {
 			return NextResponse.json(
