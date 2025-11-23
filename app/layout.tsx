@@ -9,6 +9,8 @@ export const metadata: Metadata = {
 	description: "您的智能AI助手",
 	icons: {
 		icon: "/logo.jpg",
+		shortcut: "/logo.jpg",
+		apple: "/logo.jpg",
 	},
 };
 
