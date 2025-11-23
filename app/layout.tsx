@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
@@ -22,14 +23,20 @@ export default function RootLayout({
 					dangerouslySetInnerHTML={{
 						__html: `
 							(function() {
-								const theme = localStorage.getItem('theme');
-								if (!theme || theme === 'dark') {
-									document.documentElement.classList.add('dark');
-								}
+								// 固定使用白天模式，移除 dark 类
+								document.documentElement.classList.remove('dark');
 							})();
 						`,
 					}}
 				/>
+				{process.env.NODE_ENV === "development" && (
+					<Script
+						src="//unpkg.com/react-grab/dist/index.global.js"
+						crossOrigin="anonymous"
+						strategy="beforeInteractive"
+						data-enabled="true"
+					/>
+				)}
 			</head>
 			<body className="antialiased">
 				{children}

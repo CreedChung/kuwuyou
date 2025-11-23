@@ -151,28 +151,35 @@ export function Sidebar({
 								</div>
 							) : (
 								conversations.map((conversation) => (
-									<SidebarMenuItem key={conversation.id}>
+									<SidebarMenuItem key={conversation.id} className="relative group">
 										<SidebarMenuButton
 											onClick={() => onSelectConversation(conversation.id)}
 											isActive={currentConversationId === conversation.id}
-											className="group relative"
 										>
 											<MessageSquarePlus className="h-4 w-4 shrink-0" />
 											<span className="flex-1 truncate">
 												{conversation.title}
 											</span>
-											<button
-												type="button"
-												onClick={(e) => {
+										</SidebarMenuButton>
+										<div
+											role="button"
+											tabIndex={0}
+											onClick={(e) => {
+												e.stopPropagation();
+												handleDeleteClick(conversation.id);
+											}}
+											onKeyDown={(e) => {
+												if (e.key === 'Enter' || e.key === ' ') {
+													e.preventDefault();
 													e.stopPropagation();
 													handleDeleteClick(conversation.id);
-												}}
-												className="opacity-0 group-hover:opacity-100 rounded p-1 hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-opacity absolute right-1"
-												aria-label="删除对话"
-											>
-												<Trash2 className="h-3.5 w-3.5" />
-											</button>
-										</SidebarMenuButton>
+												}
+											}}
+											className="opacity-0 group-hover:opacity-100 rounded p-1 hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-opacity absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer"
+											aria-label="删除对话"
+										>
+											<Trash2 className="h-3.5 w-3.5" />
+										</div>
 									</SidebarMenuItem>
 								))
 							)}

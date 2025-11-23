@@ -1,4 +1,5 @@
-import { AlertCircle, Bot, Loader2, User } from "lucide-react";
+import { AlertCircle, Loader2, User } from "lucide-react";
+import Image from "next/image";
 import type { Message as MessageType } from "./types";
 
 interface MessageProps {
@@ -18,12 +19,12 @@ export function Message({ message }: MessageProps) {
 		>
 			<div className="flex-shrink-0">
 				<div
-					className={`h-9 w-9 rounded-lg flex items-center justify-center ${
+					className={`h-9 w-9 rounded-lg flex items-center justify-center overflow-hidden ${
 						isUser
 							? "bg-gradient-to-br from-blue-500 to-purple-500 text-white"
 							: hasError
 								? "bg-gradient-to-br from-red-500 to-orange-500 text-white"
-								: "bg-gradient-to-br from-green-500 to-teal-500 text-white"
+								: "bg-white"
 					}`}
 				>
 					{isUser ? (
@@ -31,7 +32,13 @@ export function Message({ message }: MessageProps) {
 					) : hasError ? (
 						<AlertCircle className="h-5 w-5" />
 					) : (
-						<Bot className="h-5 w-5" />
+						<Image
+							src="/logo.jpg"
+							alt="库无忧助手"
+							width={36}
+							height={36}
+							className="object-cover"
+						/>
 					)}
 				</div>
 			</div>

@@ -17,7 +17,7 @@ import {
 	Star,
 	Users,
 } from "lucide-react";
-import React, { useId } from "react";
+import React from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { MenuToggleIcon } from "@/components/ui/menu-toggle-icon";
@@ -41,7 +41,8 @@ type LinkItem = {
 export function Header() {
 	const [open, setOpen] = React.useState(false);
 	const scrolled = useScroll(10);
-	const mobileMenuId = useId();
+	// 使用静态 ID 避免 hydration mismatch
+	const mobileMenuId = "mobile-menu";
 
 	React.useEffect(() => {
 		if (open) {
@@ -181,7 +182,14 @@ type MobileMenuProps = React.ComponentProps<"div"> & {
 };
 
 function MobileMenu({ id, open, children, className, ...props }: MobileMenuProps) {
-	if (!open || typeof window === "undefined") return null;
+	// 避免在服务器端渲染移动端菜单，防止 hydration mismatch
+	const [isClient, setIsClient] = React.useState(false);
+	
+	React.useEffect(() => {
+		setIsClient(true);
+	}, []);
+
+	if (!open || !isClient) return null;
 
 	return createPortal(
 		<div
@@ -315,20 +323,31 @@ const companyLinks2: LinkItem[] = [
 
 function useScroll(threshold: number) {
 	const [scrolled, setScrolled] = React.useState(false);
-
-	const onScroll = React.useCallback(() => {
-		setScrolled(window.scrollY > threshold);
-	}, [threshold]);
+	const [isClient, setIsClient] = React.useState(false);
 
 	React.useEffect(() => {
+		setIsClient(true);
+	}, []);
+
+	const onScroll = React.useCallback(() => {
+		if (isClient) {
+			setScrolled(window.scrollY > threshold);
+		}
+	}, [threshold, isClient]);
+
+	React.useEffect(() => {
+		if (!isClient) return;
+		
 		window.addEventListener("scroll", onScroll);
 		return () => window.removeEventListener("scroll", onScroll);
-	}, [onScroll]);
+	}, [onScroll, isClient]);
 
 	// also check on first load
 	React.useEffect(() => {
-		onScroll();
-	}, [onScroll]);
+		if (isClient) {
+			onScroll();
+		}
+	}, [onScroll, isClient]);
 
 	return scrolled;
 }

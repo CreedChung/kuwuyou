@@ -46,6 +46,7 @@
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
 		"@types/react-speech-recognition": "^3.9.6",
+		"bun-plugin-tailwind": "latest",
 		"drizzle-kit": "^0.31.7",
 		"drizzle-orm": "^0.44.7",
 		"eslint": "^9",

@@ -99,25 +99,14 @@ export default function LoginPage() {
 					<span className="font-medium">返回主页</span>
 				</Link>
 
-				{/* Logo 和标题 */}
+				{/* 标题 */}
 				<div className="text-center mb-8 space-y-2">
-					<div className="flex items-center justify-center gap-2 mb-4">
-						<div className="relative">
-							<img
-								src="/logo.jpg"
-								alt="库无忧助手 Logo"
-								className="w-16 h-16 rounded-lg drop-shadow-lg"
-							/>
-						</div>
-					</div>
-					<div className="flex items-center justify-center gap-3">
-						<h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-							库无忧助手
-						</h1>
-						<p className="text-gray-600 text-base">
-							欢迎回来,继续你的智能对话之旅
-						</p>
-					</div>
+					<h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+						库无忧助手
+					</h1>
+					<p className="text-gray-600 text-base">
+						欢迎回来,继续你的智能对话之旅
+					</p>
 				</div>
 
 				<Card className="border-gray-200 shadow-2xl backdrop-blur-xl bg-white/90 overflow-hidden">

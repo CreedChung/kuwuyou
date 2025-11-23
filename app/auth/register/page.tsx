@@ -39,25 +39,14 @@ export default function RegisterPage() {
 					<span className="font-medium">返回主页</span>
 				</Link>
 	
-				{/* Logo 和标题 */}
+				{/* 标题 */}
 				<div className="text-center mb-8 space-y-2">
-					<div className="flex items-center justify-center gap-2 mb-4">
-						<div className="relative">
-							<img
-								src="/logo.jpg"
-								alt="库无忧助手 Logo"
-								className="w-16 h-16 rounded-lg drop-shadow-lg"
-							/>
-						</div>
-					</div>
-					<div className="flex items-center justify-center gap-3">
-						<h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
-							库无忧助手
-						</h1>
-						<p className="text-gray-600 text-base">
-							创建账号,开启你的智能对话之旅
-						</p>
-					</div>
+					<h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
+						库无忧助手
+					</h1>
+					<p className="text-gray-600 text-base">
+						创建账号,开启你的智能对话之旅
+					</p>
 				</div>
 
 				<RegisterForm />
