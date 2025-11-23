@@ -5,7 +5,12 @@ import type { Message as MessageType } from "./types";
 
 interface ChatAreaProps {
 	messages: MessageType[];
-	onSendMessage: (content: string, options?: { showThinking?: boolean; showReferences?: boolean }) => void;
+	onSendMessage: (content: string, options?: {
+		showThinking?: boolean;
+		showReferences?: boolean;
+		uploadedFile?: File;
+		fileContent?: string;
+	}) => void;
 	isGenerating?: boolean;
 	onStopGenerating?: () => void;
 }

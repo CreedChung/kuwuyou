@@ -1,10 +1,11 @@
-import { AlertCircle, BookOpen, CheckCheck, ChevronDown, ChevronUp, Copy, Lightbulb, Loader2 } from "lucide-react";
+import { AlertCircle, BookOpen, CheckCheck, ChevronDown, ChevronUp, Copy, FileText, Lightbulb, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { Streamdown } from "streamdown";
 import type { Message as MessageType } from "./types";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { AnalysisResult } from "./AnalysisResult";
 
 interface MessageProps {
 	message: MessageType;
@@ -94,6 +95,36 @@ export function Message({ message }: MessageProps) {
 					</div>
 				) : (
 					<>
+						{/* 用户消息内容 */}
+						{isUser && (
+							<div className="space-y-2">
+								{/* 显示上传的文件名 */}
+								{message.uploadedFileName && (
+									<div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-3 py-2 rounded-lg border border-border">
+										<FileText className="h-4 w-4" />
+										<span>已上传: {message.uploadedFileName}</span>
+									</div>
+								)}
+								<div className="group relative">
+									<div className="prose prose-sm max-w-none dark:prose-invert">
+										<Streamdown>{message.content}</Streamdown>
+									</div>
+									<Button
+										variant="ghost"
+										size="sm"
+										className="absolute -top-2 -right-2 h-7 px-2 opacity-0 group-hover:opacity-100 transition-opacity"
+										onClick={() => copyToClipboard(message.content, "user-message")}
+									>
+										{copiedSection === "user-message" ? (
+											<CheckCheck className="h-3 w-3" />
+										) : (
+											<Copy className="h-3 w-3" />
+										)}
+									</Button>
+								</div>
+							</div>
+						)}
+
 						{/* 知识库引用 */}
 						{!isUser && message.references && message.references.length > 0 && (
 							<div className="rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30 overflow-hidden">
@@ -254,13 +285,36 @@ export function Message({ message }: MessageProps) {
 							</div>
 						)}
 
-						{/* 主要回答内容 */}
-						<div className="prose prose-sm max-w-none dark:prose-invert">
-							<Streamdown>{message.content}</Streamdown>
-							{isStreaming && message.content && (
-								<span className="inline-block w-2 h-4 ml-1 bg-primary animate-pulse" />
-							)}
-						</div>
+						{/* 助手主要回答内容 */}
+						{!isUser && (
+							<div className="space-y-4">
+								<div className="group relative">
+									<div className="prose prose-sm max-w-none dark:prose-invert">
+										<Streamdown>{message.content}</Streamdown>
+										{isStreaming && message.content && (
+											<span className="inline-block w-2 h-4 ml-1 bg-primary animate-pulse" />
+										)}
+									</div>
+									<Button
+										variant="ghost"
+										size="sm"
+										className="absolute -top-2 -right-2 h-7 px-2 opacity-0 group-hover:opacity-100 transition-opacity"
+										onClick={() => copyToClipboard(message.content, "assistant-message")}
+									>
+										{copiedSection === "assistant-message" ? (
+											<CheckCheck className="h-3 w-3" />
+										) : (
+											<Copy className="h-3 w-3" />
+										)}
+									</Button>
+								</div>
+								
+								{/* 显示分析结果 */}
+								{message.analysisResults && message.analysisResults.length > 0 && (
+									<AnalysisResult results={message.analysisResults} />
+								)}
+							</div>
+						)}
 
 						{/* Token使用统计 */}
 						{!isUser && message.usage && message.usage.length > 0 && (

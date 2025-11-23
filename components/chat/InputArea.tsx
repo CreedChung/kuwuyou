@@ -6,13 +6,20 @@ import {
 	Paperclip,
 	Send,
 	Square,
+	X,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { useSpeechInput } from "../../hooks/useSpeechInput";
+import { extractTextFromFile, truncateText, formatFileSize } from "@/utils/fileProcessor";
 
 interface InputAreaProps {
-	onSendMessage: (content: string, options?: { showThinking?: boolean; showReferences?: boolean }) => void;
+	onSendMessage: (content: string, options?: {
+		showThinking?: boolean;
+		showReferences?: boolean;
+		uploadedFile?: File;
+		fileContent?: string;
+	}) => void;
 	isGenerating?: boolean;
 	onStopGenerating?: () => void;
 }
@@ -37,7 +44,11 @@ export function InputArea({
 	const [thinkActive, setThinkActive] = useState(true);
 	const [deepSearchActive, setDeepSearchActive] = useState(true);
 	const [inputValue, setInputValue] = useState("");
+	const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+	const [fileContent, setFileContent] = useState<string>("");
+	const [isProcessingFile, setIsProcessingFile] = useState(false);
 	const wrapperRef = useRef<HTMLDivElement>(null);
+	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	// 语音识别 hook
 	const {
@@ -94,10 +105,59 @@ export function InputArea({
 			onSendMessage(inputValue.trim(), {
 				showThinking: thinkActive,      // 控制是否显示思考过程
 				showReferences: deepSearchActive, // 控制是否显示知识库引用
+				uploadedFile: uploadedFile || undefined,
+				fileContent: fileContent || undefined,
 			});
 			setInputValue("");
+			setUploadedFile(null);
+			setFileContent("");
 			resetTranscript();
 		}
+	};
+
+	// 处理文件上传
+	const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+
+		// 验证文件大小 (最大10MB)
+		if (file.size > 10 * 1024 * 1024) {
+			alert("文件大小不能超过10MB");
+			return;
+		}
+
+		setIsProcessingFile(true);
+		try {
+			// 提取文件文本内容
+			const text = await extractTextFromFile(file);
+			
+			// 截断到5000字
+			const truncatedText = truncateText(text, 5000);
+			
+			setUploadedFile(file);
+			setFileContent(truncatedText);
+			setIsActive(true);
+		} catch (error) {
+			console.error("文件处理失败:", error);
+			alert(error instanceof Error ? error.message : "文件处理失败");
+		} finally {
+			setIsProcessingFile(false);
+			// 重置文件输入
+			if (fileInputRef.current) {
+				fileInputRef.current.value = "";
+			}
+		}
+	};
+
+	// 移除已上传的文件
+	const handleRemoveFile = () => {
+		setUploadedFile(null);
+		setFileContent("");
+	};
+
+	// 触发文件选择
+	const handleFileButtonClick = () => {
+		fileInputRef.current?.click();
 	};
 
 	// 处理语音输入
@@ -196,13 +256,45 @@ export function InputArea({
 				>
 					<form onSubmit={handleSubmit}>
 						<div className="flex flex-col items-stretch w-full h-full">
+							{/* 文件上传显示 */}
+							{uploadedFile && (
+								<div className="px-4 pt-3 pb-2">
+									<div className="flex items-center gap-2 bg-muted/50 px-3 py-2 rounded-lg border border-border">
+										<Paperclip className="h-4 w-4 text-muted-foreground" />
+										<div className="flex-1 min-w-0">
+											<p className="text-sm font-medium truncate">{uploadedFile.name}</p>
+										</div>
+										<button
+											type="button"
+											onClick={handleRemoveFile}
+											className="p-1 hover:bg-muted rounded transition-colors"
+											title="移除文件"
+										>
+											<X className="h-4 w-4" />
+										</button>
+									</div>
+								</div>
+							)}
+
 							{/* Input Row */}
 							<div className="flex items-center gap-2 p-3 rounded-full bg-background w-full">
+								<input
+									ref={fileInputRef}
+									type="file"
+									accept=".txt,.md,.doc,.docx,.pdf"
+									onChange={handleFileUpload}
+									className="hidden"
+									disabled={isGenerating || isProcessingFile}
+								/>
 								<button
-									className="p-3 rounded-full hover:bg-accent transition"
+									className={`p-3 rounded-full hover:bg-accent transition ${
+										isProcessingFile ? "opacity-50 cursor-not-allowed" : ""
+									} ${uploadedFile ? "text-primary" : ""}`}
 									title="附加文件"
 									type="button"
 									tabIndex={-1}
+									onClick={handleFileButtonClick}
+									disabled={isGenerating || isProcessingFile}
 								>
 									<Paperclip size={20} />
 								</button>
@@ -363,7 +455,7 @@ export function InputArea({
 												? "bg-blue-600/10 outline outline-blue-600/60 text-blue-950 dark:text-blue-100"
 												: "bg-accent text-foreground hover:bg-accent/80"
 										}`}
-										title="显示知识库引用"
+										title="无忧搜索"
 										type="button"
 										onClick={(e) => {
 											e.stopPropagation();
@@ -371,7 +463,7 @@ export function InputArea({
 										}}
 										initial={false}
 										animate={{
-											width: deepSearchActive ? 150 : 36,
+											width: deepSearchActive ? 100 : 36,
 											paddingLeft: deepSearchActive ? 16 : 9,
 											paddingRight: deepSearchActive ? 16 : 9,
 										}}
@@ -394,7 +486,7 @@ export function InputArea({
 												width: { type: "spring", stiffness: 400, damping: 30 },
 											}}
 										>
-											显示知识库引用
+											无忧搜索
 										</motion.span>
 									</motion.button>
 								</div>

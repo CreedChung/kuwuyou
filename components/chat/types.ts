@@ -122,6 +122,8 @@ export interface Message {
   thinking?: string; // 思考过程
   references?: KnowledgeReference[]; // 知识库引用
   usage?: TokenUsage[]; // Token使用统计
+  analysisResults?: AnalysisItem[]; // 分析结果
+  uploadedFileName?: string; // 上传的文件名
 }
 
 // 知识库引用
@@ -129,6 +131,14 @@ export interface KnowledgeReference {
   content: string; // 引用的文本内容
   source?: string; // 来源（文档名等）
   score?: number; // 相关度分数（0-1之间）
+}
+
+// 分析结果项
+export interface AnalysisItem {
+  origin: string; // 待检测内容中的原句
+  reason: string; // 知识库/搜索工具返回的具体依据内容，注明来源
+  issueDes: string; // 指出问题的性质、标准缺失或不一致点
+  suggestion: string; // 提供修改建议，引用标准条文或行业做法
 }
 
 // 会话类型

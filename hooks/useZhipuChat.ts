@@ -6,8 +6,9 @@
 import { useState, useCallback, useRef } from "react";
 import { zhipuChatService, type ChatMessage } from "@/services/zhipuChat";
 import { knowledgeRetrievalService, type RetrievalSlice } from "@/services/knowledgeRetrieval";
-import type { Message, KnowledgeReference } from "@/components/chat/types";
+import type { Message, KnowledgeReference, AnalysisItem } from "@/components/chat/types";
 import { chatSystemPrompt } from "@/utils/prompt";
+import { detectAnalysisKeyword } from "@/utils/fileProcessor";
 
 export function useZhipuChat() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -24,16 +25,22 @@ export function useZhipuChat() {
       showThinking?: boolean;
       showReferences?: boolean;
       knowledgeId?: string;
+      uploadedFile?: File;
+      fileContent?: string;
     } = {}
   ) => {
     if (!content.trim() || isGenerating) return;
+
+    // 检测是否是分析模式
+    const isAnalysisMode = options.fileContent && detectAnalysisKeyword(content);
 
     // 添加用户消息
     const userMessage: Message = {
       id: `user-${Date.now()}`,
       role: "user",
-      content: content.trim(),
+      content: isAnalysisMode ? content.trim() : content.trim(),
       timestamp: Date.now(),
+      uploadedFileName: options.uploadedFile?.name,
     };
 
     setMessages((prev) => [...prev, userMessage]);
@@ -48,12 +55,98 @@ export function useZhipuChat() {
       isStreaming: true,
       thinking: "",
       references: [],
+      analysisResults: [],
     };
 
     currentMessageRef.current = assistantMessage;
     setMessages((prev) => [...prev, assistantMessage]);
 
     try {
+      // 如果是分析模式,调用分析API
+      if (isAnalysisMode && options.fileContent) {
+        console.log("🔍 ========== 启动分析模式 ==========");
+        console.log("📝 用户输入:", content);
+        console.log("📄 文件名:", options.uploadedFile?.name);
+        console.log("📊 文件内容长度:", options.fileContent.length, "字");
+        console.log("📋 文件内容预览:", options.fileContent.substring(0, 200) + "...");
+        
+        const knowledgeId = options.knowledgeId || process.env.NEXT_PUBLIC_ZHIPU_KNOWLEDGE_ID;
+        console.log("🔑 知识库ID:", knowledgeId);
+        
+        const requestData = {
+          content: options.fileContent,
+          knowledgeId: knowledgeId,
+        };
+        console.log("📤 发送分析请求:", requestData);
+        
+        const analysisResponse = await fetch("/api/analysis", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            content: options.fileContent,
+            knowledgeId: knowledgeId,
+          }),
+        });
+
+        if (!analysisResponse.ok) {
+          const errorData = await analysisResponse.json().catch(() => ({}));
+          const errorMessage = errorData.error || `分析请求失败 (${analysisResponse.status})`;
+          console.error("❌ 分析API错误:");
+          console.error("   状态码:", analysisResponse.status);
+          console.error("   错误信息:", errorMessage);
+          console.error("   详细数据:", errorData);
+          throw new Error(errorMessage);
+        }
+
+        const analysisData = await analysisResponse.json();
+        console.log("📥 收到分析响应:", analysisData);
+
+        if (analysisData.success && analysisData.results) {
+          console.log("✅ 分析成功!");
+          console.log("📊 分析结果数量:", analysisData.results.length);
+          console.log("📋 分析结果详情:");
+          analysisData.results.forEach((item: AnalysisItem, index: number) => {
+            console.log(`\n--- 问题 ${index + 1} ---`);
+            console.log("原句:", item.origin);
+            console.log("依据:", item.reason);
+            console.log("问题描述:", item.issueDes);
+            console.log("修改建议:", item.suggestion);
+          });
+          
+          if (analysisData.usage) {
+            console.log("\n💰 Token使用情况:", analysisData.usage);
+          }
+          
+          currentMessageRef.current.analysisResults = analysisData.results as AnalysisItem[];
+          currentMessageRef.current.content = `已完成规范检查分析，共发现 ${analysisData.results.length} 个问题。`;
+          currentMessageRef.current.isStreaming = false;
+          
+          console.log("========== 分析模式完成 ==========\n");
+
+          // 更新UI
+          setMessages((prev) => {
+            const updated = [...prev];
+            const lastIndex = updated.length - 1;
+            if (lastIndex >= 0 && updated[lastIndex].id === currentMessageRef.current?.id) {
+              updated[lastIndex] = { ...currentMessageRef.current };
+            }
+            return updated;
+          });
+
+          // 添加到对话历史
+          conversationHistoryRef.current.push({
+            role: "assistant",
+            content: currentMessageRef.current.content,
+          });
+
+          setIsGenerating(false);
+          currentMessageRef.current = null;
+          return;
+        }
+      }
+
       // 第一步：检索知识库（如果配置了知识库ID）
       let retrievalSlices: RetrievalSlice[] = [];
       const knowledgeId = options.knowledgeId || process.env.NEXT_PUBLIC_ZHIPU_KNOWLEDGE_ID;
