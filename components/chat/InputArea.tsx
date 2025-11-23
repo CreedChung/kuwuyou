@@ -272,10 +272,10 @@ export function InputArea({
 									<button
 										type="button"
 										onClick={onStopGenerating}
-										className="flex items-center gap-1 bg-destructive hover:bg-destructive/90 text-destructive-foreground p-3 rounded-full font-medium justify-center"
+										className="flex items-center gap-1 bg-destructive hover:bg-destructive/90 text-white p-3 rounded-full font-medium justify-center"
 										title="停止生成"
 									>
-										<Square size={18} />
+										<Square size={18} className="text-white" />
 									</button>
 								) : (
 									<button

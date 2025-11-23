@@ -1,21 +1,27 @@
-import { AlertCircle, BookOpen, CheckCheck, ChevronDown, ChevronUp, Copy, Lightbulb, Loader2, User } from "lucide-react";
+import { AlertCircle, BookOpen, CheckCheck, ChevronDown, ChevronUp, Copy, Lightbulb, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { Streamdown } from "streamdown";
 import type { Message as MessageType } from "./types";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
 interface MessageProps {
 	message: MessageType;
 }
 
 export function Message({ message }: MessageProps) {
+	const { user } = useAuth();
 	const isUser = message.role === "user";
 	const hasError = !!message.error;
 	const isStreaming = message.isStreaming;
 	const [showThinking, setShowThinking] = useState(true);
 	const [showReferences, setShowReferences] = useState(true);
 	const [copiedSection, setCopiedSection] = useState<string | null>(null);
+
+	// 用户头像
+	const userName = user?.username || user?.email || '用户';
+	const userAvatar = user?.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=3b82f6&color=fff`;
 
 	// 复制文本到剪贴板
 	const copyToClipboard = async (text: string, section: string) => {
@@ -35,29 +41,33 @@ export function Message({ message }: MessageProps) {
 			}`}
 		>
 			<div className="flex-shrink-0">
-				<div
-					className={`h-9 w-9 rounded-lg flex items-center justify-center overflow-hidden ${
-						isUser
-							? "bg-gradient-to-br from-blue-500 to-purple-500 text-white"
-							: hasError
+				{isUser ? (
+					<img
+						src={userAvatar}
+						alt={userName}
+						className="h-9 w-9 rounded-lg object-cover"
+					/>
+				) : (
+					<div
+						className={`h-9 w-9 rounded-lg flex items-center justify-center overflow-hidden ${
+							hasError
 								? "bg-gradient-to-br from-red-500 to-orange-500 text-white"
 								: "bg-white"
-					}`}
-				>
-					{isUser ? (
-						<User className="h-5 w-5" />
-					) : hasError ? (
-						<AlertCircle className="h-5 w-5" />
-					) : (
-						<Image
-							src="/logo.jpg"
-							alt="库无忧助手"
-							width={36}
-							height={36}
-							className="object-cover"
-						/>
-					)}
-				</div>
+						}`}
+					>
+						{hasError ? (
+							<AlertCircle className="h-5 w-5" />
+						) : (
+							<Image
+								src="/logo.jpg"
+								alt="库无忧助手"
+								width={36}
+								height={36}
+								className="object-cover"
+							/>
+						)}
+					</div>
+				)}
 			</div>
 			<div className="flex-1 space-y-3 min-w-0">
 				<div className="flex items-center gap-2">
