@@ -156,7 +156,7 @@ export default function KnowledgePage() {
 			<div className="w-64 border-r border-border/40 bg-muted/30 flex flex-col">
 				{/* 返回按钮 */}
 				<div className="p-4 border-b border-border/40">
-					<Link href="/">
+					<Link href="/chat">
 						<Button
 							variant="ghost"
 							size="sm"

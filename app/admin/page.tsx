@@ -8,7 +8,6 @@ import {
 	AdminSidebar,
 } from "@/components/admin/AdminSidebar";
 import { AnalyticsSection } from "@/components/admin/AnalyticsSection";
-import { ContentSection } from "@/components/admin/ContentSection";
 import { OverviewSection } from "@/components/admin/OverviewSection";
 import { SecuritySection } from "@/components/admin/SecuritySection";
 import { SystemSection } from "@/components/admin/SystemSection";
@@ -38,8 +37,6 @@ export default function AdminPage() {
 							onSearchChange={setSearchQuery}
 						/>
 					)}
-
-					{activeSection === "content" && <ContentSection />}
 
 					{activeSection === "analytics" && <AnalyticsSection />}
 

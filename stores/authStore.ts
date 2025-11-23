@@ -1,5 +1,6 @@
 import type { AuthError, Session, User } from "@supabase/supabase-js";
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 import { supabase } from "../lib/supabase";
 
 interface AuthState {
@@ -63,42 +64,44 @@ interface AuthState {
 	) => Promise<{ error: AuthError | null }>;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
-	user: null,
-	session: null,
-	loading: true,
-	initialized: false,
+export const useAuthStore = create<AuthState>()(
+	persist(
+		(set, get) => ({
+			user: null,
+			session: null,
+			loading: true,
+			initialized: false,
 
-	setUser: (user) => set({ user }),
-	setSession: (session) => set({ session }),
-	setLoading: (loading) => set({ loading }),
+			setUser: (user) => set({ user }),
+			setSession: (session) => set({ session }),
+			setLoading: (loading) => set({ loading }),
 
-	initialize: async () => {
-		if (get().initialized) return;
+			initialize: async () => {
+				if (get().initialized) return;
 
-		try {
-			// 获取初始会话
-			const { data: { session } } = await supabase.auth.getSession();
-			set({
-				session,
-				user: session?.user ?? null,
-				loading: false,
-				initialized: true,
-			});
+				try {
+					// 获取初始会话
+					const { data: { session } } = await supabase.auth.getSession();
+					set({
+						session,
+						user: session?.user ?? null,
+						loading: false,
+						initialized: true,
+					});
 
-			// 监听认证状态变化
-			supabase.auth.onAuthStateChange((_event, session) => {
-				set({
-					session,
-					user: session?.user ?? null,
-					loading: false,
-				});
-			});
-		} catch (error) {
-			console.error("Auth initialization error:", error);
-			set({ loading: false, initialized: true });
-		}
-	},
+					// 监听认证状态变化
+					supabase.auth.onAuthStateChange((_event, session) => {
+						set({
+							session,
+							user: session?.user ?? null,
+							loading: false,
+						});
+					});
+				} catch (error) {
+					console.error("Auth initialization error:", error);
+					set({ loading: false, initialized: true });
+				}
+			},
 
 	signUp: async (email, password, username, toast) => {
 		try {
@@ -244,35 +247,36 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 		}
 	},
 
-	signOut: async (toast) => {
-		try {
-			// 先清除本地状态
-			set({ user: null, session: null });
+			signOut: async (toast) => {
+				try {
+					// 先清除本地状态
+					set({ user: null, session: null });
 
-			// 清除本地存储中的数据
-			localStorage.removeItem("ai_provider");
-			localStorage.removeItem("supabase.auth.token");
+					// 清除本地存储中的数据
+					localStorage.removeItem("ai_provider");
+					localStorage.removeItem("supabase.auth.token");
+					localStorage.removeItem("auth-storage");
 
-			// 调用 Supabase 登出 API
-			const { error } = await supabase.auth.signOut();
+					// 调用 Supabase 登出 API
+					const { error } = await supabase.auth.signOut();
 
-			if (error) {
-				console.error("Supabase 登出错误:", error);
-			}
+					if (error) {
+						console.error("Supabase 登出错误:", error);
+					}
 
-			toast({
-				title: "已登出",
-				description: "期待您的下次访问",
-			});
-		} catch (error) {
-			console.error("登出错误:", error);
-			set({ user: null, session: null });
-			toast({
-				title: "已登出",
-				description: "期待您的下次访问",
-			});
-		}
-	},
+					toast({
+						title: "已登出",
+						description: "期待您的下次访问",
+					});
+				} catch (error) {
+					console.error("登出错误:", error);
+					set({ user: null, session: null });
+					toast({
+						title: "已登出",
+						description: "期待您的下次访问",
+					});
+				}
+			},
 
 	resetPassword: async (email, toast) => {
 		try {
@@ -306,35 +310,46 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 		}
 	},
 
-	updatePassword: async (newPassword, toast) => {
-		try {
-			const { error } = await supabase.auth.updateUser({
-				password: newPassword,
-			});
+			updatePassword: async (newPassword, toast) => {
+				try {
+					const { error } = await supabase.auth.updateUser({
+						password: newPassword,
+					});
 
-			if (error) {
-				toast({
-					title: "更新失败",
-					description: error.message,
-					variant: "destructive",
-				});
-				return { error };
-			}
+					if (error) {
+						toast({
+							title: "更新失败",
+							description: error.message,
+							variant: "destructive",
+						});
+						return { error };
+					}
 
-			toast({
-				title: "密码已更新",
-				description: "您的密码已成功更新",
-			});
+					toast({
+						title: "密码已更新",
+						description: "您的密码已成功更新",
+					});
 
-			return { error: null };
-		} catch (error) {
-			const authError = error as AuthError;
-			toast({
-				title: "更新失败",
-				description: "发生未知错误，请稍后再试",
-				variant: "destructive",
-			});
-			return { error: authError };
+					return { error: null };
+				} catch (error) {
+					const authError = error as AuthError;
+					toast({
+						title: "更新失败",
+						description: "发生未知错误，请稍后再试",
+						variant: "destructive",
+					});
+					return { error: authError };
+				}
+			},
+		}),
+		{
+			name: "auth-storage",
+			storage: createJSONStorage(() => localStorage),
+			// 只持久化用户和会话数据，不持久化 loading 和 initialized 状态
+			partialize: (state) => ({
+				user: state.user,
+				session: state.session,
+			}),
 		}
-	},
-}));
+	)
+);

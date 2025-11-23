@@ -130,7 +130,6 @@ export function Header() {
 					</NavigationMenu>
 				</div>
 				<div className="hidden items-center gap-2 md:flex">
-					<Button variant="outline">登录</Button>
 					<Button>开始使用</Button>
 				</div>
 				<Button
@@ -166,9 +165,6 @@ export function Header() {
 					</div>
 				</NavigationMenu>
 				<div className="flex flex-col gap-2">
-					<Button variant="outline" className="w-full bg-transparent">
-						登录
-					</Button>
 					<Button className="w-full">开始使用</Button>
 				</div>
 			</MobileMenu>

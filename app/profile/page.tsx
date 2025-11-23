@@ -42,7 +42,6 @@ const sidebarItems: SidebarItem[] = [
 	{ id: "basic", label: "基本信息", icon: User },
 	{ id: "stats", label: "使用统计", icon: BarChart3 },
 	{ id: "achievements", label: "成就徽章", icon: Trophy },
-	{ id: "activity", label: "最近活动", icon: Activity },
 ];
 
 export default function ProfilePage() {
@@ -438,53 +437,6 @@ export default function ProfilePage() {
 						</div>
 					)}
 
-					{/* 最近活动 */}
-					{activeSection === "activity" && (
-						<div className="space-y-6 animate-in fade-in-50 duration-300">
-							<div>
-								<h2 className="text-2xl font-bold mb-2">最近活动</h2>
-								<p className="text-sm text-muted-foreground">
-									你的最近操作记录
-								</p>
-							</div>
-
-							<Card>
-								<CardHeader>
-									<CardTitle className="text-lg flex items-center gap-2">
-										<Activity className="h-5 w-5" />
-										活动记录
-									</CardTitle>
-									<CardDescription>最近的操作历史</CardDescription>
-								</CardHeader>
-								<CardContent>
-									<div className="space-y-3">
-										{[
-											{ action: "创建了新对话", time: "2 小时前", icon: "💬" },
-											{ action: "修改了个人资料", time: "1 天前", icon: "👤" },
-											{ action: "更改了设置", time: "3 天前", icon: "⚙️" },
-											{ action: "获得新成就", time: "5 天前", icon: "🏆" },
-											{ action: "导出了数据", time: "1 周前", icon: "📊" },
-										].map((activity) => (
-											<div
-												key={`${activity.action}-${activity.time}`}
-												className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/30"
-											>
-												<div className="text-xl">{activity.icon}</div>
-												<div className="flex-1">
-													<p className="text-sm font-medium">
-														{activity.action}
-													</p>
-													<p className="text-xs text-muted-foreground">
-														{activity.time}
-													</p>
-												</div>
-											</div>
-										))}
-									</div>
-								</CardContent>
-							</Card>
-						</div>
-					)}
 				</div>
 			</div>
 		</div>

@@ -28,7 +28,6 @@ interface SidebarItem {
 const sidebarItems: SidebarItem[] = [
 	{ id: "overview", label: "概览", icon: BarChart3 },
 	{ id: "users", label: "用户管理", icon: Users },
-	{ id: "content", label: "内容审核", icon: FileText },
 	{ id: "analytics", label: "数据分析", icon: Activity },
 	{ id: "system", label: "系统设置", icon: Settings },
 	{ id: "security", label: "安全监控", icon: Shield },
