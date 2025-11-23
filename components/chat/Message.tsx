@@ -159,18 +159,25 @@ export function Message({ message }: MessageProps) {
 												className="text-sm text-blue-800 dark:text-blue-200 p-3 rounded bg-white/50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800"
 											>
 												<div className="flex items-start justify-between gap-2 mb-2">
-													<div className="flex items-center gap-2">
+													<div className="flex items-center gap-2 flex-1 min-w-0">
 														<span className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-500 dark:bg-blue-600 text-white text-xs flex items-center justify-center font-medium">
 															{index + 1}
 														</span>
-														<div className="font-medium text-xs text-blue-600 dark:text-blue-400">
-															{ref.source || "知识库"}
+														<div className="flex items-center gap-2 min-w-0 flex-1">
+															<div className="font-medium text-xs text-blue-600 dark:text-blue-400 truncate">
+																{ref.source || "知识库"}
+															</div>
+															{ref.score !== undefined && (
+																<span className="flex-shrink-0 text-xs px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300 font-mono">
+																	{(ref.score * 100).toFixed(1)}%
+																</span>
+															)}
 														</div>
 													</div>
 													<Button
 														variant="ghost"
 														size="sm"
-														className="h-5 px-1.5 -mt-1"
+														className="h-5 px-1.5 -mt-1 flex-shrink-0"
 														onClick={() => copyToClipboard(ref.content, `ref-${index}`)}
 													>
 														{copiedSection === `ref-${index}` ? (

@@ -128,7 +128,7 @@ export interface Message {
 export interface KnowledgeReference {
   content: string; // 引用的文本内容
   source?: string; // 来源（文档名等）
-  score?: number; // 相关度分数
+  score?: number; // 相关度分数（0-1之间）
 }
 
 // 会话类型

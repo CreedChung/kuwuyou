@@ -167,24 +167,24 @@ class ZhipuChatService {
       });
     }
 
-    // 添加联网搜索工具
-    if (options.useWebSearch) {
-      tools.push({
-        type: "web_search",
-        web_search: {
-          enable: true,
-          search_engine: "search_pro",
-          search_result: true,
-        },
-      });
-    }
+    // 添加联网搜索工具 - 已禁用
+    // if (options.useWebSearch) {
+    //   tools.push({
+    //     type: "web_search",
+    //     web_search: {
+    //       enable: true,
+    //       search_engine: "search_pro",
+    //       search_result: true,
+    //     },
+    //   });
+    // }
 
     const requestBody: ChatCompletionRequest = {
       model: this.model,
       messages: finalMessages,
       stream: true,
       temperature: options.temperature ?? 0.95,
-      max_tokens: options.maxTokens ?? 12000,
+      max_tokens: options.maxTokens ?? 8192,
     };
 
     // 添加思维链配置
@@ -240,6 +240,9 @@ class ZhipuChatService {
 
           try {
             const parsed: ChatCompletionChunk = JSON.parse(data);
+            
+            // 🔍 调试：打印完整的响应数据
+            console.log("🔍 完整响应数据:", JSON.stringify(parsed, null, 2));
 
             for (const choice of parsed.choices) {
               // 处理完成原因
@@ -258,26 +261,39 @@ class ZhipuChatService {
 
                 // 普通文本内容
                 if (choice.delta.content) {
-                  console.log("💬 回答内容:", choice.delta.content);
                   yield { content: choice.delta.content };
                 }
               }
             }
 
+            // 🔍 调试：检查 web_search 字段
+            console.log("🔍 检查 web_search 字段:", {
+              exists: !!parsed.web_search,
+              type: typeof parsed.web_search,
+              length: parsed.web_search?.length,
+              data: parsed.web_search
+            });
+
             // 处理知识库引用（从 web_search 字段）
             if (parsed.web_search && parsed.web_search.length > 0) {
               console.log("📚 收到知识库引用:", parsed.web_search.length, "个");
+              console.log("📚 原始 web_search 数据:", JSON.stringify(parsed.web_search, null, 2));
+              
               const references: KnowledgeReference[] = parsed.web_search
                 .filter(item => item.content)
                 .map(item => ({
                   content: item.content!,
-                  source: item.title || item.media || "搜索结果",
+                  source: item.title || item.media || "知识库",
                 }));
 
               if (references.length > 0) {
                 console.log("📖 知识库引用内容:", references);
                 yield { references };
+              } else {
+                console.warn("⚠️ web_search 存在但没有有效的 content 字段");
               }
+            } else if (parsed.web_search && parsed.web_search.length === 0) {
+              console.log("⚠️ web_search 字段存在但为空数组");
             }
 
             // 处理 token 使用统计
@@ -285,7 +301,7 @@ class ZhipuChatService {
               yield { usage: parsed.usage };
             }
           } catch (e) {
-            console.error("解析SSE数据失败:", e, data);
+            console.error("❌ 解析SSE数据失败:", e, "原始数据:", data);
           }
         }
       }
