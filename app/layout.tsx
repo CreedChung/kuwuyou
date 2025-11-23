@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import { Toaster } from "@/components/ui/toaster";
+import { AuthInitializer } from "@/components/auth/AuthInitializer";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -39,7 +40,9 @@ export default function RootLayout({
 				)}
 			</head>
 			<body className="antialiased">
-				{children}
+				<AuthInitializer>
+					{children}
+				</AuthInitializer>
 				<Toaster />
 			</body>
 		</html>

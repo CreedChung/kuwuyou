@@ -47,14 +47,14 @@ export function SettingsSidebar({
 		<div className="w-64 border-r border-border/40 bg-muted/30 flex flex-col">
 			{/* 返回按钮 */}
 			<div className="p-4 border-b border-border/40">
-				<Link href="/">
+				<Link href="/chat">
 					<Button
 						variant="ghost"
 						size="sm"
 						className="w-full justify-start gap-2 hover:bg-muted"
 					>
 						<ArrowLeft className="h-4 w-4" />
-						<span>返回</span>
+						<span>返回聊天</span>
 					</Button>
 				</Link>
 			</div>

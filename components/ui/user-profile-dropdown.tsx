@@ -119,16 +119,16 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
 
 							{/* Quick actions section */}
 							<DropdownMenuGroup>
-								<div className="grid grid-cols-3 gap-1 p-1">
+								<div className="grid grid-cols-1 gap-1 p-1">
 									{actions.map((action) => (
 										<Button
 											key={action.label}
 											variant="ghost"
-											className="flex flex-col h-16 items-center justify-center gap-1 text-muted-foreground"
+											className="flex flex-row h-12 items-center justify-start gap-3 text-muted-foreground w-full px-3"
 											onClick={action.onClick}
 										>
 											<action.icon className="h-5 w-5" />
-											<span className="text-xs">{action.label}</span>
+											<span className="text-sm">{action.label}</span>
 										</Button>
 									))}
 								</div>

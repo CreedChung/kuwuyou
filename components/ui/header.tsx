@@ -84,22 +84,11 @@ export function Header() {
 											</li>
 										))}
 									</ul>
-									<div className="p-2">
-										<p className="text-muted-foreground text-sm">
-											感兴趣？{" "}
-											<Link
-												href="#"
-												className="text-foreground font-medium hover:underline"
-											>
-												预约演示
-											</Link>
-										</p>
-									</div>
 								</NavigationMenuContent>
 							</NavigationMenuItem>
 							<NavigationMenuItem>
 								<NavigationMenuTrigger className="bg-transparent">
-									公司
+									关于
 								</NavigationMenuTrigger>
 								<NavigationMenuContent className="bg-background p-1 pr-1.5 pb-1.5">
 									<div className="grid w-lg grid-cols-2 gap-2">
@@ -155,7 +144,7 @@ export function Header() {
 						{productLinks.map((link) => (
 							<ListItem key={link.title} {...link} />
 						))}
-						<span className="text-sm">公司</span>
+						<span className="text-sm">关于</span>
 						{companyLinks.map((link) => (
 							<ListItem key={link.title} {...link} />
 						))}
@@ -299,21 +288,6 @@ const companyLinks2: LinkItem[] = [
 		title: "隐私政策",
 		href: "#",
 		icon: Shield,
-	},
-	{
-		title: "退款政策",
-		href: "#",
-		icon: RotateCcw,
-	},
-	{
-		title: "博客",
-		href: "#",
-		icon: Leaf,
-	},
-	{
-		title: "帮助中心",
-		href: "#",
-		icon: HelpCircle,
 	},
 ];
 

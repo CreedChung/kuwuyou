@@ -62,8 +62,13 @@ export function Sidebar({
 	const [conversationToDelete, setConversationToDelete] = React.useState<
 		string | null
 	>(null);
-	const { signOut } = useAuth();
+	const { signOut, user } = useAuth();
 	const router = useRouter();
+
+	// 从用户数据中提取信息
+	const userName = user?.user_metadata?.username || user?.email?.split('@')[0] || '用户';
+	const userHandle = user?.email ? `@${user.email.split('@')[0]}` : '@user';
+	const userAvatar = user?.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=random`;
 
 	const handleLogout = async () => {
 		setLogoutDialogOpen(false);
@@ -193,22 +198,11 @@ export function Sidebar({
 					<SidebarMenuItem>
 						<UserProfileDropdown
 							user={{
-								name: "用户",
-								handle: "@user",
-								avatarUrl:
-									"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop",
+								name: userName,
+								handle: userHandle,
+								avatarUrl: userAvatar,
 							}}
 							actions={[
-								{
-									icon: MessageSquarePlus,
-									label: "消息",
-									onClick: () => console.log("消息"),
-								},
-								{
-									icon: Phone,
-									label: "通话",
-									onClick: () => console.log("通话"),
-								},
 								{
 									icon: User,
 									label: "资料",
