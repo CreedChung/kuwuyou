@@ -121,10 +121,10 @@ export const useAuthStore = create<AuthState>()(
 						const error = await response.json();
 						toast({
 							title: "注册失败",
-							description: error.message || "注册失败，请稍后再试",
+							description: error.error || error.message || "注册失败，请稍后再试",
 							variant: "destructive",
 						});
-						return { error: { message: error.message } };
+						return { error: { message: error.error || error.message } };
 					}
 
 					const data = await response.json();
