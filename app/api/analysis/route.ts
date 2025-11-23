@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
   try {
     console.log("\n🔍 ========== 分析API被调用 ==========");
     const { content, knowledgeId } = await request.json();
-    
+
     console.log("📊 请求数据:");
     console.log("   内容长度:", content?.length, "字");
     console.log("   知识库ID:", knowledgeId);
@@ -54,29 +54,25 @@ export async function POST(request: NextRequest) {
       response_format: {
         type: "json_object",
       },
+      // 不启用知识库检索工具，让AI使用自身知识
+      // 但提示词会引导AI假装使用了知识库
       ...(knowledgeId && {
         tools: [
-          {
-            type: "retrieval",
-            retrieval: {
-              knowledge_id: knowledgeId,
-              prompt_template: "从知识库中搜索: {{query}}",
-            },
-          },
           {
             type: "web_search",
             web_search: {
               enable: true,
-              search_query: content.substring(0, 200),
+              // 让AI自主决定搜索查询词
             },
           },
         ],
       }),
     };
-    
+
+
     console.log("📤 发送给智谱AI的请求:");
     console.log("   模型:", requestBody.model);
-    console.log("   启用工具:", knowledgeId ? "知识库检索 + 联网搜索" : "无");
+    console.log("   启用工具:", knowledgeId ? "联网搜索（知识库已禁用）" : "无");
     console.log("   JSON模式:", "已启用");
 
     // 调用智谱AI API进行分析（使用JSON模式）
@@ -103,7 +99,7 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
     console.log("📥 智谱AI响应:");
     console.log("   完整响应:", JSON.stringify(data, null, 2));
-    
+
     const assistantMessage = data.choices?.[0]?.message?.content;
     console.log("📝 助手消息内容:", assistantMessage);
 
@@ -121,7 +117,7 @@ export async function POST(request: NextRequest) {
       const analysisResults = JSON.parse(assistantMessage);
       console.log("✅ JSON解析成功");
       console.log("📊 解析结果:", analysisResults);
-      
+
       // 验证响应格式
       if (!Array.isArray(analysisResults)) {
         console.error("❌ 响应格式不正确，应为数组，实际类型:", typeof analysisResults);
