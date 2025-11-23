@@ -119,6 +119,7 @@ class ZhipuChatService {
       useThinking?: boolean;
       temperature?: number;
       maxTokens?: number;
+      systemPrompt?: string;
     } = {}
   ): AsyncGenerator<{
     content?: string;
@@ -129,6 +130,28 @@ class ZhipuChatService {
   }> {
     if (!this.apiKey) {
       throw new Error("智谱 API Key 未设置");
+    }
+
+    console.log("🚀 智谱对话请求开始");
+    console.log("📝 用户消息:", messages.filter(m => m.role === "user").map(m => m.content));
+    console.log("⚙️ 配置:", {
+      useKnowledge: options.useKnowledge,
+      useWebSearch: options.useWebSearch,
+      useThinking: options.useThinking,
+      knowledgeId: this.knowledgeId,
+    });
+
+    // 如果提供了系统提示词，插入到消息列表开头
+    let finalMessages = messages;
+    if (options.systemPrompt) {
+      const hasSystemMessage = messages.some(m => m.role === "system");
+      if (!hasSystemMessage) {
+        finalMessages = [
+          { role: "system", content: options.systemPrompt },
+          ...messages
+        ];
+        console.log("📋 使用系统提示词");
+      }
     }
 
     // 构建工具列表
@@ -158,10 +181,10 @@ class ZhipuChatService {
 
     const requestBody: ChatCompletionRequest = {
       model: this.model,
-      messages,
+      messages: finalMessages,
       stream: true,
       temperature: options.temperature ?? 0.95,
-      max_tokens: options.maxTokens ?? 8192,
+      max_tokens: options.maxTokens ?? 12000,
     };
 
     // 添加思维链配置
@@ -175,6 +198,8 @@ class ZhipuChatService {
     }
 
     this.abortController = new AbortController();
+
+    console.log("🔧 请求体:", JSON.stringify(requestBody, null, 2));
 
     try {
       const response = await fetch(`${this.baseURL}/paas/v4/chat/completions`, {
@@ -219,6 +244,7 @@ class ZhipuChatService {
             for (const choice of parsed.choices) {
               // 处理完成原因
               if (choice.finish_reason) {
+                console.log("✅ 完成原因:", choice.finish_reason);
                 yield { finishReason: choice.finish_reason };
               }
 
@@ -226,11 +252,13 @@ class ZhipuChatService {
               if (choice.delta) {
                 // 思维链内容
                 if (choice.delta.reasoning_content) {
+                  console.log("💭 思考内容:", choice.delta.reasoning_content);
                   yield { thinking: choice.delta.reasoning_content };
                 }
 
                 // 普通文本内容
                 if (choice.delta.content) {
+                  console.log("💬 回答内容:", choice.delta.content);
                   yield { content: choice.delta.content };
                 }
               }
@@ -238,6 +266,7 @@ class ZhipuChatService {
 
             // 处理知识库引用（从 web_search 字段）
             if (parsed.web_search && parsed.web_search.length > 0) {
+              console.log("📚 收到知识库引用:", parsed.web_search.length, "个");
               const references: KnowledgeReference[] = parsed.web_search
                 .filter(item => item.content)
                 .map(item => ({
@@ -246,6 +275,7 @@ class ZhipuChatService {
                 }));
 
               if (references.length > 0) {
+                console.log("📖 知识库引用内容:", references);
                 yield { references };
               }
             }

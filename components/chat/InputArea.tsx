@@ -34,8 +34,8 @@ export function InputArea({
 	const [placeholderIndex, setPlaceholderIndex] = useState(0);
 	const [showPlaceholder, setShowPlaceholder] = useState(true);
 	const [isActive, setIsActive] = useState(false);
-	const [thinkActive, setThinkActive] = useState(false);
-	const [deepSearchActive, setDeepSearchActive] = useState(false);
+	const [thinkActive, setThinkActive] = useState(true);
+	const [deepSearchActive, setDeepSearchActive] = useState(true);
 	const [inputValue, setInputValue] = useState("");
 	const wrapperRef = useRef<HTMLDivElement>(null);
 

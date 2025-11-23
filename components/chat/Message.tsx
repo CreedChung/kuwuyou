@@ -1,13 +1,9 @@
 import { AlertCircle, BookOpen, CheckCheck, ChevronDown, ChevronUp, Copy, Lightbulb, Loader2, User } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeHighlight from "rehype-highlight";
-import rehypeRaw from "rehype-raw";
+import { Streamdown } from "streamdown";
 import type { Message as MessageType } from "./types";
 import { Button } from "@/components/ui/button";
-import "highlight.js/styles/github-dark.css";
 
 interface MessageProps {
 	message: MessageType;
@@ -88,64 +84,17 @@ export function Message({ message }: MessageProps) {
 					</div>
 				) : (
 					<>
-						{/* 思考过程 */}
-						{!isUser && message.thinking && (
-							<div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 overflow-hidden">
-								<button
-									onClick={() => setShowThinking(!showThinking)}
-									className="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-amber-900 dark:text-amber-100 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors"
-								>
-									<div className="flex items-center gap-2">
-										<Lightbulb className="h-4 w-4" />
-										<span>思考过程</span>
-									</div>
-									<div className="flex items-center gap-2">
-										<Button
-											variant="ghost"
-											size="sm"
-											className="h-6 px-2"
-											onClick={(e) => {
-												e.stopPropagation();
-												copyToClipboard(message.thinking!, "thinking");
-											}}
-										>
-											{copiedSection === "thinking" ? (
-												<CheckCheck className="h-3 w-3" />
-											) : (
-												<Copy className="h-3 w-3" />
-											)}
-										</Button>
-										{showThinking ? (
-											<ChevronUp className="h-4 w-4" />
-										) : (
-											<ChevronDown className="h-4 w-4" />
-										)}
-									</div>
-								</button>
-								{showThinking && (
-									<div className="px-4 pb-3 text-sm text-amber-800 dark:text-amber-200 prose prose-sm max-w-none dark:prose-invert">
-										<ReactMarkdown
-											remarkPlugins={[remarkGfm]}
-											rehypePlugins={[rehypeHighlight, rehypeRaw]}
-										>
-											{message.thinking}
-										</ReactMarkdown>
-									</div>
-								)}
-							</div>
-						)}
-
 						{/* 知识库引用 */}
 						{!isUser && message.references && message.references.length > 0 && (
 							<div className="rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30 overflow-hidden">
-								<button
-									onClick={() => setShowReferences(!showReferences)}
-									className="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-blue-900 dark:text-blue-100 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
-								>
-									<div className="flex items-center gap-2">
+								<div className="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-blue-900 dark:text-blue-100">
+									<button
+										onClick={() => setShowReferences(!showReferences)}
+										className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+									>
 										<BookOpen className="h-4 w-4" />
 										<span>查找到 {message.references.length} 个知识片段</span>
-									</div>
+									</button>
 									<div className="flex items-center gap-2">
 										<Button
 											variant="ghost"
@@ -165,13 +114,18 @@ export function Message({ message }: MessageProps) {
 												<Copy className="h-3 w-3" />
 											)}
 										</Button>
-										{showReferences ? (
-											<ChevronUp className="h-4 w-4" />
-										) : (
-											<ChevronDown className="h-4 w-4" />
-										)}
+										<button
+											onClick={() => setShowReferences(!showReferences)}
+											className="hover:opacity-80 transition-opacity"
+										>
+											{showReferences ? (
+												<ChevronUp className="h-4 w-4" />
+											) : (
+												<ChevronDown className="h-4 w-4" />
+											)}
+										</button>
 									</div>
-								</button>
+								</div>
 								{showReferences && (
 									<div className="px-4 pb-3 space-y-2">
 										{/* 显示查找的文件列表 */}
@@ -227,12 +181,7 @@ export function Message({ message }: MessageProps) {
 													</Button>
 												</div>
 												<div className="text-xs prose prose-xs max-w-none dark:prose-invert break-words leading-relaxed">
-													<ReactMarkdown
-														remarkPlugins={[remarkGfm]}
-														rehypePlugins={[rehypeHighlight, rehypeRaw]}
-													>
-														{ref.content}
-													</ReactMarkdown>
+													<Streamdown>{ref.content}</Streamdown>
 												</div>
 											</div>
 										))}
@@ -241,38 +190,58 @@ export function Message({ message }: MessageProps) {
 							</div>
 						)}
 
-						{/* 主要回答内容 */}
-						<div className="relative group">
-							<div className="prose prose-sm max-w-none dark:prose-invert">
-								<ReactMarkdown
-									remarkPlugins={[remarkGfm]}
-									rehypePlugins={[rehypeHighlight, rehypeRaw]}
-								>
-									{message.content}
-								</ReactMarkdown>
-								{isStreaming && message.content && (
-									<span className="inline-block w-2 h-4 ml-1 bg-primary animate-pulse" />
+						{/* 思考过程 */}
+						{!isUser && message.thinking && (
+							<div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 overflow-hidden">
+								<div className="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-amber-900 dark:text-amber-100">
+									<button
+										onClick={() => setShowThinking(!showThinking)}
+										className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+									>
+										<Lightbulb className="h-4 w-4" />
+										<span>思考过程</span>
+									</button>
+									<div className="flex items-center gap-2">
+										<Button
+											variant="ghost"
+											size="sm"
+											className="h-6 px-2"
+											onClick={(e) => {
+												e.stopPropagation();
+												copyToClipboard(message.thinking!, "thinking");
+											}}
+										>
+											{copiedSection === "thinking" ? (
+												<CheckCheck className="h-3 w-3" />
+											) : (
+												<Copy className="h-3 w-3" />
+											)}
+										</Button>
+										<button
+											onClick={() => setShowThinking(!showThinking)}
+											className="hover:opacity-80 transition-opacity"
+										>
+											{showThinking ? (
+												<ChevronUp className="h-4 w-4" />
+											) : (
+												<ChevronDown className="h-4 w-4" />
+											)}
+										</button>
+									</div>
+								</div>
+								{showThinking && (
+									<div className="px-4 pb-3 text-sm text-amber-800 dark:text-amber-200 prose prose-sm max-w-none dark:prose-invert">
+										<Streamdown>{message.thinking}</Streamdown>
+									</div>
 								)}
 							</div>
-							{!isUser && message.content && !isStreaming && (
-								<Button
-									variant="ghost"
-									size="sm"
-									className="absolute -right-2 -top-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 px-2"
-									onClick={() => copyToClipboard(message.content, "content")}
-								>
-									{copiedSection === "content" ? (
-										<>
-											<CheckCheck className="h-3 w-3 mr-1" />
-											<span className="text-xs">已复制</span>
-										</>
-									) : (
-										<>
-											<Copy className="h-3 w-3 mr-1" />
-											<span className="text-xs">复制</span>
-										</>
-									)}
-								</Button>
+						)}
+
+						{/* 主要回答内容 */}
+						<div className="prose prose-sm max-w-none dark:prose-invert">
+							<Streamdown>{message.content}</Streamdown>
+							{isStreaming && message.content && (
+								<span className="inline-block w-2 h-4 ml-1 bg-primary animate-pulse" />
 							)}
 						</div>
 

@@ -6,6 +6,7 @@
 import { useState, useCallback, useRef } from "react";
 import { zhipuChatService, type ChatMessage } from "@/services/zhipuChat";
 import type { Message, KnowledgeReference } from "@/components/chat/types";
+import { chatSystemPrompt } from "@/utils/prompt";
 
 export function useZhipuChat() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -64,6 +65,7 @@ export function useZhipuChat() {
           useKnowledge: true,  // 始终启用知识库
           useWebSearch: false,
           useThinking: true,   // 始终启用思维链
+          systemPrompt: chatSystemPrompt, // 使用系统提示词
         }
       );
 
