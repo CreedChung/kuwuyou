@@ -153,6 +153,12 @@ export function useZhipuChat() {
       let retrievalSlices: RetrievalSlice[] = [];
       const knowledgeId = options.knowledgeId || process.env.NEXT_PUBLIC_ZHIPU_KNOWLEDGE_ID;
       
+      console.log("📋 检查知识库检索条件:", {
+        knowledgeId,
+        showReferences: options.showReferences,
+        willExecute: !!(knowledgeId && options.showReferences)
+      });
+      
       if (knowledgeId && options.showReferences) {
         try {
           console.log("🔍 开始知识库检索...");
@@ -199,6 +205,12 @@ export function useZhipuChat() {
 
       // 第二步：联网搜索（如果开关打开）
       let webSearchResults: WebSearchResult[] = [];
+      
+      console.log("🌐 检查联网搜索条件:", {
+        useWebSearch: options.useWebSearch,
+        willExecute: !!options.useWebSearch
+      });
+      
       if (options.useWebSearch) {
         try {
           console.log("🌐 开始联网搜索...");

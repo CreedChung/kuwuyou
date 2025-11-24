@@ -64,7 +64,11 @@ export function ChatArea({
 									<button
 										key={suggestion}
 										type="button"
-										onClick={() => onSendMessage(suggestion)}
+										onClick={() => onSendMessage(suggestion, {
+											showThinking: true,
+											showReferences: true,
+											useWebSearch: true,
+										})}
 										className="group rounded-xl border border-border bg-card px-5 py-4 text-left text-sm text-card-foreground transition-all hover:border-primary/50 hover:bg-accent hover:shadow-md"
 									>
 										<span className="group-hover:text-primary transition-colors">

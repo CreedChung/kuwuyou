@@ -104,11 +104,11 @@ export function InputArea({
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 		if (inputValue.trim() && !isGenerating) {
-			// 传递显示选项（API 始终调用知识库和思维链）
+			// 始终启用所有功能（无忧思考、知识库检索、联网搜索）
 			onSendMessage(inputValue.trim(), {
-				showThinking: thinkActive,      // 控制是否显示思考过程
-				showReferences: deepSearchActive, // 控制是否显示知识库引用
-				useWebSearch: webSearchActive,  // 控制是否使用联网搜索
+				showThinking: true,      // 始终显示思考过程
+				showReferences: true,    // 始终显示知识库引用
+				useWebSearch: true,      // 始终使用联网搜索
 				uploadedFile: uploadedFile || undefined,
 				fileContent: fileContent || undefined,
 			});
@@ -385,158 +385,7 @@ export function InputArea({
 								)}
 							</div>
 
-							{/* Expanded Controls */}
-							<motion.div
-								className="w-full flex justify-start px-4 items-center text-sm"
-								variants={{
-									hidden: {
-										opacity: 0,
-										y: 20,
-										pointerEvents: "none" as const,
-										transition: { duration: 0.25 },
-									},
-									visible: {
-										opacity: 1,
-										y: 0,
-										pointerEvents: "auto" as const,
-										transition: { duration: 0.35, delay: 0.08 },
-									},
-								}}
-								initial="hidden"
-								animate={isActive || inputValue ? "visible" : "hidden"}
-								style={{ marginTop: 8 }}
-							>
-								<div className="flex gap-3 items-center">
-									{/* Think Toggle */}
-									<motion.button
-										className={`flex items-center py-2 rounded-full font-medium group whitespace-nowrap overflow-hidden justify-start ${
-											thinkActive
-												? "bg-blue-600/10 outline outline-blue-600/60 text-blue-950 dark:text-blue-100"
-												: "bg-accent text-foreground hover:bg-accent/80"
-										}`}
-										title="无忧思考模式"
-										type="button"
-										onClick={(e) => {
-											e.stopPropagation();
-											setThinkActive((a) => !a);
-										}}
-										initial={false}
-										animate={{
-											width: thinkActive ? 110 : 36,
-											paddingLeft: thinkActive ? 16 : 9,
-											paddingRight: thinkActive ? 16 : 9,
-										}}
-										transition={{
-											type: "spring",
-											stiffness: 400,
-											damping: 30,
-										}}
-									>
-										<Lightbulb
-											className="group-hover:fill-yellow-300 transition-all flex-shrink-0"
-											size={18}
-										/>
-										<motion.span
-											className="ml-1"
-											initial={false}
-											animate={{
-												opacity: thinkActive ? 1 : 0,
-												width: thinkActive ? "auto" : 0,
-											}}
-											transition={{
-												opacity: { duration: 0.2 },
-												width: { type: "spring", stiffness: 400, damping: 30 },
-											}}
-										>
-											无忧思考
-										</motion.span>
-									</motion.button>
-
-									{/* Knowledge Base Toggle */}
-									<motion.button
-										className={`flex items-center py-2 rounded-full font-medium whitespace-nowrap overflow-hidden justify-start ${
-											deepSearchActive
-												? "bg-blue-600/10 outline outline-blue-600/60 text-blue-950 dark:text-blue-100"
-												: "bg-accent text-foreground hover:bg-accent/80"
-										}`}
-										title="知识库搜索"
-										type="button"
-										onClick={(e) => {
-											e.stopPropagation();
-											setDeepSearchActive((a) => !a);
-										}}
-										initial={false}
-										animate={{
-											width: deepSearchActive ? 100 : 36,
-											paddingLeft: deepSearchActive ? 16 : 9,
-											paddingRight: deepSearchActive ? 16 : 9,
-										}}
-										transition={{
-											type: "spring",
-											stiffness: 400,
-											damping: 30,
-										}}
-									>
-										<Globe size={18} className="flex-shrink-0" />
-										<motion.span
-											className="ml-1"
-											initial={false}
-											animate={{
-												opacity: deepSearchActive ? 1 : 0,
-												width: deepSearchActive ? "auto" : 0,
-											}}
-											transition={{
-												opacity: { duration: 0.2 },
-												width: { type: "spring", stiffness: 400, damping: 30 },
-											}}
-										>
-											知识库
-										</motion.span>
-									</motion.button>
-
-									{/* Web Search Toggle */}
-									<motion.button
-										className={`flex items-center py-2 rounded-full font-medium whitespace-nowrap overflow-hidden justify-start ${
-											webSearchActive
-												? "bg-green-600/10 outline outline-green-600/60 text-green-950 dark:text-green-100"
-												: "bg-accent text-foreground hover:bg-accent/80"
-										}`}
-										title="联网搜索"
-										type="button"
-										onClick={(e) => {
-											e.stopPropagation();
-											setWebSearchActive((a) => !a);
-										}}
-										initial={false}
-										animate={{
-											width: webSearchActive ? 110 : 36,
-											paddingLeft: webSearchActive ? 16 : 9,
-											paddingRight: webSearchActive ? 16 : 9,
-										}}
-										transition={{
-											type: "spring",
-											stiffness: 400,
-											damping: 30,
-										}}
-									>
-										<Search size={18} className="flex-shrink-0" />
-										<motion.span
-											className="ml-1"
-											initial={false}
-											animate={{
-												opacity: webSearchActive ? 1 : 0,
-												width: webSearchActive ? "auto" : 0,
-											}}
-											transition={{
-												opacity: { duration: 0.2 },
-												width: { type: "spring", stiffness: 400, damping: 30 },
-											}}
-										>
-											联网搜索
-										</motion.span>
-									</motion.button>
-								</div>
-							</motion.div>
+							{/* 功能开关已隐藏 - 所有功能默认启用 */}
 						</div>
 					</form>
 				</motion.div>
