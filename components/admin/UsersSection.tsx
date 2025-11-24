@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import {
 	Ban,
 	CheckCircle,
@@ -8,6 +11,9 @@ import {
 	Trash2,
 	Upload,
 	Users,
+	ChevronLeft,
+	ChevronRight,
+	Loader2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,33 +26,20 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
-const mockUsers = [
-	{
-		id: "1",
-		name: "张三",
-		email: "zhangsan@example.com",
-		role: "VIP",
-		status: "active",
-		joinDate: "2024-01-15",
-	},
-	{
-		id: "2",
-		name: "李四",
-		email: "lisi@example.com",
-		role: "普通用户",
-		status: "active",
-		joinDate: "2024-02-20",
-	},
-	{
-		id: "3",
-		name: "王五",
-		email: "wangwu@example.com",
-		role: "普通用户",
-		status: "banned",
-		joinDate: "2024-03-10",
-	},
-];
+interface User {
+	id: string;
+	name: string;
+	email: string;
+	avatar?: string;
+	role: string;
+	status: string;
+	joinDate: string;
+	conversationCount: number;
+	messageCount: number;
+	lastActiveAt: string | null;
+}
 
 interface UsersSectionProps {
 	searchQuery: string;
@@ -57,13 +50,129 @@ export function UsersSection({
 	searchQuery,
 	onSearchChange,
 }: UsersSectionProps) {
+	const [users, setUsers] = useState<User[]>([]);
+	const [loading, setLoading] = useState(false);
+	const [page, setPage] = useState(1);
+	const [total, setTotal] = useState(0);
+	const [totalPages, setTotalPages] = useState(0);
+	const [statusFilter, setStatusFilter] = useState("all");
+	const { toast } = useToast();
+
+	const fetchUsers = async () => {
+		setLoading(true);
+		try {
+			const params = new URLSearchParams({
+				search: searchQuery,
+				status: statusFilter,
+				page: page.toString(),
+				pageSize: '10',
+			});
+
+			const response = await fetch(`/api/admin/users?${params}`);
+			const result = await response.json();
+
+			if (result.success) {
+				setUsers(result.data.users);
+				setTotal(result.data.total);
+				setTotalPages(result.data.totalPages);
+			} else {
+				toast({
+					title: "获取失败",
+					description: result.error || "无法加载用户列表",
+					variant: "destructive",
+				});
+			}
+		} catch (error) {
+			console.error('获取用户列表失败:', error);
+			toast({
+				title: "获取失败",
+				description: "网络错误，请稍后重试",
+				variant: "destructive",
+			});
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	useEffect(() => {
+		fetchUsers();
+	}, [searchQuery, statusFilter, page]);
+
+	const handleUserAction = async (userId: string, action: string) => {
+		try {
+			const response = await fetch('/api/admin/users', {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ userId, action }),
+			});
+
+			const result = await response.json();
+
+			if (result.success) {
+				toast({
+					title: "操作成功",
+					description: result.message,
+				});
+				fetchUsers();
+			} else {
+				toast({
+					title: "操作失败",
+					description: result.error,
+					variant: "destructive",
+				});
+			}
+		} catch (error) {
+			console.error('用户操作失败:', error);
+			toast({
+				title: "操作失败",
+				description: "网络错误，请稍后重试",
+				variant: "destructive",
+			});
+		}
+	};
+
+	const handleDeleteUser = async (userId: string) => {
+		if (!confirm('确定要删除此用户吗？此操作无法撤销。')) {
+			return;
+		}
+
+		try {
+			const response = await fetch(`/api/admin/users?userId=${userId}`, {
+				method: 'DELETE',
+			});
+
+			const result = await response.json();
+
+			if (result.success) {
+				toast({
+					title: "删除成功",
+					description: result.message,
+				});
+				fetchUsers();
+			} else {
+				toast({
+					title: "删除失败",
+					description: result.error,
+					variant: "destructive",
+				});
+			}
+		} catch (error) {
+			console.error('删除用户失败:', error);
+			toast({
+				title: "删除失败",
+				description: "网络错误，请稍后重试",
+				variant: "destructive",
+			});
+		}
+	};
+
 	return (
 		<div className="space-y-6 animate-in fade-in-50 duration-300">
 			<div className="flex items-center justify-between">
 				<div>
 					<h2 className="text-2xl font-bold mb-2">用户管理</h2>
 					<p className="text-sm text-muted-foreground">
-						管理和监控所有用户账户
+						管理和监控所有用户账户 (共 {total} 人)
 					</p>
 				</div>
 				<Button className="gap-2">
@@ -85,7 +194,7 @@ export function UsersSection({
 								className="pl-10"
 							/>
 						</div>
-						<Select defaultValue="all">
+						<Select value={statusFilter} onValueChange={setStatusFilter}>
 							<SelectTrigger className="w-[180px]">
 								<Filter className="h-4 w-4 mr-2" />
 								<SelectValue placeholder="筛选状态" />
@@ -110,74 +219,122 @@ export function UsersSection({
 					</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<div className="space-y-3">
-						{mockUsers.map((user) => (
-							<div
-								key={user.id}
-								className="flex items-center justify-between p-4 rounded-lg border border-border/40 hover:bg-muted/50 transition-colors"
-							>
-								<div className="flex items-center gap-4">
-									<div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-										<Users className="h-5 w-5 text-primary" />
-									</div>
-									<div>
-										<div className="flex items-center gap-2">
-											<p className="font-medium">{user.name}</p>
-											<Badge
-												variant={user.role === "VIP" ? "default" : "secondary"}
-												className="text-xs"
-											>
-												{user.role}
-											</Badge>
-											{user.status === "banned" && (
-												<Badge className="text-xs bg-red-500/10 text-red-500 border-red-500/20">
-													已封禁
-												</Badge>
-											)}
-										</div>
-										<p className="text-sm text-muted-foreground">
-											{user.email}
-										</p>
-										<p className="text-xs text-muted-foreground mt-1">
-											加入时间: {user.joinDate}
-										</p>
-									</div>
-								</div>
-								<div className="flex items-center gap-2">
-									<Button variant="ghost" size="icon">
-										<Eye className="h-4 w-4" />
-									</Button>
-									<Button variant="ghost" size="icon">
-										<Edit className="h-4 w-4" />
-									</Button>
-									{user.status === "active" ? (
-										<Button
-											variant="ghost"
-											size="icon"
-											className="text-red-500 hover:text-red-600"
-										>
-											<Ban className="h-4 w-4" />
-										</Button>
-									) : (
-										<Button
-											variant="ghost"
-											size="icon"
-											className="text-green-500 hover:text-green-600"
-										>
-											<CheckCircle className="h-4 w-4" />
-										</Button>
-									)}
-									<Button
-										variant="ghost"
-										size="icon"
-										className="text-red-500 hover:text-red-600"
+					{loading ? (
+						<div className="flex items-center justify-center py-12">
+							<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+						</div>
+					) : users.length === 0 ? (
+						<div className="text-center py-12">
+							<Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+							<p className="text-sm text-muted-foreground">暂无用户数据</p>
+						</div>
+					) : (
+						<>
+							<div className="space-y-3">
+								{users.map((user) => (
+									<div
+										key={user.id}
+										className="flex items-center justify-between p-4 rounded-lg border border-border/40 hover:bg-muted/50 transition-colors"
 									>
-										<Trash2 className="h-4 w-4" />
-									</Button>
-								</div>
+										<div className="flex items-center gap-4">
+											<div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+												<Users className="h-5 w-5 text-primary" />
+											</div>
+											<div>
+												<div className="flex items-center gap-2">
+													<p className="font-medium">{user.name}</p>
+													<Badge
+														variant={user.role === "VIP" ? "default" : "secondary"}
+														className="text-xs"
+													>
+														{user.role}
+													</Badge>
+													{user.status === "banned" && (
+														<Badge className="text-xs bg-red-500/10 text-red-500 border-red-500/20">
+															已封禁
+														</Badge>
+													)}
+												</div>
+												<p className="text-sm text-muted-foreground">
+													{user.email}
+												</p>
+												<p className="text-xs text-muted-foreground mt-1">
+													加入: {user.joinDate} | 对话: {user.conversationCount} | 消息: {user.messageCount}
+												</p>
+											</div>
+										</div>
+										<div className="flex items-center gap-2">
+											<Button variant="ghost" size="icon" title="查看详情">
+												<Eye className="h-4 w-4" />
+											</Button>
+											<Button variant="ghost" size="icon" title="编辑">
+												<Edit className="h-4 w-4" />
+											</Button>
+											{user.status === "active" ? (
+												<Button
+													variant="ghost"
+													size="icon"
+													title="封禁"
+													className="text-red-500 hover:text-red-600"
+													onClick={() => handleUserAction(user.id, 'ban')}
+												>
+													<Ban className="h-4 w-4" />
+												</Button>
+											) : (
+												<Button
+													variant="ghost"
+													size="icon"
+													title="解禁"
+													className="text-green-500 hover:text-green-600"
+													onClick={() => handleUserAction(user.id, 'unban')}
+												>
+													<CheckCircle className="h-4 w-4" />
+												</Button>
+											)}
+											<Button
+												variant="ghost"
+												size="icon"
+												title="删除"
+												className="text-red-500 hover:text-red-600"
+												onClick={() => handleDeleteUser(user.id)}
+											>
+												<Trash2 className="h-4 w-4" />
+											</Button>
+										</div>
+									</div>
+								))}
 							</div>
-						))}
-					</div>
+
+							{/* 分页 */}
+							{totalPages > 1 && (
+								<div className="flex items-center justify-between mt-6 pt-6 border-t">
+									<p className="text-sm text-muted-foreground">
+										第 {page} 页，共 {totalPages} 页
+									</p>
+									<div className="flex gap-2">
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => setPage(p => Math.max(1, p - 1))}
+											disabled={page === 1}
+										>
+											<ChevronLeft className="h-4 w-4" />
+											上一页
+										</Button>
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+											disabled={page === totalPages}
+										>
+											下一页
+											<ChevronRight className="h-4 w-4" />
+										</Button>
+									</div>
+								</div>
+							)}
+						</>
+					)}
 				</CardContent>
 			</Card>
 		</div>

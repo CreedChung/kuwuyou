@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import {
 	Activity,
 	AlertTriangle,
@@ -8,8 +11,10 @@ import {
 	TrendingUp,
 	UserCheck,
 	Users,
+	RefreshCw,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
@@ -17,22 +22,97 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-
-const _iconMap = {
-	Users,
-	UserCheck,
-	DollarSign,
-	MessageSquare,
-};
+import { useAdminStore } from "@/stores/adminStore";
 
 export function OverviewSection() {
+	const { systemStats, systemStatus, updateSystemStats, updateSystemStatus } = useAdminStore();
+	const [loading, setLoading] = useState(false);
+
+	const fetchStats = async () => {
+		setLoading(true);
+		try {
+			const response = await fetch('/api/admin/stats');
+			const result = await response.json();
+			if (result.success) {
+				updateSystemStats(result.data);
+			}
+		} catch (error) {
+			console.error('获取统计数据失败:', error);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const fetchSystemStatus = async () => {
+		try {
+			const response = await fetch('/api/admin/system');
+			const result = await response.json();
+			if (result.success) {
+				updateSystemStatus(result.data);
+			}
+		} catch (error) {
+			console.error('获取系统状态失败:', error);
+		}
+	};
+
+	useEffect(() => {
+		fetchStats();
+		fetchSystemStatus();
+		
+		// 每30秒刷新一次
+		const interval = setInterval(() => {
+			fetchStats();
+			fetchSystemStatus();
+		}, 30000);
+
+		return () => clearInterval(interval);
+	}, []);
+
+	const getStatusBadge = (status: 'normal' | 'warning' | 'error') => {
+		switch (status) {
+			case 'normal':
+				return (
+					<Badge className="gap-1.5 bg-green-500/10 text-green-500 border-green-500/20">
+						<CheckCircle className="h-3 w-3" />
+						正常
+					</Badge>
+				);
+			case 'warning':
+				return (
+					<Badge className="gap-1.5 bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
+						<AlertTriangle className="h-3 w-3" />
+						警告
+					</Badge>
+				);
+			case 'error':
+				return (
+					<Badge className="gap-1.5 bg-red-500/10 text-red-500 border-red-500/20">
+						<AlertTriangle className="h-3 w-3" />
+						错误
+					</Badge>
+				);
+		}
+	};
+
 	return (
 		<div className="space-y-6 animate-in fade-in-50 duration-300">
-			<div>
-				<h2 className="text-2xl font-bold mb-2">系统概览</h2>
-				<p className="text-sm text-muted-foreground">
-					查看系统整体运行状态和关键指标
-				</p>
+			<div className="flex items-center justify-between">
+				<div>
+					<h2 className="text-2xl font-bold mb-2">系统概览</h2>
+					<p className="text-sm text-muted-foreground">
+						查看系统整体运行状态和关键指标
+					</p>
+				</div>
+				<Button
+					variant="outline"
+					size="sm"
+					onClick={fetchStats}
+					disabled={loading}
+					className="gap-2"
+				>
+					<RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+					刷新
+				</Button>
 			</div>
 
 			{/* 统计卡片 */}
@@ -41,12 +121,18 @@ export function OverviewSection() {
 					<CardContent className="pt-6">
 						<div className="flex items-center justify-between mb-2">
 							<Users className="h-5 w-5 text-muted-foreground" />
-							<TrendingUp className="h-4 w-4 text-green-500" />
+							{systemStats.userGrowth >= 0 ? (
+								<TrendingUp className="h-4 w-4 text-green-500" />
+							) : (
+								<TrendingDown className="h-4 w-4 text-red-500" />
+							)}
 						</div>
 						<div className="space-y-1">
-							<p className="text-2xl font-bold">1,234</p>
+							<p className="text-2xl font-bold">{systemStats.totalUsers.toLocaleString()}</p>
 							<p className="text-xs text-muted-foreground">总用户数</p>
-							<p className="text-xs font-medium text-green-500">+12.5%</p>
+							<p className={`text-xs font-medium ${systemStats.userGrowth >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+								{systemStats.userGrowth >= 0 ? '+' : ''}{systemStats.userGrowth}%
+							</p>
 						</div>
 					</CardContent>
 				</Card>
@@ -54,12 +140,18 @@ export function OverviewSection() {
 					<CardContent className="pt-6">
 						<div className="flex items-center justify-between mb-2">
 							<UserCheck className="h-5 w-5 text-muted-foreground" />
-							<TrendingUp className="h-4 w-4 text-green-500" />
+							{systemStats.activeGrowth >= 0 ? (
+								<TrendingUp className="h-4 w-4 text-green-500" />
+							) : (
+								<TrendingDown className="h-4 w-4 text-red-500" />
+							)}
 						</div>
 						<div className="space-y-1">
-							<p className="text-2xl font-bold">856</p>
+							<p className="text-2xl font-bold">{systemStats.activeUsers.toLocaleString()}</p>
 							<p className="text-xs text-muted-foreground">活跃用户</p>
-							<p className="text-xs font-medium text-green-500">+8.2%</p>
+							<p className={`text-xs font-medium ${systemStats.activeGrowth >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+								{systemStats.activeGrowth >= 0 ? '+' : ''}{systemStats.activeGrowth}%
+							</p>
 						</div>
 					</CardContent>
 				</Card>
@@ -67,12 +159,18 @@ export function OverviewSection() {
 					<CardContent className="pt-6">
 						<div className="flex items-center justify-between mb-2">
 							<DollarSign className="h-5 w-5 text-muted-foreground" />
-							<TrendingDown className="h-4 w-4 text-red-500" />
+							{systemStats.revenueGrowth >= 0 ? (
+								<TrendingUp className="h-4 w-4 text-green-500" />
+							) : (
+								<TrendingDown className="h-4 w-4 text-red-500" />
+							)}
 						</div>
 						<div className="space-y-1">
-							<p className="text-2xl font-bold">¥45,678</p>
+							<p className="text-2xl font-bold">¥{systemStats.totalRevenue.toLocaleString()}</p>
 							<p className="text-xs text-muted-foreground">本月收入</p>
-							<p className="text-xs font-medium text-red-500">-3.1%</p>
+							<p className={`text-xs font-medium ${systemStats.revenueGrowth >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+								{systemStats.revenueGrowth >= 0 ? '+' : ''}{systemStats.revenueGrowth}%
+							</p>
 						</div>
 					</CardContent>
 				</Card>
@@ -80,12 +178,18 @@ export function OverviewSection() {
 					<CardContent className="pt-6">
 						<div className="flex items-center justify-between mb-2">
 							<MessageSquare className="h-5 w-5 text-muted-foreground" />
-							<TrendingUp className="h-4 w-4 text-green-500" />
+							{systemStats.messageGrowth >= 0 ? (
+								<TrendingUp className="h-4 w-4 text-green-500" />
+							) : (
+								<TrendingDown className="h-4 w-4 text-red-500" />
+							)}
 						</div>
 						<div className="space-y-1">
-							<p className="text-2xl font-bold">2,890</p>
+							<p className="text-2xl font-bold">{systemStats.totalMessages.toLocaleString()}</p>
 							<p className="text-xs text-muted-foreground">消息总数</p>
-							<p className="text-xs font-medium text-green-500">+15.7%</p>
+							<p className={`text-xs font-medium ${systemStats.messageGrowth >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+								{systemStats.messageGrowth >= 0 ? '+' : ''}{systemStats.messageGrowth}%
+							</p>
 						</div>
 					</CardContent>
 				</Card>
@@ -107,34 +211,29 @@ export function OverviewSection() {
 								<span className="text-sm text-muted-foreground">
 									服务器状态
 								</span>
-								<Badge className="gap-1.5 bg-green-500/10 text-green-500 border-green-500/20">
-									<CheckCircle className="h-3 w-3" />
-									正常
-								</Badge>
+								{getStatusBadge(systemStatus.server)}
 							</div>
 							<p className="text-xs text-muted-foreground">
-								运行时间: 15天 8小时
+								运行时间: {systemStatus.uptime}
 							</p>
 						</div>
 						<div className="p-4 rounded-lg bg-muted/50">
 							<div className="flex items-center justify-between mb-2">
 								<span className="text-sm text-muted-foreground">数据库</span>
-								<Badge className="gap-1.5 bg-green-500/10 text-green-500 border-green-500/20">
-									<CheckCircle className="h-3 w-3" />
-									正常
-								</Badge>
+								{getStatusBadge(systemStatus.database)}
 							</div>
-							<p className="text-xs text-muted-foreground">响应时间: 12ms</p>
+							<p className="text-xs text-muted-foreground">
+								响应时间: {systemStatus.dbResponseTime}
+							</p>
 						</div>
 						<div className="p-4 rounded-lg bg-muted/50">
 							<div className="flex items-center justify-between mb-2">
 								<span className="text-sm text-muted-foreground">API 服务</span>
-								<Badge className="gap-1.5 bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
-									<AlertTriangle className="h-3 w-3" />
-									警告
-								</Badge>
+								{getStatusBadge(systemStatus.api)}
 							</div>
-							<p className="text-xs text-muted-foreground">请求延迟较高</p>
+							<p className="text-xs text-muted-foreground">
+								{systemStatus.api === 'normal' ? '运行正常' : '请求延迟较高'}
+							</p>
 						</div>
 					</div>
 				</CardContent>

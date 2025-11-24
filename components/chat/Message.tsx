@@ -12,6 +12,49 @@ interface MessageProps {
 	onRegenerate?: () => void;
 }
 
+// 格式化日期时间为可读格式
+function formatDate(dateString: string): string {
+	try {
+		const date = new Date(dateString);
+		const now = new Date();
+		const diff = now.getTime() - date.getTime();
+		const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+		
+		// 如果是今天
+		if (days === 0) {
+			const hours = Math.floor(diff / (1000 * 60 * 60));
+			if (hours === 0) {
+				const minutes = Math.floor(diff / (1000 * 60));
+				if (minutes === 0) {
+					return '刚刚';
+				}
+				return `${minutes}分钟前`;
+			}
+			return `${hours}小时前`;
+		}
+		
+		// 如果是昨天
+		if (days === 1) {
+			return '昨天';
+		}
+		
+		// 如果是一周内
+		if (days < 7) {
+			return `${days}天前`;
+		}
+		
+		// 如果是今年
+		if (date.getFullYear() === now.getFullYear()) {
+			return `${date.getMonth() + 1}月${date.getDate()}日`;
+		}
+		
+		// 其他情况显示完整日期
+		return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+	} catch {
+		return dateString;
+	}
+}
+
 export function Message({ message, onRegenerate }: MessageProps) {
 	const { user } = useAuth();
 	const isUser = message.role === "user";
@@ -81,7 +124,7 @@ export function Message({ message, onRegenerate }: MessageProps) {
 					<div className="font-semibold text-sm text-foreground">
 						{isUser ? "你" : "库无忧助手"}
 					</div>
-					{isStreaming && !isUser && (
+					{isStreaming && !isUser && !message.content && (
 						<div className="flex items-center gap-1 text-xs text-muted-foreground">
 							<Loader2 className="h-3 w-3 animate-spin" />
 							<span>正在无忧思考...</span>
@@ -189,7 +232,7 @@ export function Message({ message, onRegenerate }: MessageProps) {
 																key={idx}
 																className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200"
 															>
-																{source}
+																{source?.replace(/\.[^/.]+$/, '') || source}
 															</span>
 														))}
 													</div>
@@ -209,7 +252,7 @@ export function Message({ message, onRegenerate }: MessageProps) {
 														</span>
 														<div className="flex items-center gap-2 min-w-0 flex-1 flex-wrap">
 															<div className="font-medium text-xs text-blue-600 dark:text-blue-400 truncate">
-																{ref.source || "知识库"}
+																{ref.source ? ref.source.replace(/\.[^/.]+$/, '') : "知识库"}
 															</div>
 															{ref.score !== undefined && (
 																<span className="flex-shrink-0 text-xs px-1.5 py-0.5 rounded font-mono bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300">
@@ -333,7 +376,7 @@ export function Message({ message, onRegenerate }: MessageProps) {
 														{ref.publishDate && (
 															<>
 																<span>·</span>
-																<span>{ref.publishDate}</span>
+																<span>{formatDate(ref.publishDate)}</span>
 															</>
 														)}
 														{ref.link && (
@@ -416,7 +459,7 @@ export function Message({ message, onRegenerate }: MessageProps) {
 								<div className="group relative">
 									<div className="prose prose-sm max-w-none dark:prose-invert">
 										<Streamdown>{message.content}</Streamdown>
-										{isStreaming && message.content && (
+										{message.isStreaming === true && (
 											<span className="inline-block w-2 h-4 ml-1 bg-primary animate-pulse" />
 										)}
 									</div>
