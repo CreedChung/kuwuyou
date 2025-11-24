@@ -89,13 +89,13 @@ class ZhipuService {
 		}
 
 		const coreMessages = this.convertMessages(messages);
-		const model = this.zhipuInstance(options.model || "glm-4-plus") as unknown as LanguageModel;
+		const model = this.zhipuInstance(options.model || "glm-4.5-air") as unknown as LanguageModel;
 
 		const { text } = await generateText({
 			model,
 			messages: coreMessages,
 			temperature: options.temperature,
-			...(options.maxTokens && { maxOutputTokens: options.maxTokens }),
+			maxOutputTokens: options.maxTokens ?? 50000,
 			topP: options.topP,
 		});
 
@@ -118,13 +118,13 @@ class ZhipuService {
 
 		try {
 			const coreMessages = this.convertMessages(messages);
-			const model = this.zhipuInstance(options.model || "glm-4-plus") as unknown as LanguageModel;
+			const model = this.zhipuInstance(options.model || "glm-4.5-air") as unknown as LanguageModel;
 
 			const result = await streamText({
 				model,
 				messages: coreMessages,
 				temperature: options.temperature,
-				...(options.maxTokens && { maxOutputTokens: options.maxTokens }),
+				maxOutputTokens: options.maxTokens ?? 50000,
 				topP: options.topP,
 				abortSignal: this.abortController.signal,
 			});
@@ -153,15 +153,7 @@ class ZhipuService {
 	 */
 	getAvailableModels(): string[] {
 		return [
-			"glm-4-plus",
-			"glm-4-0520",
-			"glm-4",
-			"glm-4-air",
-			"glm-4-airx",
-			"glm-4-flash",
-			"glm-4-flashx",
-			"glm-4v",
-			"glm-4v-plus",
+			"glm-4.5-air",
 		];
 	}
 }

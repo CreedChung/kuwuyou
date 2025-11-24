@@ -7,6 +7,7 @@ import {
 	Send,
 	Square,
 	X,
+	Search,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
@@ -17,6 +18,7 @@ interface InputAreaProps {
 	onSendMessage: (content: string, options?: {
 		showThinking?: boolean;
 		showReferences?: boolean;
+		useWebSearch?: boolean;
 		uploadedFile?: File;
 		fileContent?: string;
 	}) => void;
@@ -43,6 +45,7 @@ export function InputArea({
 	const [isActive, setIsActive] = useState(false);
 	const [thinkActive, setThinkActive] = useState(true);
 	const [deepSearchActive, setDeepSearchActive] = useState(true);
+	const [webSearchActive, setWebSearchActive] = useState(true);
 	const [inputValue, setInputValue] = useState("");
 	const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 	const [fileContent, setFileContent] = useState<string>("");
@@ -105,6 +108,7 @@ export function InputArea({
 			onSendMessage(inputValue.trim(), {
 				showThinking: thinkActive,      // 控制是否显示思考过程
 				showReferences: deepSearchActive, // 控制是否显示知识库引用
+				useWebSearch: webSearchActive,  // 控制是否使用联网搜索
 				uploadedFile: uploadedFile || undefined,
 				fileContent: fileContent || undefined,
 			});
@@ -455,7 +459,7 @@ export function InputArea({
 												? "bg-blue-600/10 outline outline-blue-600/60 text-blue-950 dark:text-blue-100"
 												: "bg-accent text-foreground hover:bg-accent/80"
 										}`}
-										title="无忧搜索"
+										title="知识库搜索"
 										type="button"
 										onClick={(e) => {
 											e.stopPropagation();
@@ -486,7 +490,49 @@ export function InputArea({
 												width: { type: "spring", stiffness: 400, damping: 30 },
 											}}
 										>
-											无忧搜索
+											知识库
+										</motion.span>
+									</motion.button>
+
+									{/* Web Search Toggle */}
+									<motion.button
+										className={`flex items-center py-2 rounded-full font-medium whitespace-nowrap overflow-hidden justify-start ${
+											webSearchActive
+												? "bg-green-600/10 outline outline-green-600/60 text-green-950 dark:text-green-100"
+												: "bg-accent text-foreground hover:bg-accent/80"
+										}`}
+										title="联网搜索"
+										type="button"
+										onClick={(e) => {
+											e.stopPropagation();
+											setWebSearchActive((a) => !a);
+										}}
+										initial={false}
+										animate={{
+											width: webSearchActive ? 110 : 36,
+											paddingLeft: webSearchActive ? 16 : 9,
+											paddingRight: webSearchActive ? 16 : 9,
+										}}
+										transition={{
+											type: "spring",
+											stiffness: 400,
+											damping: 30,
+										}}
+									>
+										<Search size={18} className="flex-shrink-0" />
+										<motion.span
+											className="ml-1"
+											initial={false}
+											animate={{
+												opacity: webSearchActive ? 1 : 0,
+												width: webSearchActive ? "auto" : 0,
+											}}
+											transition={{
+												opacity: { duration: 0.2 },
+												width: { type: "spring", stiffness: 400, damping: 30 },
+											}}
+										>
+											联网搜索
 										</motion.span>
 									</motion.button>
 								</div>

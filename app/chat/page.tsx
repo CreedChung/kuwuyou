@@ -106,7 +106,7 @@ export default function ChatPage() {
 	);
 
 	const handleSendMessage = useCallback(
-		async (content: string, options?: { showThinking?: boolean; showReferences?: boolean }) => {
+		async (content: string, options?: { showThinking?: boolean; showReferences?: boolean; useWebSearch?: boolean }) => {
 			if (!currentConversationId || isGenerating) return;
 			await sendMessage(content, options);
 		},

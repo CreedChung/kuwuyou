@@ -1,0 +1,124 @@
+/**
+ * 智谱 AI 联网搜索服务
+ * 使用 Web Search API 进行联网搜索
+ */
+
+export interface WebSearchResult {
+  content: string;      // 网页摘要
+  icon: string;        // 网站图标
+  link: string;        // 网页链接
+  media: string;       // 网站名称
+  publish_date?: string; // 发布日期
+  refer: string;       // 引用标识
+  title: string;       // 网页标题
+}
+
+export interface WebSearchIntent {
+  intent: string;      // 搜索意图类型
+  keywords: string;    // 搜索关键词
+  query: string;       // 原始查询
+}
+
+export interface WebSearchResponse {
+  created: number;
+  id: string;
+  request_id: string;
+  search_intent: WebSearchIntent[];
+  search_result: WebSearchResult[];
+}
+
+export interface WebSearchOptions {
+  searchEngine?: string;       // 搜索引擎：search_std, search_pro 等
+  count?: number;              // 返回结果数量 (1-50)
+  searchDomainFilter?: string; // 域名过滤
+  searchRecencyFilter?: string; // 时间范围过滤
+  contentSize?: string;        // 摘要字数：low, medium, high
+}
+
+class WebSearchService {
+  private apiKey: string;
+  private baseURL: string;
+
+  constructor() {
+    this.apiKey = process.env.NEXT_PUBLIC_ZHIPU_API_KEY || "";
+    this.baseURL = process.env.NEXT_PUBLIC_ZHIPU_API_BASE_URL || "https://open.bigmodel.cn/api/paas/v4";
+  }
+
+  /**
+   * 执行联网搜索
+   */
+  async search(query: string, options: WebSearchOptions = {}): Promise<WebSearchResponse> {
+    const {
+      searchEngine = "search_std",  // 默认使用 search_std
+      count = 5,
+    } = options;
+
+    // 调用我们自己的 API 路由
+    const response = await fetch("/api/web-search", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        query,
+        searchEngine,
+        count,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `联网搜索失败 (${response.status})`);
+    }
+
+    return await response.json();
+  }
+
+  /**
+   * 格式化搜索结果为知识库引用格式
+   */
+  formatAsReferences(results: WebSearchResult[]) {
+    return results.map(result => ({
+      content: result.content,
+      source: result.media,
+      link: result.link,
+      title: result.title,
+      refer: result.refer,
+      publishDate: result.publish_date,
+      type: "web_search" as const,
+    }));
+  }
+
+  /**
+   * 格式化搜索结果为上下文文本（用于LLM）
+   */
+  formatAsContext(results: WebSearchResult[]): string {
+    if (results.length === 0) {
+      return "";
+    }
+
+    const contextParts = results.map((result, index) => {
+      const parts = [
+        `[${result.refer}] ${result.title}`,
+        `来源：${result.media}`,
+        `链接：${result.link}`,
+      ];
+      
+      if (result.publish_date) {
+        parts.push(`发布时间：${result.publish_date}`);
+      }
+      
+      parts.push(`内容：${result.content}`);
+      
+      return parts.join("\n");
+    });
+
+    return `以下是联网搜索的相关信息：\n\n${contextParts.join("\n\n---\n\n")}`;
+  }
+}
+
+// 导出单例
+export const webSearchService = new WebSearchService();
+
+// 导出类以便测试
+export { WebSearchService };

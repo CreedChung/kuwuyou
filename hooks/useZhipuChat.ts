@@ -6,6 +6,7 @@
 import { useState, useCallback, useRef } from "react";
 import { zhipuChatService, type ChatMessage } from "@/services/zhipuChat";
 import { knowledgeRetrievalService, type RetrievalSlice } from "@/services/knowledgeRetrieval";
+import { webSearchService, type WebSearchResult } from "@/services/webSearch";
 import type { Message, KnowledgeReference, AnalysisItem } from "@/components/chat/types";
 import { chatSystemPrompt } from "@/utils/prompt";
 import { detectAnalysisKeyword } from "@/utils/fileProcessor";
@@ -24,6 +25,7 @@ export function useZhipuChat() {
     options: {
       showThinking?: boolean;
       showReferences?: boolean;
+      useWebSearch?: boolean;
       knowledgeId?: string;
       uploadedFile?: File;
       fileContent?: string;
@@ -147,11 +149,11 @@ export function useZhipuChat() {
         }
       }
 
-      // 第一步：检索知识库（如果配置了知识库ID）
+      // 第一步：检索知识库（如果开关打开且配置了知识库ID）
       let retrievalSlices: RetrievalSlice[] = [];
       const knowledgeId = options.knowledgeId || process.env.NEXT_PUBLIC_ZHIPU_KNOWLEDGE_ID;
       
-      if (knowledgeId && (options.showReferences ?? true)) {
+      if (knowledgeId && options.showReferences) {
         try {
           console.log("🔍 开始知识库检索...");
           const retrievalResult = await knowledgeRetrievalService.retrieve({
@@ -170,6 +172,7 @@ export function useZhipuChat() {
               content: slice.text.replace(/\s+/g, ' ').trim(),
               source: slice.metadata.doc_name,
               score: slice.score,
+              type: "knowledge" as const,
             }));
 
             // 更新UI显示检索结果
@@ -190,24 +193,81 @@ export function useZhipuChat() {
           console.error("❌ 知识库检索失败:", error);
           // 检索失败不影响后续对话，继续执行
         }
+      } else if (!options.showReferences) {
+        console.log("⏭️ 知识库检索已关闭");
       }
 
-      // 第二步：构建对话上下文（包含知识库检索结果）
+      // 第二步：联网搜索（如果开关打开）
+      let webSearchResults: WebSearchResult[] = [];
+      if (options.useWebSearch) {
+        try {
+          console.log("🌐 开始联网搜索...");
+          const searchResponse = await webSearchService.search(content.trim(), {
+            searchEngine: "search_std",
+            count: 5,
+          });
+
+          webSearchResults = searchResponse.search_result || [];
+
+          // 将搜索结果转换为引用格式并显示
+          if (webSearchResults.length > 0) {
+            const webReferences = webSearchService.formatAsReferences(webSearchResults);
+            
+            // 合并知识库和网络搜索的引用
+            if (!currentMessageRef.current.references) {
+              currentMessageRef.current.references = [];
+            }
+            currentMessageRef.current.references = [
+              ...currentMessageRef.current.references,
+              ...webReferences,
+            ];
+
+            // 更新UI显示搜索结果
+            setMessages((prev) => {
+              const updated = [...prev];
+              const lastIndex = updated.length - 1;
+              if (lastIndex >= 0 && updated[lastIndex].id === currentMessageRef.current?.id) {
+                updated[lastIndex] = { ...currentMessageRef.current };
+              }
+              return updated;
+            });
+
+            console.log("✅ 联网搜索完成:", webSearchResults.length, "个结果");
+          } else {
+            console.log("⚠️ 联网搜索无结果");
+          }
+        } catch (error) {
+          console.error("❌ 联网搜索失败:", error);
+          // 搜索失败不影响后续对话，继续执行
+        }
+      } else {
+        console.log("⏭️ 联网搜索已关闭");
+      }
+
+      // 第三步：构建对话上下文（包含知识库检索结果和联网搜索结果）
       const messagesWithContext: ChatMessage[] = [...conversationHistoryRef.current];
       
-      // 如果有检索结果，将其作为系统消息添加到对话历史
+      // 构建上下文消息
+      const contextParts: string[] = [];
+      
+      // 添加知识库上下文
       if (retrievalSlices.length > 0) {
-        const contextMessage = knowledgeRetrievalService.formatAsContext(retrievalSlices);
+        const knowledgeContext = knowledgeRetrievalService.formatAsContext(retrievalSlices);
+        contextParts.push(knowledgeContext);
+      }
+      
+      // 添加联网搜索上下文
+      if (webSearchResults.length > 0) {
+        const webContext = webSearchService.formatAsContext(webSearchResults);
+        contextParts.push(webContext);
+      }
+      
+      // 构建最终的用户消息
+      if (contextParts.length > 0) {
         messagesWithContext.push({
           role: "user",
-          content: content.trim(),
+          content: `${contextParts.join("\n\n")}\n\n用户问题：${content.trim()}`,
         });
-        
-        // 在实际发送前，添加知识库上下文到最后一条用户消息
-        messagesWithContext[messagesWithContext.length - 1] = {
-          role: "user",
-          content: `${contextMessage}\n\n用户问题：${content.trim()}`,
-        };
       } else {
         messagesWithContext.push({
           role: "user",
@@ -221,7 +281,7 @@ export function useZhipuChat() {
         content: content.trim(),
       });
 
-      // 第三步：调用对话API（不再使用retrieval工具，因为我们已经手动检索了）
+      // 第四步：调用对话API（不再使用retrieval工具，因为我们已经手动检索了）
       const stream = zhipuChatService.chatCompletionStream(
         messagesWithContext,
         {

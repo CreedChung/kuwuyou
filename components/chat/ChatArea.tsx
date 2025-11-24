@@ -8,6 +8,7 @@ interface ChatAreaProps {
 	onSendMessage: (content: string, options?: {
 		showThinking?: boolean;
 		showReferences?: boolean;
+		useWebSearch?: boolean;
 		uploadedFile?: File;
 		fileContent?: string;
 	}) => void;

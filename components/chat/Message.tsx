@@ -1,4 +1,4 @@
-import { AlertCircle, BookOpen, CheckCheck, ChevronDown, ChevronUp, Copy, FileText, Lightbulb, Loader2 } from "lucide-react";
+import { AlertCircle, BookOpen, CheckCheck, ChevronDown, ChevronUp, Copy, FileText, Globe, Lightbulb, Loader2, ExternalLink } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { Streamdown } from "streamdown";
@@ -125,7 +125,7 @@ export function Message({ message }: MessageProps) {
 							</div>
 						)}
 
-						{/* 知识库引用 */}
+						{/* 知识库引用和联网搜索结果 */}
 						{!isUser && message.references && message.references.length > 0 && (
 							<div className="rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30 overflow-hidden">
 								<div className="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-blue-900 dark:text-blue-100">
@@ -133,8 +133,36 @@ export function Message({ message }: MessageProps) {
 										onClick={() => setShowReferences(!showReferences)}
 										className="flex items-center gap-2 hover:opacity-80 transition-opacity"
 									>
-										<BookOpen className="h-4 w-4" />
-										<span>查找到 {message.references.length} 个知识片段</span>
+										{(() => {
+											const knowledgeCount = message.references.filter(ref => ref.type === "knowledge").length;
+											const webCount = message.references.filter(ref => ref.type === "web_search").length;
+											
+											if (knowledgeCount > 0 && webCount > 0) {
+												return (
+													<>
+														<div className="flex items-center gap-1">
+															<BookOpen className="h-4 w-4" />
+															<Globe className="h-4 w-4" />
+														</div>
+														<span>查找到 {knowledgeCount} 个知识片段 + {webCount} 个网络结果</span>
+													</>
+												);
+											} else if (webCount > 0) {
+												return (
+													<>
+														<Globe className="h-4 w-4" />
+														<span>查找到 {webCount} 个网络结果</span>
+													</>
+												);
+											} else {
+												return (
+													<>
+														<BookOpen className="h-4 w-4" />
+														<span>查找到 {knowledgeCount} 个知识片段</span>
+													</>
+												);
+											}
+										})()}
 									</button>
 									<div className="flex items-center gap-2">
 										<Button
@@ -168,14 +196,15 @@ export function Message({ message }: MessageProps) {
 									</div>
 								</div>
 								{showReferences && (
-									<div className="px-4 pb-3 space-y-2">
-										{/* 显示查找的文件列表 */}
+									<div className="px-4 pb-3 space-y-3">
+										{/* 显示查找的文件列表（仅知识库） */}
 										{(() => {
+											const knowledgeRefs = message.references.filter(ref => ref.type !== "web_search");
 											const uniqueSources = Array.from(
-												new Set(message.references.map(ref => ref.source).filter(Boolean))
+												new Set(knowledgeRefs.map(ref => ref.source).filter(Boolean))
 											);
 											return uniqueSources.length > 0 && (
-												<div className="mb-3 p-2 bg-blue-100/50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800">
+												<div className="p-2 bg-blue-100/50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800">
 													<div className="text-xs font-medium text-blue-700 dark:text-blue-300 mb-1">
 														📁 查找的文件：
 													</div>
@@ -193,46 +222,109 @@ export function Message({ message }: MessageProps) {
 											);
 										})()}
 										
-										{/* 知识片段列表 */}
-										{message.references.map((ref, index) => (
-											<div
-												key={index}
-												className="text-sm text-blue-800 dark:text-blue-200 p-3 rounded bg-white/50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800"
-											>
-												<div className="flex items-start justify-between gap-2 mb-2">
-													<div className="flex items-center gap-2 flex-1 min-w-0">
-														<span className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-500 dark:bg-blue-600 text-white text-xs flex items-center justify-center font-medium">
-															{index + 1}
-														</span>
-														<div className="flex items-center gap-2 min-w-0 flex-1">
-															<div className="font-medium text-xs text-blue-600 dark:text-blue-400 truncate">
-																{ref.source || "知识库"}
+										{/* 引用列表 */}
+										{message.references.map((ref, index) => {
+											const isWebSearch = ref.type === "web_search";
+											return (
+												<div
+													key={index}
+													className={`text-sm p-3 rounded border ${
+														isWebSearch
+															? "bg-green-50/50 dark:bg-green-950/20 border-green-200 dark:border-green-800 text-green-800 dark:text-green-200"
+															: "bg-white/50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800 text-blue-800 dark:text-blue-200"
+													}`}
+												>
+													<div className="flex items-start justify-between gap-2 mb-2">
+														<div className="flex items-center gap-2 flex-1 min-w-0">
+															<span className={`flex-shrink-0 w-5 h-5 rounded-full text-white text-xs flex items-center justify-center font-medium ${
+																isWebSearch ? "bg-green-500 dark:bg-green-600" : "bg-blue-500 dark:bg-blue-600"
+															}`}>
+																{isWebSearch ? (
+																	<Globe className="h-3 w-3" />
+																) : (
+																	<span>{index + 1}</span>
+																)}
+															</span>
+															<div className="flex items-center gap-2 min-w-0 flex-1 flex-wrap">
+																{isWebSearch && ref.title && (
+																	<div className="font-medium text-xs text-green-700 dark:text-green-300 truncate flex-1 min-w-0">
+																		{ref.title}
+																	</div>
+																)}
+																{!isWebSearch && (
+																	<div className="font-medium text-xs text-blue-600 dark:text-blue-400 truncate">
+																		{ref.source || "知识库"}
+																	</div>
+																)}
+																{ref.score !== undefined && (
+																	<span className={`flex-shrink-0 text-xs px-1.5 py-0.5 rounded font-mono ${
+																		isWebSearch
+																			? "bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-300"
+																			: "bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300"
+																	}`}>
+																		{(ref.score * 100).toFixed(1)}%
+																	</span>
+																)}
+																{isWebSearch && ref.refer && (
+																	<span className="flex-shrink-0 text-xs px-1.5 py-0.5 rounded bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-300 font-mono">
+																		{ref.refer}
+																	</span>
+																)}
 															</div>
-															{ref.score !== undefined && (
-																<span className="flex-shrink-0 text-xs px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300 font-mono">
-																	{(ref.score * 100).toFixed(1)}%
+														</div>
+														<Button
+															variant="ghost"
+															size="sm"
+															className="h-5 px-1.5 -mt-1 flex-shrink-0"
+															onClick={() => copyToClipboard(ref.content, `ref-${index}`)}
+														>
+															{copiedSection === `ref-${index}` ? (
+																<CheckCheck className="h-3 w-3" />
+															) : (
+																<Copy className="h-3 w-3" />
+															)}
+														</Button>
+													</div>
+													
+													{/* 网络搜索来源信息 */}
+													{isWebSearch && (ref.source || ref.link || ref.publishDate) && (
+														<div className="flex items-center gap-2 mb-2 text-xs text-green-600 dark:text-green-400 flex-wrap">
+															{ref.source && (
+																<span className="flex items-center gap-1">
+																	<span className="font-medium">来源:</span>
+																	<span>{ref.source}</span>
 																</span>
 															)}
+															{ref.publishDate && (
+																<>
+																	<span>·</span>
+																	<span>{ref.publishDate}</span>
+																</>
+															)}
+															{ref.link && (
+																<>
+																	<span>·</span>
+																	<a
+																		href={ref.link}
+																		target="_blank"
+																		rel="noopener noreferrer"
+																		className="flex items-center gap-1 hover:underline"
+																		onClick={(e) => e.stopPropagation()}
+																	>
+																		<span>查看原文</span>
+																		<ExternalLink className="h-3 w-3" />
+																	</a>
+																</>
+															)}
 														</div>
+													)}
+													
+													<div className="text-xs prose prose-xs max-w-none dark:prose-invert break-words leading-relaxed">
+														<Streamdown>{ref.content}</Streamdown>
 													</div>
-													<Button
-														variant="ghost"
-														size="sm"
-														className="h-5 px-1.5 -mt-1 flex-shrink-0"
-														onClick={() => copyToClipboard(ref.content, `ref-${index}`)}
-													>
-														{copiedSection === `ref-${index}` ? (
-															<CheckCheck className="h-3 w-3" />
-														) : (
-															<Copy className="h-3 w-3" />
-														)}
-													</Button>
 												</div>
-												<div className="text-xs prose prose-xs max-w-none dark:prose-invert break-words leading-relaxed">
-													<Streamdown>{ref.content}</Streamdown>
-												</div>
-											</div>
-										))}
+											);
+										})}
 									</div>
 								)}
 							</div>

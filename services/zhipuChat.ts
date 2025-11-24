@@ -167,17 +167,7 @@ class ZhipuChatService {
       });
     }
 
-    // 添加联网搜索工具 - 已禁用
-    // if (options.useWebSearch) {
-    //   tools.push({
-    //     type: "web_search",
-    //     web_search: {
-    //       enable: true,
-    //       search_engine: "search_pro",
-    //       search_result: true,
-    //     },
-    //   });
-    // }
+    // 注意：联网搜索现在使用独立的 Web Search API，不通过 Chat API 的 tools
 
     const requestBody: ChatCompletionRequest = {
       model: this.model,
@@ -241,13 +231,9 @@ class ZhipuChatService {
           try {
             const parsed: ChatCompletionChunk = JSON.parse(data);
             
-            // 🔍 调试：打印完整的响应数据
-            console.log("🔍 完整响应数据:", JSON.stringify(parsed, null, 2));
-
             for (const choice of parsed.choices) {
               // 处理完成原因
               if (choice.finish_reason) {
-                console.log("✅ 完成原因:", choice.finish_reason);
                 yield { finishReason: choice.finish_reason };
               }
 
@@ -255,7 +241,6 @@ class ZhipuChatService {
               if (choice.delta) {
                 // 思维链内容
                 if (choice.delta.reasoning_content) {
-                  console.log("💭 思考内容:", choice.delta.reasoning_content);
                   yield { thinking: choice.delta.reasoning_content };
                 }
 
@@ -264,36 +249,6 @@ class ZhipuChatService {
                   yield { content: choice.delta.content };
                 }
               }
-            }
-
-            // 🔍 调试：检查 web_search 字段
-            console.log("🔍 检查 web_search 字段:", {
-              exists: !!parsed.web_search,
-              type: typeof parsed.web_search,
-              length: parsed.web_search?.length,
-              data: parsed.web_search
-            });
-
-            // 处理知识库引用（从 web_search 字段）
-            if (parsed.web_search && parsed.web_search.length > 0) {
-              console.log("📚 收到知识库引用:", parsed.web_search.length, "个");
-              console.log("📚 原始 web_search 数据:", JSON.stringify(parsed.web_search, null, 2));
-              
-              const references: KnowledgeReference[] = parsed.web_search
-                .filter(item => item.content)
-                .map(item => ({
-                  content: item.content!,
-                  source: item.title || item.media || "知识库",
-                }));
-
-              if (references.length > 0) {
-                console.log("📖 知识库引用内容:", references);
-                yield { references };
-              } else {
-                console.warn("⚠️ web_search 存在但没有有效的 content 字段");
-              }
-            } else if (parsed.web_search && parsed.web_search.length === 0) {
-              console.log("⚠️ web_search 字段存在但为空数组");
             }
 
             // 处理 token 使用统计

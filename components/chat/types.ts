@@ -131,6 +131,11 @@ export interface KnowledgeReference {
   content: string; // 引用的文本内容
   source?: string; // 来源（文档名等）
   score?: number; // 相关度分数（0-1之间）
+  link?: string; // 链接（网络搜索结果）
+  title?: string; // 标题（网络搜索结果）
+  refer?: string; // 引用标识（网络搜索结果）
+  publishDate?: string; // 发布日期（网络搜索结果）
+  type?: "knowledge" | "web_search"; // 引用类型
 }
 
 // 分析结果项
