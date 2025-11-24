@@ -117,6 +117,51 @@ export default function ChatPage() {
 		stopGenerating();
 	}, [stopGenerating]);
 
+	const handleRegenerateMessage = useCallback(
+		(messageId: string) => {
+			if (isGenerating) return;
+
+			// 找到要重新生成的助手消息
+			const messageIndex = messages.findIndex((m) => m.id === messageId);
+			if (messageIndex === -1 || messages[messageIndex].role !== "assistant") return;
+
+			// 找到之前的用户消息
+			const userMessageIndex = messageIndex - 1;
+			if (userMessageIndex < 0 || messages[userMessageIndex].role !== "user") return;
+
+			const userMessage = messages[userMessageIndex];
+
+			// 删除用户消息和助手消息
+			const newMessages = messages.slice(0, userMessageIndex);
+			setConversations((prev) =>
+				prev.map((conv) => {
+					if (conv.id === currentConversationId) {
+						return {
+							...conv,
+							messages: newMessages,
+							timestamp: Date.now(),
+						};
+					}
+					return conv;
+				})
+			);
+
+			// 重新发送用户消息
+			// 检查用户消息是否有上传的文件信息
+			const hasFile = !!userMessage.uploadedFileName;
+			
+			// 重新发送（使用默认选项：显示思考过程、引用和联网搜索）
+			setTimeout(() => {
+				handleSendMessage(userMessage.content, {
+					showThinking: true,
+					showReferences: true,
+					useWebSearch: true,
+				});
+			}, 100);
+		},
+		[messages, isGenerating, currentConversationId, handleSendMessage]
+	);
+
 	const handleOpenKnowledgeBase = useCallback(() => {
 		window.location.href = "/knowledge";
 	}, []);

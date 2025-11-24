@@ -93,7 +93,6 @@ export default function KnowledgePage() {
 				<KnowledgeSearchBar
 					searchQuery={searchQuery}
 					onSearchChange={setSearchQuery}
-					total={total}
 				/>
 
 				{/* 知识库列表 */}

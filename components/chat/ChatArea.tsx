@@ -14,6 +14,7 @@ interface ChatAreaProps {
 	}) => void;
 	isGenerating?: boolean;
 	onStopGenerating?: () => void;
+	onRegenerateMessage?: (messageId: string) => void;
 }
 
 export function ChatArea({
@@ -21,6 +22,7 @@ export function ChatArea({
 	onSendMessage,
 	isGenerating = false,
 	onStopGenerating,
+	onRegenerateMessage,
 }: ChatAreaProps) {
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -82,7 +84,15 @@ export function ChatArea({
 				) : (
 					<div className="mx-auto max-w-4xl py-4">
 						{messages.map((message) => (
-							<Message key={message.id} message={message} />
+							<Message
+								key={message.id}
+								message={message}
+								onRegenerate={
+									message.role === 'assistant' && onRegenerateMessage
+										? () => onRegenerateMessage(message.id)
+										: undefined
+								}
+							/>
 						))}
 						<div ref={messagesEndRef} />
 					</div>

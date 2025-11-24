@@ -35,23 +35,34 @@ export function KnowledgeSidebar({ total, currentCount }: KnowledgeSidebarProps)
 				</h1>
 			</div>
 
-			{/* 统计信息 */}
-			<div className="px-4 pb-4">
-				<Card className="bg-muted/50">
-					<CardContent className="p-4">
-						<div className="space-y-2">
-							<div className="flex items-center justify-between text-sm">
-								<span className="text-muted-foreground">知识库总数</span>
-								<span className="font-bold text-lg">{total}</span>
-							</div>
-							<div className="flex items-center justify-between text-sm">
-								<span className="text-muted-foreground">当前显示</span>
-								<span className="font-medium">{currentCount}</span>
-							</div>
-						</div>
-					</CardContent>
-				</Card>
-			</div>
+					{/* 统计信息 */}
+					<div className="px-4 pb-4">
+						<Card className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-primary/20 shadow-sm">
+							<CardContent className="p-5">
+								<div className="space-y-4">
+									<div className="flex items-center justify-between">
+										<div className="space-y-1">
+											<p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+												知识库总数
+											</p>
+											<p className="text-3xl font-bold text-foreground">
+												{total}
+											</p>
+										</div>
+										<div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+											<BookOpen className="h-6 w-6 text-primary" />
+										</div>
+									</div>
+									<div className="pt-3 border-t border-border/50">
+										<div className="flex items-center justify-between text-sm">
+											<span className="text-muted-foreground">当前显示</span>
+											<span className="font-semibold text-lg text-foreground">{currentCount}</span>
+										</div>
+									</div>
+								</div>
+							</CardContent>
+						</Card>
+					</div>
 
 			{/* 快捷操作 */}
 			<div className="flex-1 px-4 pb-4">
