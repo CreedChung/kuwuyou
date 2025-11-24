@@ -1,6 +1,6 @@
 /**
- * 智谱 AI 联网搜索服务
- * 使用 Web Search API 进行联网搜索
+ * 博查 AI 联网搜索服务
+ * 使用 Bocha Web Search API 进行联网搜索
  */
 
 export interface WebSearchResult {
@@ -28,36 +28,22 @@ export interface WebSearchResponse {
 }
 
 export interface WebSearchOptions {
-  searchEngine?: string;       // 搜索引擎：search_std, search_pro 等
   count?: number;              // 返回结果数量 (1-50)
-  searchDomainFilter?: string; // 域名过滤
-  searchRecencyFilter?: string; // 时间范围过滤
-  contentSize?: string;        // 摘要字数：low, medium, high
-  provider?: "zhipu" | "bocha"; // 搜索引擎提供商
+  searchEngine?: string;       // 搜索引擎类型
 }
 
 class WebSearchService {
-  private zhipuApiKey: string;
-  private bochaApiKey: string;
-  private baseURL: string;
-  private defaultProvider: "zhipu" | "bocha";
+  private apiKey: string;
 
   constructor() {
-    this.zhipuApiKey = process.env.NEXT_PUBLIC_ZHIPU_API_KEY || "";
-    this.bochaApiKey = process.env.NEXT_PUBLIC_BOCHA_API_KEY || "";
-    this.baseURL = process.env.NEXT_PUBLIC_ZHIPU_API_BASE_URL || "https://open.bigmodel.cn/api/paas/v4";
-    this.defaultProvider = (process.env.NEXT_PUBLIC_SEARCH_ENGINE as "zhipu" | "bocha") || "bocha";
+    this.apiKey = process.env.NEXT_PUBLIC_BOCHA_API_KEY || "";
   }
 
   /**
    * 执行联网搜索
    */
   async search(query: string, options: WebSearchOptions = {}): Promise<WebSearchResponse> {
-    const {
-      searchEngine = "search_std",  // 默认使用 search_std (仅智谱)
-      count = 5,
-      provider = this.defaultProvider, // 使用环境变量配置的默认搜索引擎
-    } = options;
+    const { count = 10 } = options;
 
     // 调用我们自己的 API 路由
     const response = await fetch("/api/web-search", {
@@ -67,9 +53,7 @@ class WebSearchService {
       },
       body: JSON.stringify({
         query,
-        searchEngine,
         count,
-        provider,
       }),
     });
 
@@ -82,24 +66,10 @@ class WebSearchService {
   }
 
   /**
-   * 获取当前使用的搜索提供商
+   * 检查是否配置了API
    */
-  getCurrentProvider(): "zhipu" | "bocha" {
-    return this.defaultProvider;
-  }
-
-  /**
-   * 检查是否配置了博查API
-   */
-  hasBochaApi(): boolean {
-    return !!this.bochaApiKey;
-  }
-
-  /**
-   * 检查是否配置了智谱API
-   */
-  hasZhipuApi(): boolean {
-    return !!this.zhipuApiKey;
+  hasApiKey(): boolean {
+    return !!this.apiKey;
   }
 
   /**

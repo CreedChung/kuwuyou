@@ -25,12 +25,11 @@ export async function basicSearchExample() {
 }
 
 // ============================================
-// 示例 2: 指定使用博查搜索
+// 示例 2: 使用自定义选项搜索
 // ============================================
 export async function bochaSearchExample() {
   try {
     const result = await webSearchService.search('Next.js 15 新特性', {
-      provider: 'bocha',
       count: 10,
     });
     
@@ -40,19 +39,17 @@ export async function bochaSearchExample() {
     
     return result;
   } catch (error) {
-    console.error('博查搜索失败:', error);
+    console.error('搜索失败:', error);
     throw error;
   }
 }
 
 // ============================================
-// 示例 3: 指定使用智谱搜索
+// 示例 3: 格式化搜索结果
 // ============================================
-export async function zhipuSearchExample() {
+export async function formatSearchExample() {
   try {
     const result = await webSearchService.search('人工智能最新进展', {
-      provider: 'zhipu',
-      searchEngine: 'search_pro', // 使用专业搜索
       count: 5,
     });
     
@@ -62,7 +59,7 @@ export async function zhipuSearchExample() {
     
     return result;
   } catch (error) {
-    console.error('智谱搜索失败:', error);
+    console.error('搜索失败:', error);
     throw error;
   }
 }
@@ -97,12 +94,10 @@ export async function advancedBochaExample() {
 // ============================================
 export function checkApiConfiguration() {
   console.log('=== API 配置检查 ===');
-  console.log('博查API已配置:', webSearchService.hasBochaApi());
-  console.log('智谱API已配置:', webSearchService.hasZhipuApi());
-  console.log('当前默认引擎:', webSearchService.getCurrentProvider());
+  console.log('API已配置:', webSearchService.hasApiKey());
   
-  if (!webSearchService.hasBochaApi() && !webSearchService.hasZhipuApi()) {
-    console.warn('⚠️ 警告: 没有配置任何搜索API!');
+  if (!webSearchService.hasApiKey()) {
+    console.warn('⚠️ 警告: 没有配置搜索API!');
     return false;
   }
   
@@ -264,11 +259,11 @@ export async function runAllExamples() {
     console.log('\n1. 基础搜索示例');
     await basicSearchExample();
     
-    console.log('\n2. 博查搜索示例');
+    console.log('\n2. 自定义选项搜索示例');
     await bochaSearchExample();
     
-    console.log('\n3. 智谱搜索示例');
-    await zhipuSearchExample();
+    console.log('\n3. 格式化搜索结果示例');
+    await formatSearchExample();
     
     console.log('\n4. 高级博查搜索示例');
     await advancedBochaExample();

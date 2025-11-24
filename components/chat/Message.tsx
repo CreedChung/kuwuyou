@@ -476,8 +476,15 @@ export function Message({ message, onRegenerate }: MessageProps) {
 						)}
 	
 						{!isUser && message.usage && message.usage.length > 0 && (
-							<div className="text-xs text-muted-foreground mt-2 flex items-center gap-2">
-								<span>Token 使用: {message.usage}</span>
+							<div className="text-xs text-muted-foreground mt-2 space-y-1">
+								<div className="font-medium">Token 使用:</div>
+								{message.usage.map((usage, index) => (
+									<div key={index} className="flex items-center gap-2 pl-2">
+										<span className="font-mono">
+											{usage.nodeName}: 输入 {usage.inputTokenCount} + 输出 {usage.outputTokenCount} = {usage.totalTokenCount}
+										</span>
+									</div>
+								))}
 							</div>
 						)}
 					</>
