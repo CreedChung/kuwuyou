@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
-import { sql } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +18,8 @@ export async function GET() {
     
     try {
       const start = Date.now();
-      await db.execute(sql`SELECT 1`);
+      // 使用简单的查询测试数据库连接
+      await db.$client.execute('SELECT 1');
       const responseTime = Date.now() - start;
       dbResponseTime = `${responseTime}ms`;
       
