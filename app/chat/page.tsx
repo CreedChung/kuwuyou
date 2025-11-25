@@ -8,9 +8,18 @@ import { ChatArea } from "@/components/chat/ChatArea";
 import { Header } from "@/components/chat/Header";
 import { Sidebar } from "@/components/chat/Sidebar";
 import { useZhipuChat } from "@/hooks/useZhipuChat";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import type { Conversation } from "@/components/chat/types";
 
 export default function ChatPage() {
+	return (
+		<ProtectedRoute>
+			<ChatPageContent />
+		</ProtectedRoute>
+	);
+}
+
+function ChatPageContent() {
 	const [conversations, setConversations] = useState<Conversation[]>([]);
 	const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
 
@@ -184,6 +193,7 @@ export default function ChatPage() {
 						onSendMessage={handleSendMessage}
 						isGenerating={isGenerating}
 						onStopGenerating={handleStopGenerating}
+						onRegenerateMessage={handleRegenerateMessage}
 					/>
 				</div>
 			</SidebarInset>

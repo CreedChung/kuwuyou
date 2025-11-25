@@ -71,16 +71,16 @@ export function useZhipuChat() {
         console.log("📄 文件名:", options.uploadedFile?.name);
         console.log("📊 文件内容长度:", options.fileContent.length, "字");
         console.log("📋 文件内容预览:", options.fileContent.substring(0, 200) + "...");
-        
+
         const knowledgeId = options.knowledgeId || process.env.NEXT_PUBLIC_ZHIPU_KNOWLEDGE_ID;
         console.log("🔑 知识库ID:", knowledgeId);
-        
+
         const requestData = {
           content: options.fileContent,
           knowledgeId: knowledgeId,
         };
         console.log("📤 发送分析请求:", requestData);
-        
+
         const analysisResponse = await fetch("/api/analysis", {
           method: "POST",
           headers: {
@@ -116,15 +116,15 @@ export function useZhipuChat() {
             console.log("问题描述:", item.issueDes);
             console.log("修改建议:", item.suggestion);
           });
-          
+
           if (analysisData.usage) {
             console.log("\n💰 Token使用情况:", analysisData.usage);
           }
-          
+
           currentMessageRef.current.analysisResults = analysisData.results as AnalysisItem[];
           currentMessageRef.current.content = `已完成规范检查分析，共发现 ${analysisData.results.length} 个问题。`;
           currentMessageRef.current.isStreaming = false;
-          
+
           console.log("========== 分析模式完成 ==========\n");
 
           // 更新UI
@@ -152,20 +152,20 @@ export function useZhipuChat() {
       // 第一步：检索知识库（如果开关打开且配置了知识库ID）
       let retrievalSlices: RetrievalSlice[] = [];
       const knowledgeId = options.knowledgeId || process.env.NEXT_PUBLIC_ZHIPU_KNOWLEDGE_ID;
-      
+
       console.log("📋 检查知识库检索条件:", {
         knowledgeId,
         showReferences: options.showReferences,
         willExecute: !!(knowledgeId && options.showReferences)
       });
-      
+
       if (knowledgeId && options.showReferences) {
         try {
           console.log("🔍 开始知识库检索...");
           const retrievalResult = await knowledgeRetrievalService.retrieve({
             query: content.trim(),
             knowledge_ids: [knowledgeId],
-            top_k: 5, // 返回前5个最相关的结果
+            top_k: 10, // 返回前10个最相关的结果
             recall_method: "mixed", // 使用混合检索
           });
 
@@ -205,18 +205,18 @@ export function useZhipuChat() {
 
       // 第二步：联网搜索（如果开关打开）
       let webSearchResults: WebSearchResult[] = [];
-      
+
       console.log("🌐 检查联网搜索条件:", {
         useWebSearch: options.useWebSearch,
         willExecute: !!options.useWebSearch
       });
-      
+
       if (options.useWebSearch) {
         try {
           console.log("🌐 开始联网搜索...");
           const searchResponse = await webSearchService.search(content.trim(), {
             searchEngine: "search_std",
-            count: 5,
+            count: 10,
           });
 
           webSearchResults = searchResponse.search_result || [];
@@ -224,7 +224,7 @@ export function useZhipuChat() {
           // 将搜索结果转换为引用格式并显示
           if (webSearchResults.length > 0) {
             const webReferences = webSearchService.formatAsReferences(webSearchResults);
-            
+
             // 合并知识库和网络搜索的引用
             if (!currentMessageRef.current.references) {
               currentMessageRef.current.references = [];
@@ -258,22 +258,22 @@ export function useZhipuChat() {
 
       // 第三步：构建对话上下文（包含知识库检索结果和联网搜索结果）
       const messagesWithContext: ChatMessage[] = [...conversationHistoryRef.current];
-      
+
       // 构建上下文消息
       const contextParts: string[] = [];
-      
+
       // 添加知识库上下文
       if (retrievalSlices.length > 0) {
         const knowledgeContext = knowledgeRetrievalService.formatAsContext(retrievalSlices);
         contextParts.push(knowledgeContext);
       }
-      
+
       // 添加联网搜索上下文
       if (webSearchResults.length > 0) {
         const webContext = webSearchService.formatAsContext(webSearchResults);
         contextParts.push(webContext);
       }
-      
+
       // 构建最终的用户消息
       if (contextParts.length > 0) {
         messagesWithContext.push({
@@ -337,9 +337,9 @@ export function useZhipuChat() {
         // 处理完成原因
         if (chunk.finishReason) {
           if (chunk.finishReason === "sensitive" || chunk.finishReason === "network_error") {
-            currentMessageRef.current.error = 
-              chunk.finishReason === "sensitive" 
-                ? "内容被安全审核拦截" 
+            currentMessageRef.current.error =
+              chunk.finishReason === "sensitive"
+                ? "内容被安全审核拦截"
                 : "网络错误";
           }
           currentMessageRef.current.isStreaming = false;
@@ -359,7 +359,7 @@ export function useZhipuChat() {
       // 流结束，确保状态更新
       if (currentMessageRef.current) {
         currentMessageRef.current.isStreaming = false;
-        
+
         // 将助手回复添加到对话历史
         conversationHistoryRef.current.push({
           role: "assistant",

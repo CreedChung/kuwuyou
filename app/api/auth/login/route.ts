@@ -60,7 +60,11 @@ export async function POST(request: NextRequest) {
 			{
 				success: true,
 				message: "登录成功",
-				user: userWithoutPassword,
+				user: {
+					...userWithoutPassword,
+					// 确保 role 字段存在，如果数据库中没有则默认为 'user'
+					role: userWithoutPassword.role || 'user',
+				},
 			},
 			{ status: 200 }
 		);

@@ -3,6 +3,7 @@
 export const dynamic = "force-dynamic";
 
 import { useEffect, useState } from "react";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AccountSettings } from "@/components/settings/AccountSettings";
 import { ConnectionsSettings } from "@/components/settings/ConnectionsSettings";
 import { DataSettings } from "@/components/settings/DataSettings";
@@ -17,6 +18,14 @@ import {
 import { Toaster } from "@/components/ui/toaster";
 
 export default function SettingsPage() {
+	return (
+		<ProtectedRoute>
+			<SettingsPageContent />
+		</ProtectedRoute>
+	);
+}
+
+function SettingsPageContent() {
 	const [activeSection, setActiveSection] = useState<SettingSection>("general");
 	const [darkMode, setDarkMode] = useState(true);
 	const [model, setModel] = useState("glm-4-plus");

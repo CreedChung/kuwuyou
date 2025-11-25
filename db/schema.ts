@@ -8,6 +8,7 @@ export const profiles = sqliteTable("profiles", {
 	email: text("email").notNull().unique(),
 	password: text("password").notNull(), // 加密后的密码
 	avatarUrl: text("avatar_url"),
+	role: text("role", { enum: ["user", "admin"] }).notNull().default("user"), // 用户角色
 	createdAt: integer("created_at", { mode: "timestamp" })
 		.default(sql`CURRENT_TIMESTAMP`)
 		.notNull(),

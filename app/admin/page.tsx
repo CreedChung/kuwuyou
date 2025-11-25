@@ -14,11 +14,11 @@ import { OverviewSection } from "@/components/admin/OverviewSection";
 import { SecuritySection } from "@/components/admin/SecuritySection";
 import { SystemSection } from "@/components/admin/SystemSection";
 import { UsersSection } from "@/components/admin/UsersSection";
-import { useAdminStore } from "@/stores/adminStore";
+import { useAuthStore } from "@/stores/authStore";
 
 export default function AdminPage() {
 	const router = useRouter();
-	const { isAdmin, setAdminUser } = useAdminStore();
+	const { user, initialized } = useAuthStore();
 	const [loading, setLoading] = useState(true);
 	const [activeSection, setActiveSection] = useState<AdminSection>("overview");
 	const [searchQuery, setSearchQuery] = useState("");
@@ -30,33 +30,33 @@ export default function AdminPage() {
 		// 检查管理员权限
 		const checkAdminAuth = async () => {
 			try {
-				// 这里应该调用验证 API
-				// 目前使用简化的逻辑
-				const hasAuth = localStorage.getItem('admin_auth') === 'true';
-				
-				if (!hasAuth) {
-					// 如果没有权限，重定向到登录页
-					router.push('/auth/login?redirect=/admin');
+				// 等待认证初始化完成
+				if (!initialized) {
 					return;
 				}
 
-				// 设置管理员信息
-				setAdminUser({
-					id: '1',
-					name: '管理员',
-					email: 'admin@example.com',
-					role: 'admin',
-				});
+				// 检查用户是否登录
+				if (!user) {
+					router.push("/auth/login");
+					return;
+				}
+
+				// 检查用户角色，只有 admin 可以访问
+				if (user.role !== "admin") {
+					// 不是管理员，重定向到首页
+					router.push("/");
+					return;
+				}
+				// 是管理员，放行
 			} catch (error) {
-				console.error('验证管理员权限失败:', error);
-				router.push('/auth/login?redirect=/admin');
+				console.error("验证管理员权限失败:", error);
 			} finally {
 				setLoading(false);
 			}
 		};
 
 		checkAdminAuth();
-	}, [router, setAdminUser]);
+	}, [router, user, initialized]);
 
 	if (loading) {
 		return (
@@ -69,7 +69,8 @@ export default function AdminPage() {
 		);
 	}
 
-	if (!isAdmin) {
+	// 检查用户是否是管理员
+	if (!user || user.role !== "admin") {
 		return (
 			<div className="flex h-screen items-center justify-center bg-background">
 				<div className="text-center">

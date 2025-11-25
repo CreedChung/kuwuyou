@@ -18,6 +18,7 @@ import {
 	Loader2,
 } from "lucide-react";
 import { useId, useState, useEffect } from "react";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,7 +35,6 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { getProfile, updateProfile, updateAvatar, type ProfileData, type StatsData, type AchievementData } from "@/services/profile";
 import { useAuthStore } from "@/stores/authStore";
-import { useRouter } from "next/navigation";
 
 type ProfileSection = "basic" | "stats" | "achievements" | "activity";
 
@@ -51,12 +51,19 @@ const sidebarItems: SidebarItem[] = [
 ];
 
 export default function ProfilePage() {
+	return (
+		<ProtectedRoute>
+			<ProfilePageContent />
+		</ProtectedRoute>
+	);
+}
+
+function ProfilePageContent() {
 	const usernameId = useId();
 	const emailId = useId();
 	const bioId = useId();
 	const locationId = useId();
 	const { toast } = useToast();
-	const router = useRouter();
 	const { user, initialized, initialize } = useAuthStore();
 	
 	const [activeSection, setActiveSection] = useState<ProfileSection>("basic");
@@ -97,12 +104,6 @@ export default function ProfilePage() {
 				return;
 			}
 
-			// 认证状态已初始化,检查用户是否登录
-			if (!user) {
-				router.push("/auth/login");
-				return;
-			}
-
 			setLoading(true);
 			const data = await getProfile();
 			
@@ -123,7 +124,7 @@ export default function ProfilePage() {
 		};
 
 		loadProfile();
-	}, [user, initialized, router, toast]);
+	}, [user, initialized, toast]);
 
 	const handleSave = async () => {
 		setSaving(true);

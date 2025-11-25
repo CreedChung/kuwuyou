@@ -66,14 +66,18 @@ export function Sidebar({
 	const router = useRouter();
 
 	// 从用户数据中提取信息
-	const userName = user?.username || user?.email?.split('@')[0] || '用户';
-	const userHandle = user?.email ? `@${user.email.split('@')[0]}` : '@user';
-	const userAvatar = user?.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=3b82f6&color=fff`;
+	const userName = user?.username || user?.email?.split("@")[0] || "用户";
+	const userHandle = user?.email ? `@${user.email.split("@")[0]}` : "@user";
+	const userAvatar =
+		user?.avatarUrl ||
+		`https://ui-avatars.com/api/?name=${encodeURIComponent(
+			userName
+		)}&background=3b82f6&color=fff`;
 
 	const handleLogout = async () => {
 		setLogoutDialogOpen(false);
 		await signOut();
-		router.push("/auth/login");
+		router.push("/");
 	};
 
 	const handleDeleteClick = (conversationId: string) => {
@@ -156,7 +160,10 @@ export function Sidebar({
 								</div>
 							) : (
 								conversations.map((conversation) => (
-									<SidebarMenuItem key={conversation.id} className="relative group">
+									<SidebarMenuItem
+										key={conversation.id}
+										className="relative group"
+									>
 										<SidebarMenuButton
 											onClick={() => onSelectConversation(conversation.id)}
 											isActive={currentConversationId === conversation.id}
@@ -174,7 +181,7 @@ export function Sidebar({
 												handleDeleteClick(conversation.id);
 											}}
 											onKeyDown={(e) => {
-												if (e.key === 'Enter' || e.key === ' ') {
+												if (e.key === "Enter" || e.key === " ") {
 													e.preventDefault();
 													e.stopPropagation();
 													handleDeleteClick(conversation.id);

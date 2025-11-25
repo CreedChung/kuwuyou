@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useRef } from "react";
+"use client";
+
+import { useCallback, useEffect, useRef, memo } from "react";
 import { InputArea } from "./InputArea";
 import { Message } from "./Message";
 import type { Message as MessageType } from "./types";
@@ -17,7 +19,7 @@ interface ChatAreaProps {
 	onRegenerateMessage?: (messageId: string) => void;
 }
 
-export function ChatArea({
+export const ChatArea = memo(function ChatArea({
 	messages,
 	onSendMessage,
 	isGenerating = false,
@@ -32,7 +34,7 @@ export function ChatArea({
 
 	useEffect(() => {
 		scrollToBottom();
-	}, [scrollToBottom]);
+	}, [messages.length]); // 只在消息数量变化时滚动
 
 	return (
 		<div className="flex flex-col h-full bg-background">
@@ -107,4 +109,4 @@ export function ChatArea({
 			/>
 		</div>
 	);
-}
+});

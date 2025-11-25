@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import {
 	Knowledge,
 	KnowledgeSidebar,
@@ -13,6 +14,14 @@ import {
 } from "@/components/knowledge";
 
 export default function KnowledgePage() {
+	return (
+		<ProtectedRoute>
+			<KnowledgePageContent />
+		</ProtectedRoute>
+	);
+}
+
+function KnowledgePageContent() {
 	const [knowledgeList, setKnowledgeList] = useState<Knowledge[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [searchQuery, setSearchQuery] = useState("");

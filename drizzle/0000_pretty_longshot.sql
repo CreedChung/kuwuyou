@@ -30,9 +30,8 @@ CREATE TABLE `profiles` (
 	`id` text PRIMARY KEY NOT NULL,
 	`username` text NOT NULL,
 	`email` text NOT NULL,
+	`password` text NOT NULL,
 	`avatar_url` text,
-	`bio` text,
-	`location` text,
 	`created_at` integer DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`updated_at` integer DEFAULT CURRENT_TIMESTAMP NOT NULL
 );

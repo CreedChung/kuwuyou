@@ -1,1 +1,0 @@
-ALTER TABLE `profiles` ADD `password_hash` text NOT NULL;

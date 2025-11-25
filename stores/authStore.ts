@@ -7,6 +7,7 @@ interface User {
 	email: string;
 	username?: string;
 	avatarUrl?: string;
+	role?: "user" | "admin";
 }
 
 interface AuthError {
@@ -177,13 +178,20 @@ export const useAuthStore = create<AuthState>()(
 
 					const data = await response.json();
 					set({ user: data.user });
-
+	
+					// 如果用户是管理员，设置管理员权限标识
+					if (data.user?.role === 'admin') {
+						localStorage.setItem('admin_auth', 'true');
+					} else {
+						localStorage.removeItem('admin_auth');
+					}
+	
 					console.log("登录成功!", data);
 					toast({
 						title: "登录成功",
 						description: "欢迎回来！",
 					});
-
+	
 					return { error: null };
 				} catch (error) {
 					console.error("signIn catch 块捕获错误:", error);
@@ -223,6 +231,7 @@ export const useAuthStore = create<AuthState>()(
 					// 清除本地存储中的数据
 					localStorage.removeItem("ai_provider");
 					localStorage.removeItem("auth-storage");
+					localStorage.removeItem("admin_auth");
 
 					toast({
 						title: "已登出",

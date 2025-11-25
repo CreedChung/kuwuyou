@@ -5,7 +5,6 @@ import {
 	Activity,
 	AlertTriangle,
 	CheckCircle,
-	DollarSign,
 	MessageSquare,
 	TrendingDown,
 	TrendingUp,
@@ -116,7 +115,7 @@ export function OverviewSection() {
 			</div>
 
 			{/* 统计卡片 */}
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 				<Card>
 					<CardContent className="pt-6">
 						<div className="flex items-center justify-between mb-2">
@@ -151,25 +150,6 @@ export function OverviewSection() {
 							<p className="text-xs text-muted-foreground">活跃用户</p>
 							<p className={`text-xs font-medium ${systemStats.activeGrowth >= 0 ? 'text-green-500' : 'text-red-500'}`}>
 								{systemStats.activeGrowth >= 0 ? '+' : ''}{systemStats.activeGrowth}%
-							</p>
-						</div>
-					</CardContent>
-				</Card>
-				<Card>
-					<CardContent className="pt-6">
-						<div className="flex items-center justify-between mb-2">
-							<DollarSign className="h-5 w-5 text-muted-foreground" />
-							{systemStats.revenueGrowth >= 0 ? (
-								<TrendingUp className="h-4 w-4 text-green-500" />
-							) : (
-								<TrendingDown className="h-4 w-4 text-red-500" />
-							)}
-						</div>
-						<div className="space-y-1">
-							<p className="text-2xl font-bold">¥{systemStats.totalRevenue.toLocaleString()}</p>
-							<p className="text-xs text-muted-foreground">本月收入</p>
-							<p className={`text-xs font-medium ${systemStats.revenueGrowth >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-								{systemStats.revenueGrowth >= 0 ? '+' : ''}{systemStats.revenueGrowth}%
 							</p>
 						</div>
 					</CardContent>

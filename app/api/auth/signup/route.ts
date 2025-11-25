@@ -82,6 +82,7 @@ export async function POST(request: NextRequest) {
 					id: userId,
 					email,
 					username,
+					role: 'user', // 新用户默认为普通用户
 				},
 			},
 			{ status: 201 }

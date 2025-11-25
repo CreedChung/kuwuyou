@@ -8,6 +8,10 @@ import {
 	Square,
 	X,
 	Search,
+	BookOpen,
+	Brain,
+	ChevronUp,
+	ChevronDown,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
@@ -50,6 +54,7 @@ export function InputArea({
 	const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 	const [fileContent, setFileContent] = useState<string>("");
 	const [isProcessingFile, setIsProcessingFile] = useState(false);
+	const [showOptions, setShowOptions] = useState(false);
 	const wrapperRef = useRef<HTMLDivElement>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -104,11 +109,11 @@ export function InputArea({
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 		if (inputValue.trim() && !isGenerating) {
-			// 始终启用所有功能（无忧思考、知识库检索、联网搜索）
+			// 根据按钮状态决定启用哪些功能
 			onSendMessage(inputValue.trim(), {
-				showThinking: true,      // 始终显示思考过程
-				showReferences: true,    // 始终显示知识库引用
-				useWebSearch: true,      // 始终使用联网搜索
+				showThinking: thinkActive,      // 思考按钮控制
+				showReferences: deepSearchActive,    // 知识库按钮控制
+				useWebSearch: webSearchActive,      // 联网搜索按钮控制
 				uploadedFile: uploadedFile || undefined,
 				fileContent: fileContent || undefined,
 			});
@@ -385,12 +390,74 @@ export function InputArea({
 								)}
 							</div>
 
-							{/* 功能开关已隐藏 - 所有功能默认启用 */}
+							{/* 功能按钮区域 */}
+							<AnimatePresence>
+								{(isActive || inputValue) && (
+									<motion.div
+										initial={{ opacity: 0, height: 0 }}
+										animate={{ opacity: 1, height: "auto" }}
+										exit={{ opacity: 0, height: 0 }}
+										transition={{ duration: 0.2 }}
+										className="px-6 pb-4 pt-3"
+									>
+										<div className="flex items-center gap-2 flex-wrap">
+											{/* 联网搜索按钮 */}
+											<button
+												type="button"
+												onClick={() => setWebSearchActive(!webSearchActive)}
+												className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+													webSearchActive
+														? "bg-primary text-primary-foreground shadow-sm"
+														: "bg-muted text-muted-foreground hover:bg-muted/80"
+												}`}
+												title={webSearchActive ? "关闭联网搜索" : "开启联网搜索"}
+											>
+												<Globe size={14} />
+												<span>联网搜索</span>
+											</button>
+
+											{/* 知识库按钮 */}
+											<button
+												type="button"
+												onClick={() => setDeepSearchActive(!deepSearchActive)}
+												className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+													deepSearchActive
+														? "bg-primary text-primary-foreground shadow-sm"
+														: "bg-muted text-muted-foreground hover:bg-muted/80"
+												}`}
+												title={deepSearchActive ? "关闭知识库检索" : "开启知识库检索"}
+											>
+												<BookOpen size={14} />
+												<span>知识库</span>
+											</button>
+
+											{/* 思考按钮 */}
+											<button
+												type="button"
+												onClick={() => setThinkActive(!thinkActive)}
+												className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+													thinkActive
+														? "bg-primary text-primary-foreground shadow-sm"
+														: "bg-muted text-muted-foreground hover:bg-muted/80"
+												}`}
+												title={thinkActive ? "关闭深度思考" : "开启深度思考"}
+											>
+												<Brain size={14} />
+												<span>深度思考</span>
+											</button>
+										</div>
+									</motion.div>
+								)}
+							</AnimatePresence>
 						</div>
 					</form>
 				</motion.div>
-				<div className="mt-3 text-center text-xs text-muted-foreground">
-					库无忧助手可能会出错。请核查重要信息。
+				
+				{/* 底部提示信息 */}
+				<div className="mt-3 flex items-center justify-center gap-2">
+					<span className="text-xs text-muted-foreground">
+						库无忧助手可能会出错。请核查重要信息。
+					</span>
 				</div>
 			</div>
 		</div>
