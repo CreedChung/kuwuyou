@@ -15,6 +15,9 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60, // 图片缓存时间（秒）
   },
   
+  // 服务器组件外部包配置
+  serverExternalPackages: ['@libsql/client'],
+  
   // 实验性功能
   experimental: {
     serverActions: {
@@ -26,8 +29,6 @@ const nextConfig: NextConfig = {
       '@radix-ui/react-icons',
       'framer-motion',
     ],
-    // 启用并发特性
-    serverComponentsExternalPackages: ['@libsql/client'],
   },
   
   // 生产环境优化

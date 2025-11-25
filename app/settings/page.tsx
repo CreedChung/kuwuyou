@@ -9,7 +9,6 @@ import { ConnectionsSettings } from "@/components/settings/ConnectionsSettings";
 import { DataSettings } from "@/components/settings/DataSettings";
 import { GeneralSettings } from "@/components/settings/GeneralSettings";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
-import { PersonalizationSettings } from "@/components/settings/PersonalizationSettings";
 import { SecuritySettings } from "@/components/settings/SecuritySettings";
 import {
 	type SettingSection,
@@ -28,7 +27,6 @@ export default function SettingsPage() {
 function SettingsPageContent() {
 	const [activeSection, setActiveSection] = useState<SettingSection>("general");
 	const [darkMode, setDarkMode] = useState(true);
-	const [model, setModel] = useState("glm-4-plus");
 	const [zhipuApiKey, setZhipuApiKey] = useState("");
 	const [showZhipuApiKey, setShowZhipuApiKey] = useState(false);
 	const [zhipuApiKeySaved, setZhipuApiKeySaved] = useState(false);
@@ -116,10 +114,6 @@ function SettingsPageContent() {
 							onNotificationToggle={handleNotificationToggle}
 							onTestNotification={handleTestNotification}
 						/>
-					)}
-
-					{activeSection === "personalization" && (
-						<PersonalizationSettings model={model} onModelChange={setModel} />
 					)}
 
 					{activeSection === "connections" && (
