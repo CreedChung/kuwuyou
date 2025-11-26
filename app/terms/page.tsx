@@ -7,7 +7,7 @@ export default function TermsPage() {
 			<Header />
 			<div className="flex-1 container mx-auto px-4 py-12 max-w-4xl">
 				<h1 className="text-4xl font-bold mb-8">服务条款</h1>
-				
+
 				<div className="prose prose-slate dark:prose-invert max-w-none">
 					<p className="text-muted-foreground mb-6">
 						最后更新日期：2025年11月23日
@@ -22,9 +22,7 @@ export default function TermsPage() {
 
 					<section className="mb-8">
 						<h2 className="text-2xl font-semibold mb-4">2. 服务描述</h2>
-						<p className="mb-4">
-							库无忧助手是一款AI助手服务，提供：
-						</p>
+						<p className="mb-4">库无忧助手是一款AI助手服务，提供：</p>
 						<ul className="list-disc pl-6 space-y-2 mb-4">
 							<li>智能对话和问答功能</li>
 							<li>知识库管理和检索</li>
@@ -38,9 +36,7 @@ export default function TermsPage() {
 
 					<section className="mb-8">
 						<h2 className="text-2xl font-semibold mb-4">3. 用户账户</h2>
-						<p className="mb-4">
-							使用某些功能需要注册账户。您需要：
-						</p>
+						<p className="mb-4">使用某些功能需要注册账户。您需要：</p>
 						<ul className="list-disc pl-6 space-y-2 mb-4">
 							<li>提供真实、准确、完整的注册信息</li>
 							<li>维护账户信息的准确性</li>
@@ -86,18 +82,14 @@ export default function TermsPage() {
 
 					<section className="mb-8">
 						<h2 className="text-2xl font-semibold mb-4">7. 免责声明</h2>
-						<p className="mb-4">
-							服务按"现状"和"可用"基础提供。我们不保证：
-						</p>
+						<p className="mb-4">服务按"现状"和"可用"基础提供。我们不保证：</p>
 						<ul className="list-disc pl-6 space-y-2 mb-4">
 							<li>服务将不间断或无错误</li>
 							<li>结果的准确性或可靠性</li>
 							<li>满足您的特定需求</li>
 							<li>缺陷将被纠正</li>
 						</ul>
-						<p className="mb-4">
-							您使用服务的风险由您自行承担。
-						</p>
+						<p className="mb-4">您使用服务的风险由您自行承担。</p>
 					</section>
 
 					<section className="mb-8">
@@ -160,17 +152,6 @@ export default function TermsPage() {
 						<p className="mb-4">
 							如果本条款的任何条款被认定为无效或不可执行，该条款应在必要的最小范围内修改，以使其有效，其余条款将继续完全有效。
 						</p>
-					</section>
-
-					<section className="mb-8">
-						<h2 className="text-2xl font-semibold mb-4">14. 联系我们</h2>
-						<p className="mb-4">
-							如果您对本服务条款有任何疑问，请通过以下方式联系我们：
-						</p>
-						<ul className="list-none pl-0 space-y-2 mb-4">
-							<li>邮箱：support@kuwuyou.com</li>
-							<li>地址：中国·深圳</li>
-						</ul>
 					</section>
 				</div>
 			</div>
