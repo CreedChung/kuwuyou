@@ -16,8 +16,7 @@ export type AdminSection =
 	| "users"
 	| "content"
 	| "analytics"
-	| "system"
-	| "security";
+	| "system";
 
 interface SidebarItem {
 	id: AdminSection;
@@ -30,7 +29,6 @@ const sidebarItems: SidebarItem[] = [
 	{ id: "users", label: "用户管理", icon: Users },
 	{ id: "analytics", label: "数据分析", icon: Activity },
 	{ id: "system", label: "系统设置", icon: Settings },
-	{ id: "security", label: "安全监控", icon: Shield },
 ];
 
 interface AdminSidebarProps {

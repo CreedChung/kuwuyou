@@ -11,7 +11,6 @@ import {
 } from "@/components/admin/AdminSidebar";
 import { AnalyticsSection } from "@/components/admin/AnalyticsSection";
 import { OverviewSection } from "@/components/admin/OverviewSection";
-import { SecuritySection } from "@/components/admin/SecuritySection";
 import { SystemSection } from "@/components/admin/SystemSection";
 import { UsersSection } from "@/components/admin/UsersSection";
 import { useAuthStore } from "@/stores/authStore";
@@ -22,9 +21,7 @@ export default function AdminPage() {
 	const [loading, setLoading] = useState(true);
 	const [activeSection, setActiveSection] = useState<AdminSection>("overview");
 	const [searchQuery, setSearchQuery] = useState("");
-	const [maintenanceMode, setMaintenanceMode] = useState(false);
 	const [autoBackup, setAutoBackup] = useState(true);
-	const [twoFactorRequired, setTwoFactorRequired] = useState(false);
 
 	useEffect(() => {
 		// 检查管理员权限
@@ -104,17 +101,8 @@ export default function AdminPage() {
 
 					{activeSection === "system" && (
 						<SystemSection
-							maintenanceMode={maintenanceMode}
 							autoBackup={autoBackup}
-							onMaintenanceModeChange={setMaintenanceMode}
 							onAutoBackupChange={setAutoBackup}
-						/>
-					)}
-
-					{activeSection === "security" && (
-						<SecuritySection
-							twoFactorRequired={twoFactorRequired}
-							onTwoFactorRequiredChange={setTwoFactorRequired}
 						/>
 					)}
 				</div>

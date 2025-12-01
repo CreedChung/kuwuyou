@@ -17,24 +17,17 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/useToast";
 
 interface SystemSectionProps {
-	maintenanceMode: boolean;
 	autoBackup: boolean;
-	onMaintenanceModeChange: (value: boolean) => void;
 	onAutoBackupChange: (value: boolean) => void;
 }
 
 export function SystemSection({
-	maintenanceMode,
 	autoBackup,
-	onMaintenanceModeChange,
 	onAutoBackupChange,
 }: SystemSectionProps) {
-	const maintenanceId = useId();
 	const autoBackupId = useId();
 	const autoUpdateId = useId();
-	const emailNotifyId = useId();
 	const [autoUpdate, setAutoUpdate] = useState(true);
-	const [emailNotify, setEmailNotify] = useState(true);
 	const [backing, setBacking] = useState(false);
 	const { toast } = useToast();
 
@@ -98,25 +91,6 @@ export function SystemSection({
 				<CardContent className="space-y-4">
 					<div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
 						<div className="space-y-0.5">
-							<Label htmlFor={maintenanceId} className="text-sm font-medium">
-								维护模式
-							</Label>
-							<p className="text-xs text-muted-foreground">
-								启用后用户将无法访问系统
-							</p>
-						</div>
-						<Switch
-							id={maintenanceId}
-							checked={maintenanceMode}
-							onCheckedChange={(checked) => {
-								onMaintenanceModeChange(checked);
-								handleSettingChange('maintenanceMode', checked);
-							}}
-						/>
-					</div>
-
-					<div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
-						<div className="space-y-0.5">
 							<Label htmlFor={autoBackupId} className="text-sm font-medium">
 								自动备份
 							</Label>
@@ -153,25 +127,6 @@ export function SystemSection({
 						/>
 					</div>
 
-					<div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
-						<div className="space-y-0.5">
-							<Label htmlFor={emailNotifyId} className="text-sm font-medium">
-								邮件通知
-							</Label>
-							<p className="text-xs text-muted-foreground">
-								系统异常时发送邮件通知
-							</p>
-						</div>
-						<Switch
-							id={emailNotifyId}
-							checked={emailNotify}
-							onCheckedChange={(checked) => {
-								setEmailNotify(checked);
-								handleSettingChange('emailNotify', checked);
-							}}
-						/>
-					</div>
-
 					<Separator />
 
 					<div className="space-y-3">
@@ -195,56 +150,6 @@ export function SystemSection({
 				</CardContent>
 			</Card>
 
-			{/* 性能监控 */}
-			<Card>
-				<CardHeader>
-					<CardTitle className="text-lg flex items-center gap-2">
-						<Zap className="h-5 w-5" />
-						性能监控
-					</CardTitle>
-					<CardDescription>系统资源使用情况</CardDescription>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="space-y-2">
-						<div className="flex items-center justify-between text-sm">
-							<div className="flex items-center gap-2">
-								<Server className="h-4 w-4 text-muted-foreground" />
-								<span>CPU 使用率</span>
-							</div>
-							<span className="font-medium">45%</span>
-						</div>
-						<div className="h-2 bg-muted rounded-full overflow-hidden">
-							<div className="h-full bg-primary" style={{ width: '45%' }} />
-						</div>
-					</div>
-
-					<div className="space-y-2">
-						<div className="flex items-center justify-between text-sm">
-							<div className="flex items-center gap-2">
-								<Database className="h-4 w-4 text-muted-foreground" />
-								<span>内存使用率</span>
-							</div>
-							<span className="font-medium">62%</span>
-						</div>
-						<div className="h-2 bg-muted rounded-full overflow-hidden">
-							<div className="h-full bg-primary" style={{ width: '62%' }} />
-						</div>
-					</div>
-
-					<div className="space-y-2">
-						<div className="flex items-center justify-between text-sm">
-							<div className="flex items-center gap-2">
-								<AlertCircle className="h-4 w-4 text-muted-foreground" />
-								<span>磁盘使用率</span>
-							</div>
-							<span className="font-medium">78%</span>
-						</div>
-						<div className="h-2 bg-muted rounded-full overflow-hidden">
-							<div className="h-full bg-yellow-500" style={{ width: '78%' }} />
-						</div>
-					</div>
-				</CardContent>
-			</Card>
 		</div>
 	);
 }
