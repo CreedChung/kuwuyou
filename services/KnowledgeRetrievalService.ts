@@ -11,15 +11,15 @@ export interface KnowledgeRetrievalConfig {
 export interface RetrievalRequest {
   request_id?: string;
   query: string;
-  knowledge_ids: string[];
+  knowledge_ids?: string[];
   document_ids?: string[];
-  top_k?: number; // 最终召回数量 [1-20]，默认8
-  top_n?: number; // 初始召回数量 [1-100]，默认10
-  recall_method?: "embedding" | "keyword" | "mixed"; // 检索类型
-  recall_ratio?: number; // 混合检索中向量检索的权重 [0-100]，默认80
-  rerank_status?: 0 | 1; // 是否开启重排，0: 不开启，1: 开启
-  rerank_model?: "rerank" | "rerank-pro"; // 重排模型
-  fractional_threshold?: number; // 相似度阈值
+  top_k?: number;
+  top_n?: number;
+  recall_method?: "embedding" | "keyword" | "mixed";
+  recall_ratio?: number;
+  rerank_status?: 0 | 1;
+  rerank_model?: "rerank" | "rerank-pro";
+  fractional_threshold?: number;
 }
 
 // 检索结果切片
@@ -63,13 +63,9 @@ class KnowledgeRetrievalService {
       throw new Error("查询内容必须在1-1000字以内");
     }
 
-    if (!params.knowledge_ids || params.knowledge_ids.length === 0) {
-      throw new Error("至少需要提供一个知识库ID");
-    }
-
     console.log("🔍 知识库检索请求:", {
       query: params.query,
-      knowledge_ids: params.knowledge_ids,
+      knowledge_ids: params.knowledge_ids || "使用默认",
       top_k: params.top_k || 8,
       recall_method: params.recall_method || "embedding",
     });

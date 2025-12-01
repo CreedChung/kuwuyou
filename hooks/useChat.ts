@@ -110,21 +110,27 @@ export function useChat() {
 
     // 添加知识库上下文
     if (retrievalContext?.knowledgeContext) {
+      console.log("📚 知识库上下文长度:", retrievalContext.knowledgeContext.length);
       contextParts.push(retrievalContext.knowledgeContext);
     }
 
     // 添加联网搜索上下文
     if (retrievalContext?.webContext) {
+      console.log("🌐 网络搜索上下文长度:", retrievalContext.webContext.length);
       contextParts.push(retrievalContext.webContext);
     }
 
     // 构建最终的用户消息
     if (contextParts.length > 0) {
+      const finalMessage = `${contextParts.join("\n\n")}\n\n用户问题：${content.trim()}`;
+      console.log("📝 最终消息长度:", finalMessage.length);
+      console.log("📝 最终消息预览:", finalMessage.substring(0, 300) + "...");
       messagesWithContext.push({
         role: "user",
-        content: `${contextParts.join("\n\n")}\n\n用户问题：${content.trim()}`,
+        content: finalMessage,
       });
     } else {
+      console.log("⚠️ 没有检索上下文，使用原始消息");
       messagesWithContext.push({
         role: "user",
         content: content.trim(),

@@ -4,7 +4,7 @@ import { z } from "zod";
 const retrieveSchema = z.object({
 	request_id: z.string().optional(),
 	query: z.string().min(1).max(1000),
-	knowledge_ids: z.array(z.string()).min(1),
+	knowledge_ids: z.array(z.string()).optional(),
 	document_ids: z.array(z.string()).optional(),
 	top_k: z.number().int().min(1).max(20).default(8),
 	top_n: z.number().int().min(1).max(100).default(10),
@@ -55,15 +55,34 @@ export async function POST(request: NextRequest) {
 
 		const params = validationResult.data;
 
+		const defaultKnowledgeId = process.env.KNOWLEDGE_ID;
+		const knowledge_ids = params.knowledge_ids && params.knowledge_ids.length > 0
+			? params.knowledge_ids
+			: defaultKnowledgeId
+				? [defaultKnowledgeId]
+				: undefined;
+
+		if (!knowledge_ids || knowledge_ids.length === 0) {
+			if (isDev) console.log("❌ 未提供知识库ID且未配置默认知识库ID");
+			return NextResponse.json(
+				{
+					code: 400,
+					message: "至少需要提供一个知识库ID",
+				},
+				{ status: 400 }
+			);
+		}
+
 		const apiBaseUrl = process.env.KNOWLEDGE_API_URL ||
 			"https://open.bigmodel.cn/api";
 
 		if (isDev) {
 			console.log("🔍 知识库检索请求:", {
 				query: params.query,
-				knowledge_ids: params.knowledge_ids,
+				knowledge_ids: knowledge_ids,
 				top_k: params.top_k,
 				recall_method: params.recall_method,
+				usingDefaultKnowledgeId: !params.knowledge_ids || params.knowledge_ids.length === 0,
 			});
 		}
 
@@ -78,7 +97,7 @@ export async function POST(request: NextRequest) {
 				body: JSON.stringify({
 					request_id: params.request_id || `retrieve-${Date.now()}`,
 					query: params.query,
-					knowledge_ids: params.knowledge_ids,
+					knowledge_ids: knowledge_ids,
 					document_ids: params.document_ids,
 					top_k: params.top_k,
 					top_n: params.top_n,

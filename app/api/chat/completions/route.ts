@@ -25,17 +25,15 @@ export async function POST(request: NextRequest) {
 			console.log("==================== Chat Completions API 请求开始 ====================");
 		}
 
-		const authorization = request.headers.get("Authorization");
+		const token = process.env.AI_KEY;
 		
-		if (!authorization || !authorization.startsWith("Bearer ")) {
-			if (isDev) console.log("❌ Authorization 验证失败");
+		if (!token) {
+			if (isDev) console.log("❌ AI_KEY 未配置");
 			return NextResponse.json(
-				{ error: "缺少或无效的 Authorization header" },
-				{ status: 401 }
+				{ error: "服务配置错误" },
+				{ status: 500 }
 			);
 		}
-
-		const token = authorization.substring(7);
 
 		const body = await request.json();
 		

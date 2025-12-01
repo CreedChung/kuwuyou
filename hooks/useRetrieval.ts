@@ -28,16 +28,16 @@ export function useRetrieval() {
    */
   const retrieveFromKnowledge = useCallback(async (
     query: string,
-    knowledgeId: string
+    knowledgeId?: string
   ): Promise<RetrievalSlice[]> => {
     console.log("🔍 开始知识库检索...");
     
     try {
       const retrievalResult = await knowledgeRetrievalService.retrieve({
         query: query.trim(),
-        knowledge_ids: [knowledgeId],
-        top_k: 10, // 返回前10个最相关的结果
-        recall_method: "mixed", // 使用混合检索
+        knowledge_ids: knowledgeId ? [knowledgeId] : undefined,
+        top_k: 10,
+        recall_method: "mixed",
       });
 
       const retrievalSlices = retrievalResult.data;
@@ -104,36 +104,33 @@ export function useRetrieval() {
       references: [],
     };
 
-    const knowledgeId = options.knowledgeId || process.env.KNOWLEDGE_ID;
-
     console.log("📋 检查检索条件:", {
-      knowledgeId,
+      knowledgeId: options.knowledgeId || "使用默认",
       showReferences: options.showReferences,
       useWebSearch: options.useWebSearch,
-      willExecuteKnowledge: !!(knowledgeId && options.showReferences),
+      willExecuteKnowledge: !!options.showReferences,
       willExecuteWeb: !!options.useWebSearch
     });
 
     // 知识库检索
-    if (knowledgeId && options.showReferences) {
+    if (options.showReferences) {
       try {
-        const retrievalSlices = await retrieveFromKnowledge(query, knowledgeId);
+        const retrievalSlices = await retrieveFromKnowledge(query, options.knowledgeId);
         result.knowledgeSlices = retrievalSlices;
 
         if (retrievalSlices.length > 0) {
           const knowledgeReferences = formatKnowledgeReferences(retrievalSlices);
           result.references = [...result.references, ...knowledgeReferences];
           
-          // 构建知识库上下文
           result.knowledgeContext = knowledgeRetrievalService.formatAsContext(retrievalSlices);
+          console.log("✅ 知识库上下文已构建，长度:", result.knowledgeContext.length);
         } else {
           console.log("⚠️ 知识库检索无结果");
         }
       } catch (error) {
         console.error("❌ 知识库检索失败:", error);
-        // 检索失败不影响后续流程，继续执行
       }
-    } else if (!options.showReferences) {
+    } else {
       console.log("⏭️ 知识库检索已关闭");
     }
 
