@@ -33,7 +33,7 @@ export default function KnowledgeDocumentsPage() {
 		try {
 			setLoading(true);
 
-			const apiKey = process.env.ZHIPU_API_KEY;
+			const apiKey = process.env.AI_KEY;
 
 			if (!apiKey) {
 				toast({

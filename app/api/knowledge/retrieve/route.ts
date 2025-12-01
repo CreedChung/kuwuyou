@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
 
 		const params = validationResult.data;
 
-		const apiBaseUrl = process.env.KNOWLEDGE_API_BASE_URL ||
+		const apiBaseUrl = process.env.KNOWLEDGE_API_URL ||
 			"https://open.bigmodel.cn/api";
 
 		if (isDev) {

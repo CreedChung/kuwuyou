@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
 		const params = validationResult.data;
 
-		const apiBaseUrl = process.env.ZHIPU_API_BASE_URL ||
+		const apiBaseUrl = process.env.AI_BASE_URL ||
 			"https://open.bigmodel.cn/api/paas/v4";
 
 		if (isDev) {

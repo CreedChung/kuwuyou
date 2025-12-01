@@ -9,12 +9,12 @@ interface WebSearchRequest {
 }
 
 async function performWebSearch(query: string, count: number = 10) {
-  const apiKey = process.env.BOCHA_API_KEY;
+  const apiKey = process.env.SEARCH_API_KEY;
   if (!apiKey) {
     throw new Error("博查 API Key 未配置");
   }
 
-  const apiUrl = process.env.BOCHA_API_URL || "https://api.bocha.cn/v1/web-search";
+  const apiUrl = process.env.SEARCH_API_URL || "https://api.bocha.cn/v1/web-search";
 
   // 使用缓存键：query + count
   const cacheKey = `web-search:${query}:${count}`;

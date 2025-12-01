@@ -53,9 +53,9 @@ class ChatService {
 	private abortController: AbortController | null = null;
 
 	constructor(apiKey?: string, model?: string) {
-		this.apiKey = apiKey || process.env.ZHIPU_API_KEY || "";
+		this.apiKey = apiKey || process.env.AI_KEY || "";
 		this.baseURL =
-			process.env.ZHIPU_API_BASE_URL ||
+			process.env.AI_BASE_URL ||
 			"https://open.bigmodel.cn/api/paas/v4";
 		this.model = model || "glm-4.5-air";
 		this.initializeProvider();

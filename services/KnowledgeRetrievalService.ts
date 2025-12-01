@@ -48,7 +48,7 @@ class KnowledgeRetrievalService {
   private apiKey: string;
 
   constructor(config?: KnowledgeRetrievalConfig) {
-    this.apiKey = config?.apiKey || process.env.ZHIPU_API_KEY || "";
+    this.apiKey = config?.apiKey || process.env.AI_KEY || "";
   }
 
   /**

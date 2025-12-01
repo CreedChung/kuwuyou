@@ -67,7 +67,7 @@ export function UploadDocumentDialog({
 			setUploading(true);
 			setProgress(0);
 
-			const apiKey = process.env.ZHIPU_API_KEY;
+			const apiKey = process.env.AI_KEY;
 			if (!apiKey) {
 				toast({
 					title: "配置错误",
