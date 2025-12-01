@@ -1,5 +1,5 @@
 import { useAuthStore } from "@/stores/authStore";
-import { useToast } from "./use-toast";
+import { useToast } from "./useToast";
 
 /**
  * useAuth hook - 简化认证状态和方法的访问

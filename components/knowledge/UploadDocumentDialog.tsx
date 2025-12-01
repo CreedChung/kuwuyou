@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Upload, X, FileText, Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 import {
 	Dialog,
 	DialogContent,
