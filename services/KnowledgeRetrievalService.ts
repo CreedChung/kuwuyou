@@ -55,10 +55,6 @@ class KnowledgeRetrievalService {
    * 检索知识库
    */
   async retrieve(params: RetrievalRequest): Promise<RetrievalResponse> {
-    if (!this.apiKey) {
-      throw new Error("智谱 API Key 未设置");
-    }
-
     if (!params.query || params.query.length > 1000) {
       throw new Error("查询内容必须在1-1000字以内");
     }
@@ -70,11 +66,13 @@ class KnowledgeRetrievalService {
       recall_method: params.recall_method || "embedding",
     });
 
+    const apiKey = this.apiKey || process.env.NEXT_PUBLIC_AI_KEY || "client-key";
+
     try {
       const response = await fetch("/api/knowledge/retrieve", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${this.apiKey}`,
+          "Authorization": `Bearer ${apiKey}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -94,18 +92,32 @@ class KnowledgeRetrievalService {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `知识库检索失败 (${response.status})`);
+        const errorMsg = errorData.message || errorData.error || `知识库检索失败 (${response.status})`;
+        throw new Error(errorMsg);
       }
 
       const result: RetrievalResponse = await response.json();
 
+      console.log("📦 API 返回数据:", {
+        code: result.code,
+        message: result.message,
+        dataLength: result.data?.length,
+        hasData: !!result.data
+      });
+
+      // 检查业务错误码
       if (result.code !== 200) {
-        throw new Error(`知识库检索失败: ${result.message}`);
+        const errorMsg = result.message || "知识库检索失败";
+        throw new Error(`[${result.code}] ${errorMsg}`);
+      }
+
+      if (!result.data || !Array.isArray(result.data)) {
+        throw new Error("知识库检索失败，未返回有效数据");
       }
 
       console.log("✅ 知识库检索成功:", {
         count: result.data.length,
-        sources: [...new Set(result.data.map(s => s.metadata.doc_name))],
+        sources: [...new Set(result.data.map(s => s.metadata?.doc_name || "未知"))],
       });
 
       return result;

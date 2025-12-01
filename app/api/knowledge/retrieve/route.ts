@@ -73,8 +73,22 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		const apiBaseUrl = process.env.KNOWLEDGE_API_URL ||
-			"https://open.bigmodel.cn/api";
+		// 使用服务器端的 AI_KEY，而不是客户端传来的 token
+		const serverToken = process.env.AI_KEY;
+		if (!serverToken) {
+			if (isDev) console.log("❌ 服务器端未配置 AI_KEY");
+			return NextResponse.json(
+				{
+					code: 500,
+					message: "服务器配置错误：缺少 AI_KEY"
+				},
+				{ status: 500 }
+			);
+		}
+
+		// KNOWLEDGE_API_URL 应该是完整的 URL
+		const apiUrl = process.env.KNOWLEDGE_API_URL ||
+			"https://open.bigmodel.cn/api/llm-application/open/knowledge/retrieve";
 
 		if (isDev) {
 			console.log("🔍 知识库检索请求:", {
@@ -83,15 +97,17 @@ export async function POST(request: NextRequest) {
 				top_k: params.top_k,
 				recall_method: params.recall_method,
 				usingDefaultKnowledgeId: !params.knowledge_ids || params.knowledge_ids.length === 0,
+				serverToken: serverToken.substring(0, 20) + "...",
+				apiUrl: apiUrl
 			});
 		}
 
 		const response = await fetch(
-			`${apiBaseUrl}/llm-application/open/knowledge/retrieve`,
+			apiUrl,
 			{
 				method: "POST",
 				headers: {
-					"Authorization": `Bearer ${token}`,
+					"Authorization": `Bearer ${serverToken}`,
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
@@ -112,8 +128,49 @@ export async function POST(request: NextRequest) {
 
 		const data = await response.json();
 
+		if (isDev) {
+			console.log("📦 智谱AI API 原始响应:", {
+				status: response.status,
+				ok: response.ok,
+				dataCode: data.code,
+				dataMessage: data.message,
+				dataCount: data.data?.length || 0
+			});
+		}
+
 		if (!response.ok) {
-			throw new Error(data.message || "知识库检索失败");
+			if (isDev) {
+				console.error("❌ 智谱AI API 返回错误:", {
+					status: response.status,
+					data: data
+				});
+			}
+			return NextResponse.json(
+				{
+					code: response.status,
+					message: data.message || data.error?.message || "知识库检索失败",
+					data: []
+				},
+				{ status: response.status }
+			);
+		}
+
+		// 检查智谱 API 自己返回的 code
+		if (data.code && data.code !== 200) {
+			if (isDev) {
+				console.error("❌ 智谱AI API 业务错误:", {
+					code: data.code,
+					message: data.message
+				});
+			}
+			return NextResponse.json(
+				{
+					code: data.code,
+					message: data.message || "知识库检索失败",
+					data: []
+				},
+				{ status: 400 }
+			);
 		}
 
 		if (isDev) {
@@ -123,7 +180,12 @@ export async function POST(request: NextRequest) {
 			console.log("==================== 知识库检索 API 请求结束 ====================");
 		}
 
-		return NextResponse.json(data, { status: 200 });
+		return NextResponse.json({
+			code: 200,
+			message: data.message || "success",
+			data: data.data || [],
+			timestamp: Date.now()
+		}, { status: 200 });
 		
 	} catch (error) {
 		console.error("知识库检索错误:", error);

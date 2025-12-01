@@ -1,6 +1,6 @@
 /**
  * 知识库检索 Hook
- * 处理知识库检索和联网搜索
+ * 处理知识库检索和联网搜索，支持重试机制
  */
 
 import { useCallback } from "react";
@@ -22,7 +22,40 @@ export interface RetrievalResult {
   webContext?: string;
 }
 
+const RETRY_DELAY = 5000;
+const MAX_RETRIES = 3;
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 export function useRetrieval() {
+  /**
+   * 带重试的执行函数
+   */
+  const executeWithRetry = useCallback(async <T>(
+    fn: () => Promise<T>,
+    taskName: string
+  ): Promise<T | null> => {
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        console.log(`🔄 ${taskName} 第 ${attempt} 次尝试...`);
+        const result = await fn();
+        console.log(`✅ ${taskName} 成功`);
+        return result;
+      } catch (error) {
+        console.error(`❌ ${taskName} 第 ${attempt} 次失败:`, error);
+        
+        if (attempt < MAX_RETRIES) {
+          console.log(`⏳ 等待 ${RETRY_DELAY / 1000} 秒后重试...`);
+          await sleep(RETRY_DELAY);
+        } else {
+          console.error(`❌ ${taskName} 重试 ${MAX_RETRIES} 次后仍然失败，跳过该步骤`);
+          return null;
+        }
+      }
+    }
+    return null;
+  }, []);
+
   /**
    * 执行知识库检索
    */
@@ -30,24 +63,17 @@ export function useRetrieval() {
     query: string,
     knowledgeId?: string
   ): Promise<RetrievalSlice[]> => {
-    console.log("🔍 开始知识库检索...");
-    
-    try {
-      const retrievalResult = await knowledgeRetrievalService.retrieve({
-        query: query.trim(),
-        knowledge_ids: knowledgeId ? [knowledgeId] : undefined,
-        top_k: 10,
-        recall_method: "mixed",
-      });
+    const retrievalResult = await knowledgeRetrievalService.retrieve({
+      query: query.trim(),
+      knowledge_ids: knowledgeId ? [knowledgeId] : undefined,
+      top_k: 10,
+      recall_method: "mixed",
+    });
 
-      const retrievalSlices = retrievalResult.data;
-      console.log("✅ 知识库检索完成:", retrievalSlices.length, "个结果");
-      
-      return retrievalSlices;
-    } catch (error) {
-      console.error("❌ 知识库检索失败:", error);
-      throw error;
-    }
+    const retrievalSlices = retrievalResult.data;
+    console.log("📊 知识库检索结果:", retrievalSlices.length, "个");
+    
+    return retrievalSlices;
   }, []);
 
   /**
@@ -56,22 +82,15 @@ export function useRetrieval() {
   const searchWeb = useCallback(async (
     query: string
   ): Promise<WebSearchResult[]> => {
-    console.log("🌐 开始联网搜索...");
-    
-    try {
-      const searchResponse = await webSearchService.search(query.trim(), {
-        searchEngine: "search_std",
-        count: 10,
-      });
+    const searchResponse = await webSearchService.search(query.trim(), {
+      searchEngine: "search_std",
+      count: 10,
+    });
 
-      const webSearchResults = searchResponse.search_result || [];
-      console.log("✅ 联网搜索完成:", webSearchResults.length, "个结果");
-      
-      return webSearchResults;
-    } catch (error) {
-      console.error("❌ 联网搜索失败:", error);
-      throw error;
-    }
+    const webSearchResults = searchResponse.search_result || [];
+    console.log("📊 联网搜索结果:", webSearchResults.length, "个");
+    
+    return webSearchResults;
   }, []);
 
   /**
@@ -92,7 +111,8 @@ export function useRetrieval() {
   }, []);
 
   /**
-   * 执行完整的检索流程（知识库 + 联网搜索）
+   * 执行完整的检索流程（知识库 -> 联网搜索 -> 对话）
+   * 每个环节失败时等待5秒重试，最多重试3次
    */
   const performRetrieval = useCallback(async (
     query: string,
@@ -104,63 +124,66 @@ export function useRetrieval() {
       references: [],
     };
 
-    console.log("📋 检查检索条件:", {
+    console.log("🚀 开始检索流程 (知识库 -> 联网搜索 -> 对话)");
+    console.log("📋 检索配置:", {
       knowledgeId: options.knowledgeId || "使用默认",
-      showReferences: options.showReferences,
-      useWebSearch: options.useWebSearch,
-      willExecuteKnowledge: !!options.showReferences,
-      willExecuteWeb: !!options.useWebSearch
+      enableKnowledge: options.showReferences,
+      enableWebSearch: options.useWebSearch,
     });
 
-    // 知识库检索
+    // 步骤1: 知识库检索（带重试）
     if (options.showReferences) {
-      try {
-        const retrievalSlices = await retrieveFromKnowledge(query, options.knowledgeId);
+      console.log("\n📖 ========== 步骤1: 知识库检索 ==========");
+      
+      const retrievalSlices = await executeWithRetry(
+        () => retrieveFromKnowledge(query, options.knowledgeId),
+        "知识库检索"
+      );
+
+      if (retrievalSlices && retrievalSlices.length > 0) {
         result.knowledgeSlices = retrievalSlices;
-
-        if (retrievalSlices.length > 0) {
-          const knowledgeReferences = formatKnowledgeReferences(retrievalSlices);
-          result.references = [...result.references, ...knowledgeReferences];
-          
-          result.knowledgeContext = knowledgeRetrievalService.formatAsContext(retrievalSlices);
-          console.log("✅ 知识库上下文已构建，长度:", result.knowledgeContext.length);
-        } else {
-          console.log("⚠️ 知识库检索无结果");
-        }
-      } catch (error) {
-        console.error("❌ 知识库检索失败:", error);
+        const knowledgeReferences = formatKnowledgeReferences(retrievalSlices);
+        result.references = [...result.references, ...knowledgeReferences];
+        result.knowledgeContext = knowledgeRetrievalService.formatAsContext(retrievalSlices);
+        console.log("✅ 知识库检索完成，获得", retrievalSlices.length, "个结果");
+      } else {
+        console.log("⚠️ 知识库检索失败或无结果，继续下一步骤");
       }
     } else {
-      console.log("⏭️ 知识库检索已关闭");
+      console.log("\n⏭️ 跳过知识库检索（未启用）");
     }
 
-    // 联网搜索
+    // 步骤2: 联网搜索（带重试）
     if (options.useWebSearch) {
-      try {
-        const webSearchResults = await searchWeb(query);
-        result.webResults = webSearchResults;
+      console.log("\n🌐 ========== 步骤2: 联网搜索 ==========");
+      
+      const webSearchResults = await executeWithRetry(
+        () => searchWeb(query),
+        "联网搜索"
+      );
 
-        if (webSearchResults.length > 0) {
-          const webReferences = webSearchService.formatAsReferences(webSearchResults);
-          
-          // 合并知识库和网络搜索的引用
-          result.references = [...result.references, ...webReferences];
-          
-          // 构建联网搜索上下文
-          result.webContext = webSearchService.formatAsContext(webSearchResults);
-        } else {
-          console.log("⚠️ 联网搜索无结果");
-        }
-      } catch (error) {
-        console.error("❌ 联网搜索失败:", error);
-        // 搜索失败不影响后续流程，继续执行
+      if (webSearchResults && webSearchResults.length > 0) {
+        result.webResults = webSearchResults;
+        const webReferences = webSearchService.formatAsReferences(webSearchResults);
+        result.references = [...result.references, ...webReferences];
+        result.webContext = webSearchService.formatAsContext(webSearchResults);
+        console.log("✅ 联网搜索完成，获得", webSearchResults.length, "个结果");
+      } else {
+        console.log("⚠️ 联网搜索失败或无结果，继续下一步骤");
       }
     } else {
-      console.log("⏭️ 联网搜索已关闭");
+      console.log("\n⏭️ 跳过联网搜索（未启用）");
     }
+
+    console.log("\n🎯 ========== 步骤3: 准备对话 ==========");
+    console.log("📊 检索流程完成，汇总:", {
+      知识库结果: result.knowledgeSlices.length,
+      网络搜索结果: result.webResults.length,
+      总引用数: result.references.length,
+    });
 
     return result;
-  }, [retrieveFromKnowledge, searchWeb, formatKnowledgeReferences]);
+  }, [executeWithRetry, retrieveFromKnowledge, searchWeb, formatKnowledgeReferences]);
 
   return {
     performRetrieval,

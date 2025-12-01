@@ -129,10 +129,17 @@ function ChatPageContent() {
 			};
 
 			try {
+				console.log("📨 handleSendMessage 调用, options:", options);
+				
 				// 执行检索（如果启用了检索功能）
 				let retrievalContext;
 				if (options?.showReferences || options?.useWebSearch) {
-					console.log("🔍 开始检索流程...");
+					console.log("🔍 开始检索流程...", {
+						showReferences: options.showReferences,
+						useWebSearch: options.useWebSearch,
+						knowledgeId: options.knowledgeId
+					});
+					
 					const retrievalResult = await performRetrieval(content, retrievalOptions);
 					
 					retrievalContext = {
@@ -144,11 +151,16 @@ function ChatPageContent() {
 					console.log("✅ 检索流程完成:", {
 						knowledgeResults: retrievalResult.knowledgeSlices.length,
 						webResults: retrievalResult.webResults.length,
-						totalReferences: retrievalResult.references.length
+						totalReferences: retrievalResult.references.length,
+						hasKnowledgeContext: !!retrievalResult.knowledgeContext,
+						hasWebContext: !!retrievalResult.webContext
 					});
+				} else {
+					console.log("⏭️ 跳过检索流程 (showReferences:", options?.showReferences, "useWebSearch:", options?.useWebSearch, ")");
 				}
 
 				// 发送消息到聊天系统
+				console.log("💬 调用 sendChatMessage, 有检索上下文:", !!retrievalContext);
 				await sendChatMessage(content, options, retrievalContext);
 				
 			} catch (error) {
