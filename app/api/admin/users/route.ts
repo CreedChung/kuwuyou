@@ -77,7 +77,7 @@ export async function GET(request: Request) {
     }
 
     if (status !== 'all') {
-      whereConditions.push(eq(profiles.role, status));
+      whereConditions.push(eq(profiles.role, status as 'user' | 'admin'));
     }
 
     const baseQuery = db
@@ -109,10 +109,10 @@ export async function GET(request: Request) {
         ),
         queryWithRetry(() => countQuery.where(condition))
       ]);
-      
+
       const total = Number(totalResult[0]?.count) || 0;
       const users = usersData.map(formatUser);
-      
+
       return NextResponse.json({
         success: true,
         data: {

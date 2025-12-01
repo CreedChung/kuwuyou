@@ -10,7 +10,7 @@ export async function GET() {
   try {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const thirtyDaysAgoTimestamp = Math.floor(thirtyDaysAgo.getTime() / 1000);
+
 
     const [
       totalMessagesResult,
@@ -23,9 +23,9 @@ export async function GET() {
       db
         .select({ count: count() })
         .from(userStats)
-        .where(gt(userStats.lastActiveAt, thirtyDaysAgoTimestamp)),
+        .where(gt(userStats.lastActiveAt, thirtyDaysAgo)),
       db
-        .select({ 
+        .select({
           id: messages.id,
           createdAt: messages.createdAt,
         })
@@ -39,7 +39,7 @@ export async function GET() {
     const activeUsers = activeUsersResult[0]?.count || 0;
 
     const recentActivity = recentMessagesResult.length;
-    
+
     const avgResponseTime = 1.2 + (Math.random() * 0.5);
     const apiCalls = totalMessages * 2;
 

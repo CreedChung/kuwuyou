@@ -7,7 +7,7 @@ import { eq } from "drizzle-orm";
 export async function GET(request: NextRequest) {
 	try {
 		const userId = request.headers.get("x-user-id");
-		
+
 		if (!userId) {
 			return NextResponse.json(
 				{ error: "未授权访问" },
@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
 				id: profile.id,
 				username: profile.username,
 				email: profile.email,
-				avatarUrl: profile.avatarUrl,
+
 				joinDate,
 			},
 			stats: stats[0],
@@ -105,7 +105,7 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
 	try {
 		const userId = request.headers.get("x-user-id");
-		
+
 		if (!userId) {
 			return NextResponse.json(
 				{ error: "未授权访问" },
