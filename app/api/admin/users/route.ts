@@ -22,6 +22,41 @@ async function queryWithRetry<T>(
   throw new Error('Query failed after retries');
 }
 
+const formatDate = (date: Date | number | null | undefined): string => {
+  if (!date) return '';
+  try {
+    const d = typeof date === 'number' ? new Date(date * 1000) : new Date(date);
+    if (isNaN(d.getTime())) return '';
+    return d.toISOString().split('T')[0];
+  } catch {
+    return '';
+  }
+};
+
+const formatDateTime = (date: Date | number | null | undefined): string | null => {
+  if (!date) return null;
+  try {
+    const d = typeof date === 'number' ? new Date(date * 1000) : new Date(date);
+    if (isNaN(d.getTime())) return null;
+    return d.toISOString();
+  } catch {
+    return null;
+  }
+};
+
+const formatUser = (user: any) => ({
+  id: user.id,
+  name: user.username,
+  email: user.email,
+  avatar: null,
+  role: user.role === 'admin' ? '管理员' : '普通用户',
+  status: user.status || 'active',
+  joinDate: formatDate(user.createdAt),
+  conversationCount: user.conversationCount || 0,
+  messageCount: user.messageCount || 0,
+  lastActiveAt: formatDateTime(user.lastActiveAt),
+});
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -30,10 +65,8 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get('page') || '1');
     const pageSize = parseInt(searchParams.get('pageSize') || '10');
 
-    // 构建查询条件
     let whereConditions = [];
 
-    // 搜索条件
     if (search) {
       whereConditions.push(
         or(
@@ -43,71 +76,67 @@ export async function GET(request: Request) {
       );
     }
 
-    // 状态筛选（这里简化处理，实际需要在 schema 中添加 status 字段）
-    // 暂时使用模拟逻辑
+    if (status !== 'all') {
+      whereConditions.push(eq(profiles.role, status));
+    }
+
+    const baseQuery = db
+      .select({
+        id: profiles.id,
+        username: profiles.username,
+        email: profiles.email,
+        role: profiles.role,
+        status: profiles.status,
+        createdAt: profiles.createdAt,
+        conversationCount: userStats.conversationCount,
+        messageCount: userStats.messageCount,
+        lastActiveAt: userStats.lastActiveAt,
+      })
+      .from(profiles)
+      .leftJoin(userStats, eq(profiles.id, userStats.userId));
+
+    const countQuery = db.select({ count: sql<number>`count(*)` }).from(profiles);
+
+    if (whereConditions.length > 0) {
+      const condition = whereConditions.length === 1 ? whereConditions[0] : sql`${whereConditions.join(' AND ')}`;
+      const [usersData, totalResult] = await Promise.all([
+        queryWithRetry(() =>
+          baseQuery
+            .where(condition)
+            .orderBy(desc(profiles.createdAt))
+            .limit(pageSize)
+            .offset((page - 1) * pageSize)
+        ),
+        queryWithRetry(() => countQuery.where(condition))
+      ]);
+      
+      const total = Number(totalResult[0]?.count) || 0;
+      const users = usersData.map(formatUser);
+      
+      return NextResponse.json({
+        success: true,
+        data: {
+          users,
+          total,
+          page,
+          pageSize,
+          totalPages: Math.ceil(total / pageSize),
+        },
+      });
+    }
 
     const [usersData, totalResult] = await Promise.all([
       queryWithRetry(() =>
-        db
-          .select({
-            id: profiles.id,
-            username: profiles.username,
-            email: profiles.email,
-            role: profiles.role,
-            createdAt: profiles.createdAt,
-            conversationCount: userStats.conversationCount,
-            messageCount: userStats.messageCount,
-            lastActiveAt: userStats.lastActiveAt,
-          })
-          .from(profiles)
-          .leftJoin(userStats, eq(profiles.id, userStats.userId))
+        baseQuery
           .orderBy(desc(profiles.createdAt))
           .limit(pageSize)
           .offset((page - 1) * pageSize)
       ),
-      queryWithRetry(() =>
-        db.select({ count: sql<number>`count(*)` }).from(profiles)
-      )
+      queryWithRetry(() => countQuery)
     ]);
 
     const total = Number(totalResult[0]?.count) || 0;
-
-    const users = usersData.map(user => {
-      const formatDate = (date: Date | number | null | undefined): string => {
-        if (!date) return '';
-        try {
-          const d = typeof date === 'number' ? new Date(date * 1000) : new Date(date);
-          if (isNaN(d.getTime())) return '';
-          return d.toISOString().split('T')[0];
-        } catch {
-          return '';
-        }
-      };
-
-      const formatDateTime = (date: Date | number | null | undefined): string | null => {
-        if (!date) return null;
-        try {
-          const d = typeof date === 'number' ? new Date(date * 1000) : new Date(date);
-          if (isNaN(d.getTime())) return null;
-          return d.toISOString();
-        } catch {
-          return null;
-        }
-      };
-
-      return {
-        id: user.id,
-        name: user.username,
-        email: user.email,
-        avatar: null,
-        role: user.role === 'admin' ? '管理员' : '普通用户',
-        status: 'active',
-        joinDate: formatDate(user.createdAt),
-        conversationCount: user.conversationCount || 0,
-        messageCount: user.messageCount || 0,
-        lastActiveAt: formatDateTime(user.lastActiveAt),
-      };
-    });
+    const users = usersData.map(formatUser);
 
     return NextResponse.json({
       success: true,
@@ -158,6 +187,51 @@ export async function PATCH(request: Request) {
   }
 }
 
+// 更新用户信息
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json();
+    const { userId, username, email, role } = body;
+
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: '缺少用户ID' },
+        { status: 400 }
+      );
+    }
+
+    const updateData: any = {};
+    if (username) updateData.username = username;
+    if (email) updateData.email = email;
+    if (role) updateData.role = role;
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json(
+        { success: false, error: '没有需要更新的数据' },
+        { status: 400 }
+      );
+    }
+
+    updateData.updatedAt = new Date();
+
+    await db
+      .update(profiles)
+      .set(updateData)
+      .where(eq(profiles.id, userId));
+
+    return NextResponse.json({
+      success: true,
+      message: '用户信息更新成功',
+    });
+  } catch (error) {
+    console.error('更新用户信息失败:', error);
+    return NextResponse.json(
+      { success: false, error: '更新用户信息失败' },
+      { status: 500 }
+    );
+  }
+}
+
 // 删除用户
 export async function DELETE(request: Request) {
   try {
@@ -171,7 +245,6 @@ export async function DELETE(request: Request) {
       );
     }
 
-    // 删除用户（由于设置了级联删除，相关数据会自动删除）
     await db.delete(profiles).where(eq(profiles.id, userId));
 
     return NextResponse.json({

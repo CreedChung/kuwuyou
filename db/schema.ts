@@ -8,6 +8,9 @@ export const profiles = sqliteTable("profiles", {
 	email: text("email").notNull().unique(),
 	password: text("password").notNull(),
 	role: text("role", { enum: ["user", "admin"] }).notNull().default("user"),
+	status: text("status", { enum: ["active", "banned", "suspended"] }).notNull().default("active"),
+	bannedAt: integer("banned_at", { mode: "timestamp" }),
+	bannedReason: text("banned_reason"),
 	createdAt: integer("created_at", { mode: "timestamp" })
 		.default(sql`CURRENT_TIMESTAMP`)
 		.notNull(),
@@ -86,7 +89,20 @@ export type Achievement = typeof achievements.$inferSelect;
 export type NewAchievement = typeof achievements.$inferInsert;
 export type UserAchievement = typeof userAchievements.$inferSelect;
 export type NewUserAchievement = typeof userAchievements.$inferInsert;
+// 系统设置表
+export const systemSettings = sqliteTable("system_settings", {
+	id: text("id").primaryKey(),
+	key: text("key").notNull().unique(),
+	value: text("value").notNull(),
+	description: text("description"),
+	updatedAt: integer("updated_at", { mode: "timestamp" })
+		.default(sql`CURRENT_TIMESTAMP`)
+		.notNull(),
+});
+
 export type Conversation = typeof conversations.$inferSelect;
 export type NewConversation = typeof conversations.$inferInsert;
 export type Message = typeof messages.$inferSelect;
 export type NewMessage = typeof messages.$inferInsert;
+export type SystemSetting = typeof systemSettings.$inferSelect;
+export type NewSystemSetting = typeof systemSettings.$inferInsert;

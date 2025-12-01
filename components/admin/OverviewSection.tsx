@@ -138,25 +138,6 @@ export function OverviewSection() {
 				<Card>
 					<CardContent className="pt-6">
 						<div className="flex items-center justify-between mb-2">
-							<UserCheck className="h-5 w-5 text-muted-foreground" />
-							{systemStats.activeGrowth >= 0 ? (
-								<TrendingUp className="h-4 w-4 text-green-500" />
-							) : (
-								<TrendingDown className="h-4 w-4 text-red-500" />
-							)}
-						</div>
-						<div className="space-y-1">
-							<p className="text-2xl font-bold">{systemStats.activeUsers.toLocaleString()}</p>
-							<p className="text-xs text-muted-foreground">活跃用户</p>
-							<p className={`text-xs font-medium ${systemStats.activeGrowth >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-								{systemStats.activeGrowth >= 0 ? '+' : ''}{systemStats.activeGrowth}%
-							</p>
-						</div>
-					</CardContent>
-				</Card>
-				<Card>
-					<CardContent className="pt-6">
-						<div className="flex items-center justify-between mb-2">
 							<MessageSquare className="h-5 w-5 text-muted-foreground" />
 							{systemStats.messageGrowth >= 0 ? (
 								<TrendingUp className="h-4 w-4 text-green-500" />

@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
+import { systemSettings } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 
@@ -72,9 +74,29 @@ export async function POST(request: Request) {
       );
     }
 
-    // 这里应该将设置保存到数据库或配置文件
-    // 目前仅返回成功响应
-    console.log(`更新系统设置: ${setting} = ${value}`);
+    const existingSetting = await db
+      .select()
+      .from(systemSettings)
+      .where(eq(systemSettings.key, setting))
+      .limit(1);
+
+    if (existingSetting.length > 0) {
+      await db
+        .update(systemSettings)
+        .set({
+          value: String(value),
+          updatedAt: new Date(),
+        })
+        .where(eq(systemSettings.key, setting));
+    } else {
+      await db.insert(systemSettings).values({
+        id: `setting_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        key: setting,
+        value: String(value),
+        description: null,
+        updatedAt: new Date(),
+      });
+    }
 
     return NextResponse.json({
       success: true,

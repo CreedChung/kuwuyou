@@ -34,16 +34,28 @@ export function SystemSection({
 	const handleBackup = async () => {
 		setBacking(true);
 		try {
-			// 模拟备份操作
-			await new Promise(resolve => setTimeout(resolve, 2000));
-			toast({
-				title: "备份成功",
-				description: "数据库已成功备份",
+			const response = await fetch('/api/admin/system/backup', {
+				method: 'POST',
 			});
+
+			const result = await response.json();
+
+			if (result.success) {
+				toast({
+					title: "备份成功",
+					description: result.message || "数据库已成功备份",
+				});
+			} else {
+				toast({
+					title: "备份失败",
+					description: result.error || "数据库备份失败",
+					variant: "destructive",
+				});
+			}
 		} catch (error) {
 			toast({
 				title: "备份失败",
-				description: "数据库备份失败，请稍后重试",
+				description: "网络错误，请稍后重试",
 				variant: "destructive",
 			});
 		} finally {

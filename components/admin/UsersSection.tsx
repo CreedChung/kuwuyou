@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import {
-	Ban,
-	CheckCircle,
 	Edit,
 	Eye,
 	Filter,
@@ -27,6 +25,8 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/useToast";
+import { EditUserDialog } from "./EditUserDialog";
+import { UserDetailDialog } from "./UserDetailDialog";
 
 interface User {
 	id: string;
@@ -56,6 +56,9 @@ export function UsersSection({
 	const [total, setTotal] = useState(0);
 	const [totalPages, setTotalPages] = useState(0);
 	const [statusFilter, setStatusFilter] = useState("all");
+	const [selectedUser, setSelectedUser] = useState<User | null>(null);
+	const [editDialogOpen, setEditDialogOpen] = useState(false);
+	const [detailDialogOpen, setDetailDialogOpen] = useState(false);
 	const { toast } = useToast();
 
 	const fetchUsers = async () => {
@@ -98,37 +101,14 @@ export function UsersSection({
 		fetchUsers();
 	}, [searchQuery, statusFilter, page]);
 
-	const handleUserAction = async (userId: string, action: string) => {
-		try {
-			const response = await fetch('/api/admin/users', {
-				method: 'PATCH',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ userId, action }),
-			});
+	const handleViewUser = (user: User) => {
+		setSelectedUser(user);
+		setDetailDialogOpen(true);
+	};
 
-			const result = await response.json();
-
-			if (result.success) {
-				toast({
-					title: "操作成功",
-					description: result.message,
-				});
-				fetchUsers();
-			} else {
-				toast({
-					title: "操作失败",
-					description: result.error,
-					variant: "destructive",
-				});
-			}
-		} catch (error) {
-			console.error('用户操作失败:', error);
-			toast({
-				title: "操作失败",
-				description: "网络错误，请稍后重试",
-				variant: "destructive",
-			});
-		}
+	const handleEditUser = (user: User) => {
+		setSelectedUser(user);
+		setEditDialogOpen(true);
 	};
 
 	const handleDeleteUser = async (userId: string) => {
@@ -197,13 +177,12 @@ export function UsersSection({
 						<Select value={statusFilter} onValueChange={setStatusFilter}>
 							<SelectTrigger className="w-[180px]">
 								<Filter className="h-4 w-4 mr-2" />
-								<SelectValue placeholder="筛选状态" />
+								<SelectValue placeholder="筛选角色" />
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="all">全部用户</SelectItem>
-								<SelectItem value="active">活跃用户</SelectItem>
-								<SelectItem value="banned">已封禁</SelectItem>
-								<SelectItem value="vip">VIP用户</SelectItem>
+								<SelectItem value="user">普通用户</SelectItem>
+								<SelectItem value="admin">管理员</SelectItem>
 							</SelectContent>
 						</Select>
 					</div>
@@ -244,16 +223,11 @@ export function UsersSection({
 												<div className="flex items-center gap-2">
 													<p className="font-medium">{user.name}</p>
 													<Badge
-														variant={user.role === "VIP" ? "default" : "secondary"}
+														variant={user.role === "管理员" ? "default" : "secondary"}
 														className="text-xs"
 													>
 														{user.role}
 													</Badge>
-													{user.status === "banned" && (
-														<Badge className="text-xs bg-red-500/10 text-red-500 border-red-500/20">
-															已封禁
-														</Badge>
-													)}
 												</div>
 												<p className="text-sm text-muted-foreground">
 													{user.email}
@@ -264,38 +238,27 @@ export function UsersSection({
 											</div>
 										</div>
 										<div className="flex items-center gap-2">
-											<Button variant="ghost" size="icon" title="查看详情">
+											<Button
+												variant="ghost"
+												size="icon"
+												title="查看详情"
+												onClick={() => handleViewUser(user)}
+											>
 												<Eye className="h-4 w-4" />
 											</Button>
-											<Button variant="ghost" size="icon" title="编辑">
+											<Button
+												variant="ghost"
+												size="icon"
+												title="编辑"
+												onClick={() => handleEditUser(user)}
+											>
 												<Edit className="h-4 w-4" />
 											</Button>
-											{user.status === "active" ? (
-												<Button
-													variant="ghost"
-													size="icon"
-													title="封禁"
-													className="text-red-500 hover:text-red-600"
-													onClick={() => handleUserAction(user.id, 'ban')}
-												>
-													<Ban className="h-4 w-4" />
-												</Button>
-											) : (
-												<Button
-													variant="ghost"
-													size="icon"
-													title="解禁"
-													className="text-green-500 hover:text-green-600"
-													onClick={() => handleUserAction(user.id, 'unban')}
-												>
-													<CheckCircle className="h-4 w-4" />
-												</Button>
-											)}
 											<Button
 												variant="ghost"
 												size="icon"
 												title="删除"
-												className="text-red-500 hover:text-red-600"
+												className="text-red-500 hover:text-red-600 hover:bg-red-500/10"
 												onClick={() => handleDeleteUser(user.id)}
 											>
 												<Trash2 className="h-4 w-4" />
@@ -337,6 +300,19 @@ export function UsersSection({
 					)}
 				</CardContent>
 			</Card>
+
+			<EditUserDialog
+				user={selectedUser}
+				open={editDialogOpen}
+				onOpenChange={setEditDialogOpen}
+				onSuccess={fetchUsers}
+			/>
+
+			<UserDetailDialog
+				user={selectedUser}
+				open={detailDialogOpen}
+				onOpenChange={setDetailDialogOpen}
+			/>
 		</div>
 	);
 }
