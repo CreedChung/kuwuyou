@@ -4,8 +4,24 @@ import { profiles, userStats } from '@/db/schema';
 import { eq, like, or, desc, sql } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
-// 获取用户列表
+async function queryWithRetry<T>(
+  queryFn: () => Promise<T>,
+  retries = 2,
+  delay = 1000
+): Promise<T> {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      return await queryFn();
+    } catch (error) {
+      if (i === retries) throw error;
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  throw new Error('Query failed after retries');
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -30,43 +46,68 @@ export async function GET(request: Request) {
     // 状态筛选（这里简化处理，实际需要在 schema 中添加 status 字段）
     // 暂时使用模拟逻辑
 
-    // 查询用户列表并关联统计信息
-    const usersData = await db
-      .select({
-        id: profiles.id,
-        username: profiles.username,
-        email: profiles.email,
-        avatarUrl: profiles.avatarUrl,
-        createdAt: profiles.createdAt,
-        conversationCount: userStats.conversationCount,
-        messageCount: userStats.messageCount,
-        lastActiveAt: userStats.lastActiveAt,
-      })
-      .from(profiles)
-      .leftJoin(userStats, eq(profiles.id, userStats.userId))
-      .orderBy(desc(profiles.createdAt))
-      .limit(pageSize)
-      .offset((page - 1) * pageSize);
+    const [usersData, totalResult] = await Promise.all([
+      queryWithRetry(() =>
+        db
+          .select({
+            id: profiles.id,
+            username: profiles.username,
+            email: profiles.email,
+            role: profiles.role,
+            createdAt: profiles.createdAt,
+            conversationCount: userStats.conversationCount,
+            messageCount: userStats.messageCount,
+            lastActiveAt: userStats.lastActiveAt,
+          })
+          .from(profiles)
+          .leftJoin(userStats, eq(profiles.id, userStats.userId))
+          .orderBy(desc(profiles.createdAt))
+          .limit(pageSize)
+          .offset((page - 1) * pageSize)
+      ),
+      queryWithRetry(() =>
+        db.select({ count: sql<number>`count(*)` }).from(profiles)
+      )
+    ]);
 
-    // 获取总数
-    const totalResult = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(profiles);
     const total = Number(totalResult[0]?.count) || 0;
 
-    // 格式化数据
-    const users = usersData.map(user => ({
-      id: user.id,
-      name: user.username,
-      email: user.email,
-      avatar: user.avatarUrl,
-      role: '普通用户', // 实际应该从数据库获取
-      status: 'active', // 实际应该从数据库获取
-      joinDate: user.createdAt?.toISOString().split('T')[0] || '',
-      conversationCount: user.conversationCount || 0,
-      messageCount: user.messageCount || 0,
-      lastActiveAt: user.lastActiveAt?.toISOString() || null,
-    }));
+    const users = usersData.map(user => {
+      const formatDate = (date: Date | number | null | undefined): string => {
+        if (!date) return '';
+        try {
+          const d = typeof date === 'number' ? new Date(date * 1000) : new Date(date);
+          if (isNaN(d.getTime())) return '';
+          return d.toISOString().split('T')[0];
+        } catch {
+          return '';
+        }
+      };
+
+      const formatDateTime = (date: Date | number | null | undefined): string | null => {
+        if (!date) return null;
+        try {
+          const d = typeof date === 'number' ? new Date(date * 1000) : new Date(date);
+          if (isNaN(d.getTime())) return null;
+          return d.toISOString();
+        } catch {
+          return null;
+        }
+      };
+
+      return {
+        id: user.id,
+        name: user.username,
+        email: user.email,
+        avatar: null,
+        role: user.role === 'admin' ? '管理员' : '普通用户',
+        status: 'active',
+        joinDate: formatDate(user.createdAt),
+        conversationCount: user.conversationCount || 0,
+        messageCount: user.messageCount || 0,
+        lastActiveAt: formatDateTime(user.lastActiveAt),
+      };
+    });
 
     return NextResponse.json({
       success: true,

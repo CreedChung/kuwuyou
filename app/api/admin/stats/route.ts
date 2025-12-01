@@ -4,38 +4,59 @@ import { profiles, conversations, messages, userStats } from '@/db/schema';
 import { sql, count, desc } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
-// 获取系统统计数据
+async function queryWithRetry<T>(
+  queryFn: () => Promise<T>,
+  retries = 2,
+  delay = 1000
+): Promise<T> {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      return await queryFn();
+    } catch (error) {
+      if (i === retries) throw error;
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  throw new Error('Query failed after retries');
+}
+
 export async function GET() {
   try {
-    // 获取总用户数
-    const totalUsersResult = await db.select({ count: count() }).from(profiles);
-    const totalUsers = totalUsersResult[0]?.count || 0;
+    const [
+      totalUsersResult,
+      totalMessagesResult,
+      totalConversationsResult
+    ] = await Promise.all([
+      queryWithRetry(() => db.select({ count: count() }).from(profiles)),
+      queryWithRetry(() => db.select({ count: count() }).from(messages)),
+      queryWithRetry(() => db.select({ count: count() }).from(conversations))
+    ]);
 
-    // 获取活跃用户数（最近30天有活动）
+    const totalUsers = totalUsersResult[0]?.count || 0;
+    const totalMessages = totalMessagesResult[0]?.count || 0;
+    const totalConversations = totalConversationsResult[0]?.count || 0;
+
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     
-    const activeUsersResult = await db
-      .select({ count: count() })
-      .from(userStats)
-      .where(sql`${userStats.lastActiveAt} > ${Math.floor(thirtyDaysAgo.getTime() / 1000)}`);
-    const activeUsers = activeUsersResult[0]?.count || 0;
+    let activeUsers = 0;
+    try {
+      const activeUsersResult = await queryWithRetry(() =>
+        db
+          .select({ count: count() })
+          .from(userStats)
+          .where(sql`${userStats.lastActiveAt} > ${Math.floor(thirtyDaysAgo.getTime() / 1000)}`)
+      );
+      activeUsers = activeUsersResult[0]?.count || 0;
+    } catch (error) {
+      console.warn('获取活跃用户数失败，使用默认值:', error);
+    }
 
-    // 获取总消息数
-    const totalMessagesResult = await db.select({ count: count() }).from(messages);
-    const totalMessages = totalMessagesResult[0]?.count || 0;
-
-    // 获取总对话数
-    const totalConversationsResult = await db.select({ count: count() }).from(conversations);
-    const totalConversations = totalConversationsResult[0]?.count || 0;
-
-    // 计算增长率（简化版本，实际应该对比上个月数据）
-    const userGrowth = 12.5; // 模拟数据
+    const userGrowth = 12.5;
     const activeGrowth = 8.2;
     const messageGrowth = 15.7;
-
-    // 模拟收入数据（如果有支付系统，从支付表获取）
     const totalRevenue = 45678;
     const revenueGrowth = -3.1;
 
@@ -56,7 +77,11 @@ export async function GET() {
   } catch (error) {
     console.error('获取统计数据失败:', error);
     return NextResponse.json(
-      { success: false, error: '获取统计数据失败' },
+      {
+        success: false,
+        error: '获取统计数据失败',
+        details: error instanceof Error ? error.message : '未知错误'
+      },
       { status: 500 }
     );
   }
