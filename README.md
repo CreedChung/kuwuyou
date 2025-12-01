@@ -1,23 +1,51 @@
-# 库无忧 (Kuwuyou)
+# 库无忧助手 - 新手教程
 
-这是一个基于 [Next.js](https://nextjs.org) 的 AI 聊天应用,使用 Turso (LibSQL) 作为数据库。
+一个基于 Next.js 和 AI 技术的智能助手应用，支持智能对话、知识库管理和 Web 搜索功能。
 
-## 技术栈
+## 📋 目录
 
-- **框架**: Next.js 16 + React 19
-- **数据库**: Turso (LibSQL)
-- **ORM**: Drizzle ORM
-- **认证**: Supabase Auth
-- **UI**: Tailwind CSS + shadcn/ui
-- **状态管理**: Zustand
-- **AI 集成**: 智谱 AI (GLM 模型)
+- [功能特性](#功能特性)
+- [技术栈](#技术栈)
+- [环境要求](#环境要求)
+- [快速开始](#快速开始)
+- [配置说明](#配置说明)
+- [项目结构](#项目结构)
+- [开发指南](#开发指南)
+- [常见问题](#常见问题)
 
-## 快速开始
+## ✨ 功能特性
+
+- 🤖 **智能对话**：基于智谱 AI 的对话功能
+- 📚 **知识库管理**：上传和管理文档（支持 PDF、Word 等格式）
+- 🔍 **Web 搜索**：集成搜索 API，实时获取网络信息
+- 👤 **用户系统**：完整的注册、登录和个人资料管理
+- 🛡️ **管理后台**：用户管理、系统监控和数据分析
+- 📱 **响应式设计**：支持移动端和桌面端
+
+## 🛠 技术栈
+
+- **框架**：Next.js 16 (React 19)
+- **运行时**：Bun.js
+- **样式**：Tailwind CSS 4
+- **UI 组件**：shadcn/ui + Radix UI
+- **状态管理**：Zustand
+- **数据库**：Turso (LibSQL)
+- **ORM**：Drizzle ORM
+- **AI 集成**：智谱 AI (GLM-4.5)
+- **验证**：Zod
+- **加密**：bcryptjs
+
+## 📦 环境要求
+
+- **Bun**: >= 1.0.0
+- **Node.js**: >= 18.0.0 (可选)
+
+## 🚀 快速开始
 
 ### 1. 克隆项目
 
 ```bash
-git clone <repository-url>
+git clone <your-repository-url>
 cd kuwuyou
 ```
 
@@ -29,92 +57,109 @@ bun install
 
 ### 3. 配置环境变量
 
-复制 `.env.example` 到 `.env` 并填写配置:
+复制 `.env` 文件并根据需要修改配置：
 
 ```bash
-cp .env.example .env
+cp .env .env.local
 ```
 
-需要配置的环境变量:
-- `TURSO_DATABASE_URL`: Turso 数据库 URL
-- `TURSO_AUTH_TOKEN`: Turso 认证令牌
-- `NEXT_PUBLIC_SUPABASE_URL`: Supabase 项目 URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabase 匿名密钥
-- `ZHIPU_API_KEY`: 智谱 AI API 密钥 (可选)
+编辑 `.env.local` 文件，配置以下内容：
 
-### 4. 设置 Turso 数据库
+```env
+# 搜索设置
+SEARCH_API_KEY=your_search_api_key
+SEARCH_API_URL=https://api.bocha.cn/v1/web-search
 
-参考 [Turso 迁移指南](docs/TURSO_MIGRATION.md) 获取详细步骤。
+# 数据库设置
+TURSO_AUTH_TOKEN=your_turso_token
+TURSO_DATABASE_URL=your_turso_database_url
 
-快速设置:
+# Zhipu AI 设置
+AI_KEY=your_zhipu_api_key
+AI_BASE_URL=https://open.bigmodel.cn/api/paas/v4
 
-```bash
-# 安装 Turso CLI
-curl -sSfL https://get.tur.so/install.sh | bash
+# 知识库 API 设置
+KNOWLEDGE_API_URL=https://open.bigmodel.cn/api/llm-application/open/knowledge/retrieve
+KNOWLEDGE_ID=your_knowledge_id
 
-# 登录
-turso auth login
-
-# 创建数据库
-turso db create kuwuyou
-
-# 获取连接信息
-turso db show kuwuyou
-turso db tokens create kuwuyou
+# AI 设置
+DEFAULT_MODEL=glm-4.5-air
+TEMPERATURE=0.7
+MAX_TOKENS=12800
 ```
 
-### 5. 推送数据库架构
+### 4. 初始化数据库
 
 ```bash
-# 生成迁移
-bun run drizzle-kit generate
-
-# 推送到数据库
 bun run drizzle-kit push
 ```
 
-### 6. 初始化数据
-
-```bash
-bun run tsx scripts/init-achievements.ts
-```
-
-### 7. 启动开发服务器
+### 5. 启动开发服务器
 
 ```bash
 bun run dev
 ```
 
-在浏览器中打开 [http://localhost:3000](http://localhost:3000) 查看应用。
+访问 [http://localhost:3000](http://localhost:3000) 查看应用。
 
-## 项目结构
+## ⚙️ 配置说明
+
+### 获取 API 密钥
+
+#### 智谱 AI 密钥
+
+1. 访问 [智谱 AI 开放平台](https://open.bigmodel.cn/)
+2. 注册并登录账号
+3. 在控制台创建 API 密钥
+4. 将密钥配置到 `AI_KEY` 环境变量
+
+#### Turso 数据库
+
+1. 访问 [Turso](https://turso.tech/)
+2. 创建数据库实例
+3. 获取数据库 URL 和认证令牌
+4. 配置到对应的环境变量
+
+#### 搜索 API
+
+1. 获取搜索服务的 API 密钥
+2. 配置到 `SEARCH_API_KEY` 环境变量
+
+## 📁 项目结构
 
 ```
 kuwuyou/
-├── app/                    # Next.js 应用目录
-│   ├── admin/             # 管理后台
-│   ├── auth/              # 认证页面
-│   ├── chat/              # 聊天页面
-│   └── settings/          # 设置页面
-├── components/            # React 组件
-│   ├── admin/            # 管理后台组件
-│   ├── auth/             # 认证组件
-│   ├── chat/             # 聊天组件
-│   ├── settings/         # 设置组件
-│   └── ui/               # UI 组件 (shadcn/ui)
-├── db/                    # 数据库配置
-│   ├── index.ts          # 数据库连接
-│   └── schema.ts         # 数据库表结构
-├── docs/                  # 文档
-├── hooks/                 # React Hooks
-├── lib/                   # 工具库
-├── scripts/              # 脚本
-├── services/             # 服务层
-├── stores/               # Zustand 状态管理
-└── utils/                # 工具函数
+├── app/                      # Next.js 应用目录
+│   ├── api/                  # API 路由
+│   │   ├── auth/            # 认证相关 API
+│   │   ├── chat/            # 对话 API
+│   │   ├── knowledge/       # 知识库 API
+│   │   ├── admin/           # 管理后台 API
+│   │   └── web-search/      # 搜索 API
+│   ├── auth/                # 认证页面
+│   ├── chat/                # 对话页面
+│   ├── knowledge/           # 知识库页面
+│   ├── admin/               # 管理后台
+│   └── profile/             # 个人资料页面
+├── components/              # React 组件
+│   ├── auth/               # 认证组件
+│   ├── chat/               # 对话组件
+│   ├── knowledge/          # 知识库组件
+│   ├── admin/              # 管理后台组件
+│   └── ui/                 # UI 组件库
+├── db/                      # 数据库配置
+│   ├── index.ts            # 数据库客户端
+│   └── schema.ts           # 数据库模式
+├── hooks/                   # React Hooks
+├── lib/                     # 工具函数
+├── services/                # 业务服务
+├── stores/                  # Zustand 状态管理
+└── public/                  # 静态资源
 ```
 
-## 可用脚本
+## 📖 开发指南
+
+### 运行命令
 
 ```bash
 # 开发模式
@@ -128,79 +173,114 @@ bun run start
 
 # 代码检查
 bun run lint
-
-# 生成数据库迁移
-bun run drizzle-kit generate
-
-# 推送数据库架构
-bun run drizzle-kit push
 ```
 
-## 功能特性
+### 数据库管理
 
-- ✅ AI 聊天对话
-- ✅ 用户认证与授权
-- ✅ 用户资料管理
-- ✅ 成就系统
-- ✅ 管理后台
-- ✅ 响应式设计
-- ✅ 暗色模式支持
+```bash
+# 生成数据库迁移
+bunx drizzle-kit generate
 
-## 数据库
+# 执行数据库迁移
+bunx drizzle-kit push
 
-项目使用 Turso (LibSQL) 作为数据库,这是一个基于 SQLite 的边缘数据库。
+# 打开数据库管理界面
+bunx drizzle-kit studio
+```
 
-### 主要表结构
+### 添加 UI 组件
 
-- `profiles`: 用户资料
-- `user_stats`: 用户统计
-- `achievements`: 成就列表
-- `user_achievements`: 用户成就关联
+项目使用 shadcn/ui，添加新组件：
 
-详细的数据库设置指南请参考:
-- [数据库设置文档](docs/DATABASE_SETUP.md)
-- [Turso 迁移指南](docs/TURSO_MIGRATION.md)
+```bash
+bunx shadcn-ui@latest add [component-name]
+```
 
-## 认证
+### 状态管理
 
-使用 Supabase Auth 进行用户认证,支持:
-- 邮箱/密码登录
-- 钉钉扫码登录
-- 第三方 OAuth 登录
+使用 Zustand 管理全局状态，示例：
 
-详细的认证配置请参考 [认证迁移文档](docs/AUTH_MIGRATION.md)。
+```typescript
+import { useAuthStore } from '@/stores/authStore';
 
-## 部署
+const { user, isAuthenticated, login } = useAuthStore();
+```
 
-### Vercel 部署
+### API 开发
 
-最简单的部署方式是使用 [Vercel Platform](https://vercel.com/new):
+在 `app/api` 目录下创建新的路由处理器：
 
-1. 连接你的 GitHub 仓库
-2. 配置环境变量
-3. 点击部署
+```typescript
+// app/api/example/route.ts
+export async function GET(request: Request) {
+  return Response.json({ message: 'Hello' });
+}
+```
 
-### 环境变量配置
+## 🎯 主要功能使用
 
-确保在部署平台配置以下环境变量:
+### 1. 用户注册和登录
+
+- 访问 `/auth/register` 注册新账号
+- 访问 `/auth/login` 登录
+- 支持密码强度检测和表单验证
+
+### 2. AI 对话
+
+- 登录后访问 `/chat` 开始对话
+- 支持流式响应
+- 可以启用 Web 搜索增强回答
+
+### 3. 知识库管理
+
+- 访问 `/knowledge` 管理知识库
+- 支持上传 PDF、Word 等文档
+- 文档会自动处理并用于 AI 检索
+
+### 4. 管理后台
+
+- 管理员访问 `/admin` 进入后台
+- 查看系统统计和用户管理
+- 监控系统运行状态
+
+## ❓ 常见问题
+
+### 1. 安装依赖失败
+
+确保使用 Bun 安装依赖：
+```bash
+bun install
+```
+
+如果遇到问题，尝试清理缓存：
+```bash
+rm -rf node_modules bun.lockb
+bun install
+```
+
+### 2. 数据库连接失败
+
+检查 `.env` 文件中的数据库配置是否正确：
 - `TURSO_DATABASE_URL`
 - `TURSO_AUTH_TOKEN`
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `ZHIPU_API_KEY` (可选)
 
-## 相关文档
+### 3. AI API 调用失败
 
-- [Next.js 文档](https://nextjs.org/docs)
-- [Turso 文档](https://docs.turso.tech/)
-- [Drizzle ORM 文档](https://orm.drizzle.team/)
-- [Supabase 文档](https://supabase.com/docs)
-- [shadcn/ui 文档](https://ui.shadcn.com/)
+确认以下配置：
+- `AI_KEY` 是否有效
+- `AI_BASE_URL` 是否正确
+- API 配额是否充足
 
-## 贡献
+### 4. 端口已被占用
 
-欢迎提交 Issue 和 Pull Request!
+修改端口启动：
+```bash
+PORT=3001 bun run dev
+```
 
-## 许可证
+### 5. 样式不生效
 
-MIT
+确保 Tailwind CSS 配置正确，尝试重启开发服务器：
+```bash
+bun run dev
+```
