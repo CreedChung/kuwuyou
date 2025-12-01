@@ -217,7 +217,6 @@ class ChatService {
 			useThinking: options.useThinking,
 		});
 
-		// 如果提供了系统提示词，插入到消息列表开头
 		let finalMessages = messages;
 		if (options.systemPrompt) {
 			const hasSystemMessage = messages.some(m => m.role === "system");
@@ -238,7 +237,6 @@ class ChatService {
 			max_tokens: options.maxTokens ?? 8192,
 		};
 
-		// 添加思维链配置
 		if (options.useThinking) {
 			requestBody.thinking = { type: "enabled" };
 		}
@@ -248,16 +246,19 @@ class ChatService {
 		console.log("🔧 请求体:", JSON.stringify(requestBody, null, 2));
 
 		try {
-			const response = await fetch(`${this.baseURL}/paas/v4/chat/completions`, {
+			const response = await fetch("/api/chat/completions", {
 				method: "POST",
-				headers: this.getHeaders(),
+				headers: {
+					"Authorization": `Bearer ${this.apiKey}`,
+					"Content-Type": "application/json",
+				},
 				body: JSON.stringify(requestBody),
 				signal: this.abortController.signal,
 			});
 
 			if (!response.ok) {
-				const errorText = await response.text();
-				throw new Error(`请求失败 (${response.status}): ${errorText}`);
+				const errorData = await response.json().catch(() => ({}));
+				throw new Error(errorData.error || `请求失败 (${response.status})`);
 			}
 
 			const reader = response.body?.getReader();

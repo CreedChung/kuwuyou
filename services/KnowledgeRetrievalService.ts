@@ -1,11 +1,10 @@
 /**
  * 智谱知识库检索服务
- * 基于智谱AI知识库检索API
+ * 通过 API 路由调用智谱AI知识库检索API
  */
 
 export interface KnowledgeRetrievalConfig {
-  apiKey: string;
-  baseURL?: string;
+  apiKey?: string;
 }
 
 // 检索请求参数
@@ -47,21 +46,9 @@ export interface RetrievalResponse {
 
 class KnowledgeRetrievalService {
   private apiKey: string;
-  private baseURL: string;
 
   constructor(config?: KnowledgeRetrievalConfig) {
     this.apiKey = config?.apiKey || process.env.NEXT_PUBLIC_ZHIPU_API_KEY || "";
-    this.baseURL = config?.baseURL || "https://open.bigmodel.cn/api";
-  }
-
-  /**
-   * 获取请求头
-   */
-  private getHeaders(): HeadersInit {
-    return {
-      Authorization: `Bearer ${this.apiKey}`,
-      "Content-Type": "application/json",
-    };
   }
 
   /**
@@ -88,30 +75,30 @@ class KnowledgeRetrievalService {
     });
 
     try {
-      const response = await fetch(
-        `${this.baseURL}/llm-application/open/knowledge/retrieve`,
-        {
-          method: "POST",
-          headers: this.getHeaders(),
-          body: JSON.stringify({
-            request_id: params.request_id || `retrieve-${Date.now()}`,
-            query: params.query,
-            knowledge_ids: params.knowledge_ids,
-            document_ids: params.document_ids,
-            top_k: params.top_k || 8,
-            top_n: params.top_n || 10,
-            recall_method: params.recall_method || "embedding",
-            recall_ratio: params.recall_ratio || 80,
-            rerank_status: params.rerank_status || 0,
-            rerank_model: params.rerank_model,
-            fractional_threshold: params.fractional_threshold,
-          }),
-        }
-      );
+      const response = await fetch("/api/knowledge/retrieve", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${this.apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          request_id: params.request_id || `retrieve-${Date.now()}`,
+          query: params.query,
+          knowledge_ids: params.knowledge_ids,
+          document_ids: params.document_ids,
+          top_k: params.top_k || 8,
+          top_n: params.top_n || 10,
+          recall_method: params.recall_method || "embedding",
+          recall_ratio: params.recall_ratio || 80,
+          rerank_status: params.rerank_status || 0,
+          rerank_model: params.rerank_model,
+          fractional_threshold: params.fractional_threshold,
+        }),
+      });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`知识库检索失败 (${response.status}): ${errorText}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `知识库检索失败 (${response.status})`);
       }
 
       const result: RetrievalResponse = await response.json();
@@ -157,7 +144,6 @@ class KnowledgeRetrievalService {
    */
   updateConfig(config: Partial<KnowledgeRetrievalConfig>) {
     if (config.apiKey) this.apiKey = config.apiKey;
-    if (config.baseURL) this.baseURL = config.baseURL;
   }
 
   /**
