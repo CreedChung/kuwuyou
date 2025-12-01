@@ -3,6 +3,11 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   
+  // 指定 Turbopack 根目录以解决多个锁文件警告
+  turbopack: {
+    root: __dirname,
+  },
+  
   // 性能优化配置
   compress: true, // 启用 gzip 压缩
   poweredByHeader: false, // 移除 X-Powered-By 头部

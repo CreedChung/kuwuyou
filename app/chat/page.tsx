@@ -7,7 +7,8 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { ChatArea } from "@/components/chat/ChatArea";
 import { Header } from "@/components/chat/Header";
 import { Sidebar } from "@/components/chat/Sidebar";
-import { useZhipuChat } from "@/hooks/useZhipuChat";
+import { useChat } from "@/hooks/useChat";
+import { useRetrieval } from "@/hooks/useRetrieval";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import type { Conversation } from "@/components/chat/types";
 
@@ -23,14 +24,16 @@ function ChatPageContent() {
 	const [conversations, setConversations] = useState<Conversation[]>([]);
 	const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
 
-	// 使用智谱对话补全Hook
+	// 使用聊天和检索Hook
 	const {
 		messages,
 		isGenerating,
-		sendMessage,
+		sendMessage: sendChatMessage,
 		stopGenerating,
 		startNewConversation,
-	} = useZhipuChat();
+	} = useChat();
+	
+	const { performRetrieval } = useRetrieval();
 
 	// 初始化第一个对话
 	useEffect(() => {
@@ -115,11 +118,45 @@ function ChatPageContent() {
 	);
 
 	const handleSendMessage = useCallback(
-		async (content: string, options?: { showThinking?: boolean; showReferences?: boolean; useWebSearch?: boolean }) => {
+		async (content: string, options?: { showThinking?: boolean; showReferences?: boolean; useWebSearch?: boolean; knowledgeId?: string; uploadedFile?: File; fileContent?: string }) => {
 			if (!currentConversationId || isGenerating) return;
-			await sendMessage(content, options);
+			
+			// 构建检索选项
+			const retrievalOptions = {
+				showReferences: options?.showReferences,
+				useWebSearch: options?.useWebSearch,
+				knowledgeId: options?.knowledgeId,
+			};
+
+			try {
+				// 执行检索（如果启用了检索功能）
+				let retrievalContext;
+				if (options?.showReferences || options?.useWebSearch) {
+					console.log("🔍 开始检索流程...");
+					const retrievalResult = await performRetrieval(content, retrievalOptions);
+					
+					retrievalContext = {
+						knowledgeContext: retrievalResult.knowledgeContext,
+						webContext: retrievalResult.webContext,
+						references: retrievalResult.references,
+					};
+					
+					console.log("✅ 检索流程完成:", {
+						knowledgeResults: retrievalResult.knowledgeSlices.length,
+						webResults: retrievalResult.webResults.length,
+						totalReferences: retrievalResult.references.length
+					});
+				}
+
+				// 发送消息到聊天系统
+				await sendChatMessage(content, options, retrievalContext);
+				
+			} catch (error) {
+				console.error("❌ 发送消息失败:", error);
+				throw error;
+			}
 		},
-		[currentConversationId, isGenerating, sendMessage]
+		[currentConversationId, isGenerating, sendChatMessage, performRetrieval]
 	);
 
 	const handleStopGenerating = useCallback(() => {
