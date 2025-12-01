@@ -53,7 +53,7 @@ class ChatService {
 	private abortController: AbortController | null = null;
 
 	constructor(apiKey?: string, model?: string) {
-		this.apiKey = apiKey || process.env.AI_KEY || "";
+		this.apiKey = apiKey || "server-side-key";
 		this.baseURL =
 			process.env.AI_BASE_URL ||
 			"https://open.bigmodel.cn/api/paas/v4";
@@ -112,8 +112,8 @@ class ChatService {
 		messages: ChatServiceMessage[],
 		options: ChatServiceOptions = {},
 	): Promise<string> {
-		if (!this.apiKey || !this.providerInstance) {
-			throw new Error("API Key 未设置");
+		if (!this.providerInstance) {
+			throw new Error("服务初始化失败");
 		}
 
 		const coreMessages = this.convertMessages(messages);
@@ -137,8 +137,8 @@ class ChatService {
 		messages: ChatServiceMessage[],
 		options: ChatServiceOptions = {},
 	): AsyncGenerator<string, void, unknown> {
-		if (!this.apiKey || !this.providerInstance) {
-			throw new Error("API Key 未设置");
+		if (!this.providerInstance) {
+			throw new Error("服务初始化失败");
 		}
 
 		// 创建新的 AbortController
@@ -205,10 +205,6 @@ class ChatService {
 		finishReason?: string;
 		usage?: { prompt_tokens: number; completion_tokens: number; total_tokens: number };
 	}> {
-		if (!this.apiKey) {
-			throw new Error("API Key 未设置");
-		}
-
 		console.log("🚀 AI 对话请求开始");
 		console.log("📝 用户消息:", messages.filter(m => m.role === "user").map(m => m.content));
 		console.log("⚙️ 配置:", {

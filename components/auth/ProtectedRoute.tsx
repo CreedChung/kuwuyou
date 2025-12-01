@@ -17,18 +17,15 @@ export function ProtectedRoute({
 	const { user, loading, initialized } = useAuthStore();
 
 	useEffect(() => {
-		// 等待认证状态初始化完成
 		if (!initialized || loading) {
 			return;
 		}
 
-		// 如果用户未登录，重定向到登录页
 		if (!user) {
 			router.push(redirectTo);
 		}
 	}, [user, loading, initialized, router, redirectTo]);
 
-	// 在加载或未初始化时显示加载状态
 	if (!initialized || loading) {
 		return (
 			<div className="flex items-center justify-center min-h-screen">
@@ -40,9 +37,15 @@ export function ProtectedRoute({
 		);
 	}
 
-	// 如果用户未登录，不渲染内容（即将重定向）
 	if (!user) {
-		return null;
+		return (
+			<div className="flex items-center justify-center min-h-screen">
+				<div className="text-center">
+					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+					<p className="text-muted-foreground">正在跳转...</p>
+				</div>
+			</div>
+		);
 	}
 
 	// 用户已登录，渲染子组件
