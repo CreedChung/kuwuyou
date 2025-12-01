@@ -9,7 +9,6 @@ import {
 	ArrowLeft,
 	BarChart3,
 	Calendar,
-	Camera,
 	Mail,
 	MapPin,
 	Save,
@@ -33,7 +32,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/useToast";
-import { getProfile, updateProfile, updateAvatar, type ProfileData, type StatsData, type AchievementData } from "@/services/ProfileService";
+import { getProfile, updateProfile, type ProfileData, type StatsData, type AchievementData } from "@/services/ProfileService";
 import { useAuthStore } from "@/stores/authStore";
 
 type ProfileSection = "basic" | "stats" | "achievements" | "activity";
@@ -75,7 +74,6 @@ function ProfilePageContent() {
 		id: "",
 		username: "用户",
 		email: "user@example.com",
-		avatarUrl: "",
 		joinDate: "2024-01-01",
 	});
 
@@ -156,47 +154,6 @@ function ProfilePageContent() {
 		setIsEditing(false);
 	};
 
-	const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0];
-		if (!file) return;
-
-		// 检查文件类型
-		if (!file.type.startsWith("image/")) {
-			toast({
-				title: "文件类型错误",
-				description: "请选择图片文件",
-				variant: "destructive",
-			});
-			return;
-		}
-
-		// 检查文件大小 (最大 2MB)
-		if (file.size > 2 * 1024 * 1024) {
-			toast({
-				title: "文件过大",
-				description: "图片大小不能超过 2MB",
-				variant: "destructive",
-			});
-			return;
-		}
-
-		const result = await updateAvatar(file);
-
-		if (result.success && result.url) {
-			setProfile({ ...profile, avatarUrl: result.url });
-			setEditedProfile({ ...editedProfile, avatarUrl: result.url });
-			toast({
-				title: "上传成功",
-				description: "头像已更新",
-			});
-		} else {
-			toast({
-				title: "上传失败",
-				description: result.error || "更新头像失败",
-				variant: "destructive",
-			});
-		}
-	};
 
 	if (loading) {
 		return (
@@ -307,58 +264,11 @@ function ProfilePageContent() {
 								<CardContent className="space-y-6">
 									{/* 头像部分 */}
 									<div className="flex items-center gap-6">
-										<div className="relative group">
-											<Avatar className="h-20 w-20 border-4 border-primary/20">
-												<AvatarImage
-													src={profile.avatarUrl || ""}
-													alt={profile.username}
-												/>
-												<AvatarFallback className="text-2xl bg-gradient-to-br from-primary to-primary/60">
-													{profile.username.charAt(0).toUpperCase()}
-												</AvatarFallback>
-											</Avatar>
-											{isEditing && (
-												<label
-													htmlFor="avatar-upload"
-													className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-												>
-													<Camera className="h-5 w-5 text-white" />
-													<input
-														id="avatar-upload"
-														type="file"
-														accept="image/*"
-														className="hidden"
-														onChange={handleAvatarChange}
-													/>
-												</label>
-											)}
-										</div>
-										<div className="flex-1">
-											{isEditing ? (
-												<label htmlFor="avatar-upload-btn">
-													<Button variant="outline" size="sm" className="gap-2" type="button" asChild>
-														<span className="cursor-pointer">
-															<Camera className="h-4 w-4" />
-															更换头像
-														</span>
-													</Button>
-													<input
-														id="avatar-upload-btn"
-														type="file"
-														accept="image/*"
-														className="hidden"
-														onChange={handleAvatarChange}
-													/>
-												</label>
-											) : (
-												<div>
-													<p className="text-sm font-medium">头像</p>
-													<p className="text-xs text-muted-foreground">
-														点击编辑资料后可更换头像
-													</p>
-												</div>
-											)}
-										</div>
+										<Avatar className="h-20 w-20 border-4 border-primary/20">
+											<AvatarFallback className="text-2xl bg-gradient-to-br from-primary to-primary/60">
+												{profile.username.charAt(0).toUpperCase()}
+											</AvatarFallback>
+										</Avatar>
 									</div>
 
 									{/* 表单部分 */}

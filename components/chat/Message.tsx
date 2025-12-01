@@ -67,7 +67,7 @@ export function Message({ message, onRegenerate }: MessageProps) {
 
 	// 用户头像
 	const userName = user?.username || user?.email || '用户';
-	const userAvatar = user?.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=3b82f6&color=fff`;
+	const userAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=3b82f6&color=fff`;
 
 	// 复制文本到剪贴板
 	const copyToClipboard = async (text: string, section: string) => {

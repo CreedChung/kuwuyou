@@ -68,11 +68,9 @@ export function Sidebar({
 	// 从用户数据中提取信息
 	const userName = user?.username || user?.email?.split("@")[0] || "用户";
 	const userHandle = user?.email ? `@${user.email.split("@")[0]}` : "@user";
-	const userAvatar =
-		user?.avatarUrl ||
-		`https://ui-avatars.com/api/?name=${encodeURIComponent(
-			userName
-		)}&background=3b82f6&color=fff`;
+	const userAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+		userName
+	)}&background=3b82f6&color=fff`;
 
 	const handleLogout = async () => {
 		setLogoutDialogOpen(false);
@@ -207,7 +205,6 @@ export function Sidebar({
 							user={{
 								name: userName,
 								handle: userHandle,
-								avatarUrl: userAvatar,
 							}}
 							actions={[
 								{

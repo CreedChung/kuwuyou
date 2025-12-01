@@ -15,16 +15,14 @@ export async function GET(request: NextRequest) {
 			);
 		}
 
-		// 获取 Authorization header
-		const authorization = request.headers.get("Authorization");
-		if (!authorization) {
+		const apiKey = process.env.AI_KEY;
+		if (!apiKey) {
 			return NextResponse.json(
-				{ code: 401, message: "未提供认证信息" },
-				{ status: 401 }
+				{ code: 500, message: "服务器未配置 AI_KEY" },
+				{ status: 500 }
 			);
 		}
 
-		// 构建请求参数
 		const params = new URLSearchParams({
 			knowledge_id: knowledgeId,
 			page,
@@ -35,12 +33,11 @@ export async function GET(request: NextRequest) {
 			params.append("word", word);
 		}
 
-		// 调用智谱 API
 		const response = await fetch(
 			`https://open.bigmodel.cn/api/llm-application/open/document?${params.toString()}`,
 			{
 				headers: {
-					Authorization: authorization,
+					Authorization: `Bearer ${apiKey}`,
 					"Content-Type": "application/json",
 				},
 			}

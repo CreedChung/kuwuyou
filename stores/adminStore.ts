@@ -6,7 +6,6 @@ export interface AdminUser {
   name: string;
   email: string;
   role: 'admin' | 'super_admin';
-  avatar?: string;
 }
 
 export interface SystemStats {

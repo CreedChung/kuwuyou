@@ -2,7 +2,6 @@ export interface ProfileData {
 	id: string;
 	username: string;
 	email: string;
-	avatarUrl?: string | null;
 	joinDate: string;
 }
 
@@ -106,50 +105,5 @@ export async function updateProfile(updates: {
 	} catch (error) {
 		console.error("更新用户资料错误:", error);
 		return { success: false, error: "更新用户资料失败" };
-	}
-}
-
-/**
- * 更新用户头像
- */
-export async function updateAvatar(file: File): Promise<{ success: boolean; url?: string; error?: string }> {
-	try {
-		// 从 localStorage 获取当前用户信息
-		const authStorage = localStorage.getItem("auth-storage");
-		if (!authStorage) {
-			return { success: false, error: "用户未登录" };
-		}
-
-		const { state } = JSON.parse(authStorage);
-		const user = state.user;
-
-		if (!user) {
-			return { success: false, error: "用户未登录" };
-		}
-
-		// 创建 FormData 上传文件
-		const formData = new FormData();
-		formData.append("file", file);
-		formData.append("userId", user.id);
-
-		// 上传到服务器 API
-		const response = await fetch("/api/profile/avatar", {
-			method: "POST",
-			headers: {
-				"x-user-id": user.id,
-			},
-			body: formData,
-		});
-
-		if (!response.ok) {
-			const error = await response.json();
-			return { success: false, error: error.error || "上传头像失败" };
-		}
-
-		const data = await response.json();
-		return { success: true, url: data.url };
-	} catch (error) {
-		console.error("更新头像错误:", error);
-		return { success: false, error: "更新头像失败" };
 	}
 }

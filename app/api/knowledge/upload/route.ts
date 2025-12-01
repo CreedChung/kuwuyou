@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
 	try {
-		// 获取知识库 ID
 		const knowledgeId = request.nextUrl.searchParams.get("id");
 		
 		if (!knowledgeId) {
@@ -12,25 +11,22 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		// 获取 Authorization header
-		const authorization = request.headers.get("Authorization");
-		if (!authorization) {
+		const apiKey = process.env.AI_KEY;
+		if (!apiKey) {
 			return NextResponse.json(
-				{ code: 401, message: "未提供认证信息" },
-				{ status: 401 }
+				{ code: 500, message: "服务器未配置 AI_KEY" },
+				{ status: 500 }
 			);
 		}
 
-		// 获取 FormData
 		const formData = await request.formData();
 
-		// 调用智谱 API 上传文档
 		const response = await fetch(
 			`https://open.bigmodel.cn/api/llm-application/open/document/upload_document/${knowledgeId}`,
 			{
 				method: "POST",
 				headers: {
-					Authorization: authorization,
+					Authorization: `Bearer ${apiKey}`,
 				},
 				body: formData,
 			}

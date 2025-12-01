@@ -34,24 +34,8 @@ function KnowledgePageContent() {
 	const fetchKnowledgeList = async (page: number = 1) => {
 		try {
 			setLoading(true);
-			
-			// 从 localStorage 获取 API Key
-			const apiKey = process.env.AI_KEY;
-			
-			if (!apiKey) {
-				toast({
-					title: "配置错误",
-					description: "请配置智谱 API Key",
-					variant: "destructive",
-				});
-				return;
-			}
 
-			const response = await fetch(`/api/knowledge?page=${page}&size=10`, {
-				headers: {
-					"Authorization": `Bearer ${apiKey}`,
-				},
-			});
+			const response = await fetch(`/api/knowledge?page=${page}&size=10`);
 
 			const data = await response.json();
 

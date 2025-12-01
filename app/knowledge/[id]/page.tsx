@@ -33,17 +33,6 @@ export default function KnowledgeDocumentsPage() {
 		try {
 			setLoading(true);
 
-			const apiKey = process.env.AI_KEY;
-
-			if (!apiKey) {
-				toast({
-					title: "配置错误",
-					description: "请配置智谱 API Key",
-					variant: "destructive",
-				});
-				return;
-			}
-
 			const params = new URLSearchParams({
 				knowledge_id: knowledgeId,
 				page: page.toString(),
@@ -54,11 +43,7 @@ export default function KnowledgeDocumentsPage() {
 				params.append("word", word);
 			}
 
-			const response = await fetch(`/api/knowledge/documents?${params.toString()}`, {
-				headers: {
-					Authorization: `Bearer ${apiKey}`,
-				},
-			});
+			const response = await fetch(`/api/knowledge/documents?${params.toString()}`);
 
 			const data = await response.json();
 

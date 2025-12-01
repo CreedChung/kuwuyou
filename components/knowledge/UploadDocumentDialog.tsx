@@ -67,23 +67,11 @@ export function UploadDocumentDialog({
 			setUploading(true);
 			setProgress(0);
 
-			const apiKey = process.env.AI_KEY;
-			if (!apiKey) {
-				toast({
-					title: "配置错误",
-					description: "请配置智谱 API Key",
-					variant: "destructive",
-				});
-				return;
-			}
-
-			// 构建 FormData
 			const formData = new FormData();
 			files.forEach((file) => {
 				formData.append("files", file);
 			});
 
-			// 模拟进度
 			const progressInterval = setInterval(() => {
 				setProgress((prev) => {
 					if (prev >= 90) {
@@ -96,9 +84,6 @@ export function UploadDocumentDialog({
 
 			const response = await fetch(`/api/knowledge/upload?id=${knowledgeId}`, {
 				method: "POST",
-				headers: {
-					Authorization: `Bearer ${apiKey}`,
-				},
 				body: formData,
 			});
 

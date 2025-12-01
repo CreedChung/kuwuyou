@@ -18,7 +18,6 @@ import { cn } from "@/lib/utils";
 interface UserProfile {
 	name: string;
 	handle: string;
-	avatarUrl: string;
 }
 
 interface ActionItem {
@@ -78,7 +77,6 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
 			<DropdownMenuTrigger asChild>
 				<div className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted cursor-pointer">
 					<Avatar className="h-9 w-9">
-						<AvatarImage src={user.avatarUrl} alt={user.name} />
 						<AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
 					</Avatar>
 					<div>
@@ -105,7 +103,6 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
 							{/* Top section with user info */}
 							<DropdownMenuLabel className="flex items-center gap-2 p-2">
 								<Avatar className="h-9 w-9">
-									<AvatarImage src={user.avatarUrl} alt={user.name} />
 									<AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
 								</Avatar>
 								<div>

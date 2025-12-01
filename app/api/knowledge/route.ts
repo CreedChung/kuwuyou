@@ -40,22 +40,16 @@ export async function GET(request: NextRequest) {
 			console.log("==================== 知识库 API 请求开始 ====================");
 		}
 		
-		// 获取 Authorization header
-		const authorization = request.headers.get("Authorization");
-		
-		if (!authorization || !authorization.startsWith("Bearer ")) {
-			if (isDev) console.log("❌ Authorization 验证失败");
+		const apiKey = process.env.AI_KEY;
+		if (!apiKey) {
 			return NextResponse.json(
 				{
-					code: 401,
-					message: "缺少或无效的 Authorization header"
+					code: 500,
+					message: "服务器未配置 AI_KEY"
 				},
-				{ status: 401 }
+				{ status: 500 }
 			);
 		}
-
-		// 提取 token
-		const token = authorization.substring(7);
 
 		// 获取查询参数
 		const { searchParams } = new URL(request.url);
@@ -81,14 +75,11 @@ export async function GET(request: NextRequest) {
 
 		const { page: validPage, size: validSize } = validationResult.data;
 
-		// 从环境变量获取 API 基础地址
 		const apiBaseUrl = process.env.KNOWLEDGE_API_URL ||
 			"https://open.bigmodel.cn/api/llm-application/open";
 
-		// 使用缓存键：token + page + size
-		const cacheKey = `knowledge:${token.substring(0, 10)}:${validPage}:${validSize}`;
+		const cacheKey = `knowledge:${validPage}:${validSize}`;
 		
-		// 使用缓存和请求去重，缓存2分钟
 		const data = await apiCache.fetch<KnowledgeListResponse>(
 			cacheKey,
 			async () => {
@@ -97,7 +88,7 @@ export async function GET(request: NextRequest) {
 				const response = await fetch(url, {
 					method: "GET",
 					headers: {
-						"Authorization": `Bearer ${token}`,
+						"Authorization": `Bearer ${apiKey}`,
 						"Content-Type": "application/json",
 					},
 				});
