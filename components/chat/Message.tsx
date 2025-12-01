@@ -60,9 +60,9 @@ export function Message({ message, onRegenerate }: MessageProps) {
 	const isUser = message.role === "user";
 	const hasError = !!message.error;
 	const isStreaming = message.isStreaming;
-	const [showThinking, setShowThinking] = useState(true);
-	const [showKnowledge, setShowKnowledge] = useState(true);
-	const [showWebSearch, setShowWebSearch] = useState(true);
+	const [showThinking, setShowThinking] = useState(false);
+	const [showKnowledge, setShowKnowledge] = useState(false);
+	const [showWebSearch, setShowWebSearch] = useState(false);
 	const [copiedSection, setCopiedSection] = useState<string | null>(null);
 
 	// 用户头像
@@ -124,7 +124,7 @@ export function Message({ message, onRegenerate }: MessageProps) {
 					<div className="font-semibold text-sm text-foreground">
 						{isUser ? "你" : "库无忧助手"}
 					</div>
-					{isStreaming && !isUser && !message.content && (
+					{isStreaming && !isUser && !message.content && !message.thinking && knowledgeRefs.length === 0 && webRefs.length === 0 && (
 						<div className="flex items-center gap-1 text-xs text-muted-foreground">
 							<Loader2 className="h-3 w-3 animate-spin" />
 							<span>正在无忧思考...</span>
