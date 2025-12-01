@@ -4,8 +4,8 @@
  */
 
 import { useState, useCallback, useRef } from "react";
-import { zhipuChatService, type ChatMessage } from "@/services/zhipuChat";
-import type { Message, AnalysisItem } from "@/components/chat/types";
+import { chatService, type ChatMessage } from "@/services/chatService";
+import type { Message, AnalysisItem, KnowledgeReference } from "@/components/chat/types";
 import { chatSystemPrompt } from "@/utils/prompt";
 import { detectAnalysisKeyword } from "@/utils/fileProcessor";
 
@@ -21,7 +21,7 @@ export interface ChatOptions {
 export interface RetrievalContext {
   knowledgeContext?: string;
   webContext?: string;
-  references?: any[];
+  references?: KnowledgeReference[];
 }
 
 export function useChat() {
@@ -147,7 +147,7 @@ export function useChat() {
     messages: ChatMessage[],
     options: ChatOptions
   ): Promise<void> => {
-    const stream = zhipuChatService.chatCompletionStream(
+    const stream = chatService.chatCompletionStream(
       messages,
       {
         useKnowledge: false, // 不使用API内置的知识库检索
@@ -331,7 +331,7 @@ export function useChat() {
    * 停止生成
    */
   const stopGenerating = useCallback(() => {
-    zhipuChatService.stopStream();
+    chatService.stopStream();
     if (currentMessageRef.current) {
       currentMessageRef.current.isStreaming = false;
       setMessages((prev) => {
