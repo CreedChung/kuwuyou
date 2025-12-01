@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "@/hooks/useToast";
-import { notificationService } from "@/services/notification";
+import { notificationService } from "@/services/NotificationService";
 
 /**
  * 浏览器通知 Hook

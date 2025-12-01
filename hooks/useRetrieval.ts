@@ -4,8 +4,8 @@
  */
 
 import { useCallback } from "react";
-import { knowledgeRetrievalService, type RetrievalSlice } from "@/services/knowledgeRetrieval";
-import { webSearchService, type WebSearchResult } from "@/services/webSearch";
+import { knowledgeRetrievalService, type RetrievalSlice } from "@/services/KnowledgeRetrievalService";
+import { webSearchService, type WebSearchResult } from "@/services/WebSearchService";
 import type { KnowledgeReference } from "@/components/chat/types";
 
 export interface RetrievalOptions {

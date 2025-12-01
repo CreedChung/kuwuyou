@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback, useRef } from "react";
-import { chatService, type ChatMessage } from "@/services/chatService";
+import { chatService, type ChatMessage } from "@/services/ChatService";
 import type { Message, AnalysisItem, KnowledgeReference } from "@/components/chat/types";
 import { chatSystemPrompt } from "@/utils/prompt";
 import { detectAnalysisKeyword } from "@/utils/fileProcessor";

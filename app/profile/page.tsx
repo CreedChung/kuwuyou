@@ -33,7 +33,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/useToast";
-import { getProfile, updateProfile, updateAvatar, type ProfileData, type StatsData, type AchievementData } from "@/services/profile";
+import { getProfile, updateProfile, updateAvatar, type ProfileData, type StatsData, type AchievementData } from "@/services/ProfileService";
 import { useAuthStore } from "@/stores/authStore";
 
 type ProfileSection = "basic" | "stats" | "achievements" | "activity";
