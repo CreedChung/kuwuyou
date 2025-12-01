@@ -104,7 +104,7 @@ export function useRetrieval() {
       references: [],
     };
 
-    const knowledgeId = options.knowledgeId || process.env.NEXT_PUBLIC_ZHIPU_KNOWLEDGE_ID;
+    const knowledgeId = options.knowledgeId || process.env.ZHIPU_KNOWLEDGE_ID;
 
     console.log("📋 检查检索条件:", {
       knowledgeId,

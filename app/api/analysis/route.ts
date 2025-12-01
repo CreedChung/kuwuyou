@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 获取环境变量
-    const apiKey = process.env.NEXT_PUBLIC_ZHIPU_API_KEY;
+    const apiKey = process.env.ZHIPU_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
         { error: "未配置API密钥" },

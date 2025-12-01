@@ -36,7 +36,7 @@ class WebSearchService {
   private apiKey: string;
 
   constructor() {
-    this.apiKey = process.env.NEXT_PUBLIC_BOCHA_API_KEY || "";
+    this.apiKey = process.env.BOCHA_API_KEY || "";
   }
 
   /**

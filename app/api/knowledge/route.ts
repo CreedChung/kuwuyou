@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
 		const { page: validPage, size: validSize } = validationResult.data;
 
 		// 从环境变量获取 API 基础地址
-		const apiBaseUrl = process.env.NEXT_PUBLIC_KNOWLEDGE_API_BASE_URL ||
+		const apiBaseUrl = process.env.KNOWLEDGE_API_BASE_URL ||
 			"https://open.bigmodel.cn/api/llm-application/open";
 
 		// 使用缓存键：token + page + size

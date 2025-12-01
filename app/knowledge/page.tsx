@@ -36,7 +36,7 @@ function KnowledgePageContent() {
 			setLoading(true);
 			
 			// 从 localStorage 获取 API Key
-			const apiKey = process.env.NEXT_PUBLIC_ZHIPU_API_KEY;
+			const apiKey = process.env.ZHIPU_API_KEY;
 			
 			if (!apiKey) {
 				toast({

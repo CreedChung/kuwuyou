@@ -43,7 +43,7 @@ export function useChat() {
     console.log("📊 文件内容长度:", fileContent.length, "字");
     console.log("📋 文件内容预览:", fileContent.substring(0, 200) + "...");
 
-    const knowledgeIdToUse = knowledgeId || process.env.NEXT_PUBLIC_ZHIPU_KNOWLEDGE_ID;
+    const knowledgeIdToUse = knowledgeId || process.env.ZHIPU_KNOWLEDGE_ID;
     console.log("🔑 知识库ID:", knowledgeIdToUse);
 
     const requestData = {
