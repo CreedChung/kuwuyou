@@ -60,7 +60,7 @@ export function Message({ message, onRegenerate }: MessageProps) {
 	const isUser = message.role === "user";
 	const hasError = !!message.error;
 	const isStreaming = message.isStreaming;
-	const [showThinking, setShowThinking] = useState(false);
+	const [showThinking, setShowThinking] = useState(true);
 	const [showKnowledge, setShowKnowledge] = useState(false);
 	const [showWebSearch, setShowWebSearch] = useState(false);
 	const [copiedSection, setCopiedSection] = useState<string | null>(null);

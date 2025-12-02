@@ -167,13 +167,13 @@ export function useChat() {
       if (!currentMessageRef.current) break;
 
       // 更新思考过程（根据选项决定是否保存）
-      if (chunk.thinking && (options.showThinking ?? true)) {
+      if (chunk.thinking !== undefined && (options.showThinking ?? true)) {
         currentMessageRef.current.thinking =
           (currentMessageRef.current.thinking || "") + chunk.thinking;
       }
 
-      // 更新主要内容
-      if (chunk.content) {
+      // 更新主要内容（确保不包含思考内容）
+      if (chunk.content !== undefined) {
         currentMessageRef.current.content += chunk.content;
       }
 

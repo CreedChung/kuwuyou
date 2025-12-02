@@ -11,7 +11,7 @@ const chatCompletionSchema = z.object({
 	messages: z.array(chatMessageSchema).min(1),
 	stream: z.boolean().default(true),
 	temperature: z.number().min(0).max(2).default(0.95),
-	max_tokens: z.number().int().min(1).max(50000).default(8192),
+	max_tokens: z.number().int().min(1).max(50000).default(12800),
 	thinking: z.object({
 		type: z.enum(["enabled"]),
 	}).optional(),

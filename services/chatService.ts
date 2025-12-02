@@ -230,7 +230,7 @@ class ChatService {
 			messages: finalMessages,
 			stream: true,
 			temperature: options.temperature ?? 0.95,
-			max_tokens: options.maxTokens ?? 8192,
+			max_tokens: options.maxTokens ?? 12800,
 		};
 
 		if (options.useThinking) {
