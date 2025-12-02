@@ -35,6 +35,7 @@ export function Header() {
 
 				<div className="flex items-center gap-2">
 					<button
+						id="tutorial-theme-toggle"
 						type="button"
 						onClick={toggleTheme}
 						className="rounded-lg p-2 text-foreground transition-colors hover:bg-accent"

@@ -120,6 +120,7 @@ export function Sidebar({
 					</Button>
 				</div>
 				<Button
+					id="tutorial-new-chat"
 					onClick={onNewConversation}
 					className="w-full justify-start"
 					size="default"
@@ -129,6 +130,7 @@ export function Sidebar({
 					<span className="ml-2">新建对话</span>
 				</Button>
 				<Button
+					id="tutorial-search"
 					onClick={() => setSearchDialogOpen(true)}
 					className="w-full justify-start"
 					size="default"
@@ -138,6 +140,7 @@ export function Sidebar({
 					<span className="ml-2">搜索对话</span>
 				</Button>
 				<Button
+					id="tutorial-knowledge"
 					onClick={onOpenKnowledgeBase}
 					className="w-full justify-start"
 					size="default"
@@ -202,6 +205,7 @@ export function Sidebar({
 				<SidebarMenu>
 					<SidebarMenuItem>
 						<UserProfileDropdown
+							id="tutorial-user-profile"
 							user={{
 								name: userName,
 								handle: userHandle,

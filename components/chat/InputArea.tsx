@@ -296,6 +296,7 @@ export function InputArea({
 									disabled={isGenerating || isProcessingFile}
 								/>
 								<button
+									id="tutorial-file-upload"
 									className={`p-3 rounded-full hover:bg-accent transition ${
 										isProcessingFile ? "opacity-50 cursor-not-allowed" : ""
 									} ${uploadedFile ? "text-primary" : ""}`}
@@ -311,6 +312,7 @@ export function InputArea({
 								{/* Text Input & Placeholder */}
 								<div className="relative flex-1">
 									<input
+										id="tutorial-input-field"
 										type="text"
 										value={inputValue}
 										onChange={(e) => setInputValue(e.target.value)}
@@ -355,6 +357,7 @@ export function InputArea({
 								</div>
 
 								<button
+									id="tutorial-voice-input"
 									className={`p-3 rounded-full transition ${
 										listening
 											? "bg-red-500 hover:bg-red-600 text-white animate-pulse"
@@ -403,6 +406,7 @@ export function InputArea({
 										<div className="flex items-center gap-2 flex-wrap">
 											{/* 联网搜索按钮 */}
 											<button
+												id="tutorial-web-search"
 												type="button"
 												onClick={() => setWebSearchActive(!webSearchActive)}
 												className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
@@ -418,6 +422,7 @@ export function InputArea({
 
 											{/* 知识库按钮 */}
 											<button
+												id="tutorial-knowledge-base"
 												type="button"
 												onClick={() => setDeepSearchActive(!deepSearchActive)}
 												className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
@@ -433,6 +438,7 @@ export function InputArea({
 
 											{/* 思考按钮 */}
 											<button
+												id="tutorial-deep-thinking"
 												type="button"
 												onClick={() => setThinkActive(!thinkActive)}
 												className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${

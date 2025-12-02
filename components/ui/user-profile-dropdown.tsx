@@ -35,12 +35,14 @@ interface MenuItem {
 }
 
 interface UserProfileDropdownProps {
+	id?: string;
 	user: UserProfile;
 	actions: ActionItem[];
 	menuItems: MenuItem[];
 }
 
 export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
+	id,
 	user,
 	actions,
 	menuItems,
@@ -75,7 +77,7 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
 		<DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
 			{/* The trigger for the dropdown, in a real app this might be the avatar itself */}
 			<DropdownMenuTrigger asChild>
-				<div className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted cursor-pointer">
+				<div id={id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted cursor-pointer">
 					<Avatar className="h-9 w-9">
 						<AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
 					</Avatar>

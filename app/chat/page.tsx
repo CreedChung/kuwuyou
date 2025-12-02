@@ -11,7 +11,8 @@ import { useChat } from "@/hooks/useChat";
 import { useRetrieval } from "@/hooks/useRetrieval";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import type { Conversation } from "@/components/chat/types";
-import { TutorialModal } from "@/components/chat/TutorialModal";
+import { Tutorial } from "@/components/chat/Tutorial";
+
 
 export default function ChatPage() {
 	return (
@@ -225,24 +226,13 @@ function ChatPageContent() {
 		window.location.href = "/knowledge";
 	}, []);
 
-	const [showTutorial, setShowTutorial] = useState(false);
 
-	useEffect(() => {
-		const hasSeenTutorial = localStorage.getItem("hasSeenTutorial");
-		if (!hasSeenTutorial) {
-			setShowTutorial(true);
-		}
-	}, []);
 
-	const handleCloseTutorial = (open: boolean) => {
-		if (!open) {
-			localStorage.setItem("hasSeenTutorial", "true");
-			setShowTutorial(false);
-		}
-	};
+
 
 	return (
 		<SidebarProvider defaultOpen={true}>
+			<Tutorial />
 			<Sidebar
 				conversations={conversations}
 				currentConversationId={currentConversationId}
@@ -263,7 +253,7 @@ function ChatPageContent() {
 					/>
 				</div>
 			</SidebarInset>
-			<TutorialModal open={showTutorial} onOpenChange={handleCloseTutorial} />
+
 		</SidebarProvider>
 	);
 }
