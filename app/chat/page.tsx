@@ -134,7 +134,7 @@ function ChatPageContent() {
 					};
 
 					const isAnalysisMode = !!options?.fileContent;
-					const queryForRetrieval = isAnalysisMode ? options.fileContent : content;
+					const queryForRetrieval = isAnalysisMode ? (options.fileContent || content) : content;
 					
 					console.log(isAnalysisMode ? "📊 分析模式：使用文件内容作为检索关键词" : "💬 对话模式：使用用户提问作为检索关键词");
 
