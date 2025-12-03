@@ -48,8 +48,8 @@ export function InputArea({
 	const [showPlaceholder, setShowPlaceholder] = useState(true);
 	const [isActive, setIsActive] = useState(false);
 	const [thinkActive, setThinkActive] = useState(true);
-	const [deepSearchActive, setDeepSearchActive] = useState(false);
-	const [webSearchActive, setWebSearchActive] = useState(false);
+	const [deepSearchActive, setDeepSearchActive] = useState(true);
+	const [webSearchActive, setWebSearchActive] = useState(true);
 	const [inputValue, setInputValue] = useState("");
 	const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 	const [fileContent, setFileContent] = useState<string>("");
@@ -201,13 +201,13 @@ export function InputArea({
 	};
 
 	const containerVariants = {
-		collapsed: {
+		default: {
 			height: 68,
 			boxShadow: "0 2px 8px 0 rgba(0,0,0,0.08)",
 			transition: { type: "spring" as const, stiffness: 120, damping: 18 },
 		},
-		expanded: {
-			height: 128,
+		focused: {
+			height: 68,
 			boxShadow: "0 8px 32px 0 rgba(0,0,0,0.16)",
 			transition: { type: "spring" as const, stiffness: 120, damping: 18 },
 		},
@@ -250,12 +250,41 @@ export function InputArea({
 	return (
 		<div className="border-t border-border bg-background">
 			<div className="mx-auto max-w-4xl px-4 py-6">
+				{/* 文件上传显示 - 移到输入框外部 */}
+				<AnimatePresence>
+					{uploadedFile && (
+						<motion.div
+							initial={{ opacity: 0, y: -10 }}
+							animate={{ opacity: 1, y: 0 }}
+							exit={{ opacity: 0, y: -10 }}
+							transition={{ duration: 0.2 }}
+							className="mb-3"
+						>
+							<div className="flex items-center gap-2 bg-muted/50 px-4 py-3 rounded-2xl border border-border shadow-sm">
+								<Paperclip className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+								<div className="flex-1 min-w-0">
+									<p className="text-sm font-medium truncate">{uploadedFile.name}</p>
+									<p className="text-xs text-muted-foreground">{formatFileSize(uploadedFile.size)}</p>
+								</div>
+								<button
+									type="button"
+									onClick={handleRemoveFile}
+									className="p-1.5 hover:bg-muted rounded-lg transition-colors flex-shrink-0"
+									title="移除文件"
+								>
+									<X className="h-4 w-4" />
+								</button>
+							</div>
+						</motion.div>
+					)}
+				</AnimatePresence>
+
 				<motion.div
 					ref={wrapperRef}
 					className="w-full"
 					variants={containerVariants}
-					animate={isActive || inputValue ? "expanded" : "collapsed"}
-					initial="collapsed"
+					animate={isActive || inputValue ? "focused" : "default"}
+					initial="default"
 					style={{
 						overflow: "hidden",
 						borderRadius: 32,
@@ -264,200 +293,167 @@ export function InputArea({
 					onClick={handleActivate}
 				>
 					<form onSubmit={handleSubmit}>
-						<div className="flex flex-col items-stretch w-full h-full">
-							{/* 文件上传显示 */}
-							{uploadedFile && (
-								<div className="px-4 pt-3 pb-2">
-									<div className="flex items-center gap-2 bg-muted/50 px-3 py-2 rounded-lg border border-border">
-										<Paperclip className="h-4 w-4 text-muted-foreground" />
-										<div className="flex-1 min-w-0">
-											<p className="text-sm font-medium truncate">{uploadedFile.name}</p>
-										</div>
-										<button
-											type="button"
-											onClick={handleRemoveFile}
-											className="p-1 hover:bg-muted rounded transition-colors"
-											title="移除文件"
-										>
-											<X className="h-4 w-4" />
-										</button>
-									</div>
-								</div>
-							)}
+						<div className="flex items-center gap-2 p-3 rounded-full bg-background w-full">
+							<input
+								ref={fileInputRef}
+								type="file"
+								accept=".txt,.md,.doc,.docx,.pdf"
+								onChange={handleFileUpload}
+								className="hidden"
+								disabled={isGenerating || isProcessingFile}
+							/>
+							<button
+								id="tutorial-file-upload"
+								className={`p-3 rounded-full hover:bg-accent transition ${
+									isProcessingFile ? "opacity-50 cursor-not-allowed" : ""
+								} ${uploadedFile ? "text-primary" : ""}`}
+								title="附加文件"
+								type="button"
+								tabIndex={-1}
+								onClick={handleFileButtonClick}
+								disabled={isGenerating || isProcessingFile}
+							>
+								<Paperclip size={20} />
+							</button>
 
-							{/* Input Row */}
-							<div className="flex items-center gap-2 p-3 rounded-full bg-background w-full">
+							{/* Text Input & Placeholder */}
+							<div className="relative flex-1">
 								<input
-									ref={fileInputRef}
-									type="file"
-									accept=".txt,.md,.doc,.docx,.pdf"
-									onChange={handleFileUpload}
-									className="hidden"
-									disabled={isGenerating || isProcessingFile}
-								/>
-								<button
-									id="tutorial-file-upload"
-									className={`p-3 rounded-full hover:bg-accent transition ${
-										isProcessingFile ? "opacity-50 cursor-not-allowed" : ""
-									} ${uploadedFile ? "text-primary" : ""}`}
-									title="附加文件"
-									type="button"
-									tabIndex={-1}
-									onClick={handleFileButtonClick}
-									disabled={isGenerating || isProcessingFile}
-								>
-									<Paperclip size={20} />
-								</button>
-
-								{/* Text Input & Placeholder */}
-								<div className="relative flex-1">
-									<input
-										id="tutorial-input-field"
-										type="text"
-										value={inputValue}
-										onChange={(e) => setInputValue(e.target.value)}
-										onKeyDown={handleKeyDown}
-										className="flex-1 border-0 outline-0 rounded-md py-2 text-base bg-transparent w-full font-normal text-foreground"
-										style={{ position: "relative", zIndex: 1 }}
-										onFocus={handleActivate}
-										disabled={isGenerating}
-									/>
-									<div className="absolute left-0 top-0 w-full h-full pointer-events-none flex items-center px-3 py-2">
-										<AnimatePresence mode="wait">
-											{showPlaceholder && !isActive && !inputValue && (
-												<motion.span
-													key={placeholderIndex}
-													className="absolute left-0 top-1/2 -translate-y-1/2 text-muted-foreground select-none pointer-events-none"
-													style={{
-														whiteSpace: "nowrap",
-														overflow: "hidden",
-														textOverflow: "ellipsis",
-														zIndex: 0,
-													}}
-													variants={placeholderContainerVariants}
-													initial="initial"
-													animate="animate"
-													exit="exit"
-												>
-													{PLACEHOLDERS[placeholderIndex]
-														.split("")
-														.map((char, i) => (
-														        <motion.span
-														                key={`placeholder-${placeholderIndex}-char-${i}`}
-																variants={letterVariants}
-																style={{ display: "inline-block" }}
-															>
-																{char === " " ? "\u00A0" : char}
-															</motion.span>
-														))}
-												</motion.span>
-											)}
-										</AnimatePresence>
-									</div>
-								</div>
-
-								<button
-									id="tutorial-voice-input"
-									className={`p-3 rounded-full transition ${
-										listening
-											? "bg-red-500 hover:bg-red-600 text-white animate-pulse"
-											: "hover:bg-accent"
-									}`}
-									title={listening ? "停止录音" : "语音输入"}
-									type="button"
-									tabIndex={-1}
-									onClick={handleVoiceInput}
+									id="tutorial-input-field"
+									type="text"
+									value={inputValue}
+									onChange={(e) => setInputValue(e.target.value)}
+									onKeyDown={handleKeyDown}
+									className="flex-1 border-0 outline-0 rounded-md py-2 text-base bg-transparent w-full font-normal text-foreground"
+									style={{ position: "relative", zIndex: 1 }}
+									onFocus={handleActivate}
 									disabled={isGenerating}
-								>
-									{listening ? <MicOff size={20} /> : <Mic size={20} />}
-								</button>
-
-								{isGenerating ? (
-									<button
-										type="button"
-										onClick={onStopGenerating}
-										className="flex items-center gap-1 bg-destructive hover:bg-destructive/90 text-white p-3 rounded-full font-medium justify-center"
-										title="停止生成"
-									>
-										<Square size={18} className="text-white" />
-									</button>
-								) : (
-									<button
-										type="submit"
-										disabled={!inputValue.trim()}
-										className="flex items-center gap-1 bg-primary hover:bg-primary/90 text-primary-foreground p-3 rounded-full font-medium justify-center disabled:opacity-40 disabled:cursor-not-allowed"
-										title="发送"
-									>
-										<Send size={18} />
-									</button>
-								)}
+								/>
+								<div className="absolute left-0 top-0 w-full h-full pointer-events-none flex items-center px-3 py-2">
+									<AnimatePresence mode="wait">
+										{showPlaceholder && !isActive && !inputValue && (
+											<motion.span
+												key={placeholderIndex}
+												className="absolute left-0 top-1/2 -translate-y-1/2 text-muted-foreground select-none pointer-events-none"
+												style={{
+													whiteSpace: "nowrap",
+													overflow: "hidden",
+													textOverflow: "ellipsis",
+													zIndex: 0,
+												}}
+												variants={placeholderContainerVariants}
+												initial="initial"
+												animate="animate"
+												exit="exit"
+											>
+												{PLACEHOLDERS[placeholderIndex]
+													.split("")
+													.map((char, i) => (
+													        <motion.span
+													                key={`placeholder-${placeholderIndex}-char-${i}`}
+															variants={letterVariants}
+															style={{ display: "inline-block" }}
+														>
+															{char === " " ? "\u00A0" : char}
+														</motion.span>
+													))}
+											</motion.span>
+										)}
+									</AnimatePresence>
+								</div>
 							</div>
 
-							{/* 功能按钮区域 */}
-							<AnimatePresence>
-								{(isActive || inputValue) && (
-									<motion.div
-										initial={{ opacity: 0, height: 0 }}
-										animate={{ opacity: 1, height: "auto" }}
-										exit={{ opacity: 0, height: 0 }}
-										transition={{ duration: 0.2 }}
-										className="px-6 pb-4 pt-3"
-									>
-										<div className="flex items-center gap-2 flex-wrap">
-											{/* 联网搜索按钮 */}
-											<button
-												id="tutorial-web-search"
-												type="button"
-												onClick={() => setWebSearchActive(!webSearchActive)}
-												className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-													webSearchActive
-														? "bg-primary text-primary-foreground shadow-sm"
-														: "bg-muted text-muted-foreground hover:bg-muted/80"
-												}`}
-												title={webSearchActive ? "关闭联网搜索" : "开启联网搜索"}
-											>
-												<Globe size={14} />
-												<span>联网搜索</span>
-											</button>
+							<button
+								id="tutorial-voice-input"
+								className={`p-3 rounded-full transition ${
+									listening
+										? "bg-red-500 hover:bg-red-600 text-white animate-pulse"
+										: "hover:bg-accent"
+								}`}
+								title={listening ? "停止录音" : "语音输入"}
+								type="button"
+								tabIndex={-1}
+								onClick={handleVoiceInput}
+								disabled={isGenerating}
+							>
+								{listening ? <MicOff size={20} /> : <Mic size={20} />}
+							</button>
 
-											{/* 知识库按钮 */}
-											<button
-												id="tutorial-knowledge-base"
-												type="button"
-												onClick={() => setDeepSearchActive(!deepSearchActive)}
-												className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-													deepSearchActive
-														? "bg-primary text-primary-foreground shadow-sm"
-														: "bg-muted text-muted-foreground hover:bg-muted/80"
-												}`}
-												title={deepSearchActive ? "关闭知识库检索" : "开启知识库检索"}
-											>
-												<BookOpen size={14} />
-												<span>知识库</span>
-											</button>
-
-											{/* 思考按钮 */}
-											<button
-												id="tutorial-deep-thinking"
-												type="button"
-												onClick={() => setThinkActive(!thinkActive)}
-												className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-													thinkActive
-														? "bg-primary text-primary-foreground shadow-sm"
-														: "bg-muted text-muted-foreground hover:bg-muted/80"
-												}`}
-												title={thinkActive ? "关闭深度思考" : "开启深度思考"}
-											>
-												<Brain size={14} />
-												<span>深度思考</span>
-											</button>
-										</div>
-									</motion.div>
-								)}
-							</AnimatePresence>
+							{isGenerating ? (
+								<button
+									type="button"
+									onClick={onStopGenerating}
+									className="flex items-center gap-1 bg-destructive hover:bg-destructive/90 text-white p-3 rounded-full font-medium justify-center"
+									title="停止生成"
+								>
+									<Square size={18} className="text-white" />
+								</button>
+							) : (
+								<button
+									type="submit"
+									disabled={!inputValue.trim()}
+									className="flex items-center gap-1 bg-primary hover:bg-primary/90 text-primary-foreground p-3 rounded-full font-medium justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+									title="发送"
+								>
+									<Send size={18} />
+								</button>
+							)}
 						</div>
 					</form>
 				</motion.div>
+
+				{/* 功能按钮区域 - 默认显示在搜索框外部 */}
+				<div className="mt-3">
+					<div className="flex items-center gap-2 flex-wrap">
+						{/* 联网搜索按钮 */}
+						<button
+							id="tutorial-web-search"
+							type="button"
+							onClick={() => setWebSearchActive(!webSearchActive)}
+							className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+								webSearchActive
+									? "bg-primary text-primary-foreground shadow-sm"
+									: "bg-muted text-muted-foreground hover:bg-muted/80"
+							}`}
+							title={webSearchActive ? "关闭联网搜索" : "开启联网搜索"}
+						>
+							<Globe size={14} />
+							<span>联网搜索</span>
+						</button>
+
+						{/* 知识库按钮 */}
+						<button
+							id="tutorial-knowledge-base"
+							type="button"
+							onClick={() => setDeepSearchActive(!deepSearchActive)}
+							className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+								deepSearchActive
+									? "bg-primary text-primary-foreground shadow-sm"
+									: "bg-muted text-muted-foreground hover:bg-muted/80"
+							}`}
+							title={deepSearchActive ? "关闭知识库检索" : "开启知识库检索"}
+						>
+							<BookOpen size={14} />
+							<span>知识库</span>
+						</button>
+
+						{/* 思考按钮 */}
+						<button
+							id="tutorial-deep-thinking"
+							type="button"
+							onClick={() => setThinkActive(!thinkActive)}
+							className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+								thinkActive
+									? "bg-primary text-primary-foreground shadow-sm"
+									: "bg-muted text-muted-foreground hover:bg-muted/80"
+							}`}
+							title={thinkActive ? "关闭深度思考" : "开启深度思考"}
+						>
+							<Brain size={14} />
+							<span>深度思考</span>
+						</button>
+					</div>
+				</div>
 				
 				{/* 底部提示信息 */}
 				<div className="mt-3 flex items-center justify-center gap-2">

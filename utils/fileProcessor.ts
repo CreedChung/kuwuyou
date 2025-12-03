@@ -13,7 +13,7 @@ type PDFLib = typeof import('pdfjs-dist');
  */
 export async function extractTextFromFile(file: File): Promise<string> {
   const fileType = file.type;
-  const fileName = file.name.toLowerCase();
+  const fileName = file.name?.toLowerCase() || '';
 
   try {
     // .docx 文件 - 使用 mammoth 解析
@@ -196,7 +196,7 @@ export function detectAnalysisKeyword(text: string): boolean {
  */
 export function validateFileType(file: File): boolean {
   const allowedExtensions = ['.txt', '.md', '.doc', '.docx', '.pdf'];
-  const fileName = file.name.toLowerCase();
+  const fileName = file.name?.toLowerCase() || '';
   return allowedExtensions.some(ext => fileName.endsWith(ext));
 }
 

@@ -133,19 +133,22 @@ function ChatPageContent() {
 						knowledgeId: options.knowledgeId,
 					};
 
-					sendChatMessage(content, options, undefined);
+					const isAnalysisMode = !!options?.fileContent;
+					const queryForRetrieval = isAnalysisMode ? options.fileContent : content;
+					
+					console.log(isAnalysisMode ? "📊 分析模式：使用文件内容作为检索关键词" : "💬 对话模式：使用用户提问作为检索关键词");
 
-					performRetrieval(content, retrievalOptions).then(retrievalResult => {
-						const retrievalContext = {
-							knowledgeContext: retrievalResult.knowledgeContext,
-							webContext: retrievalResult.webContext,
-							references: retrievalResult.references,
-						};
-						
-						console.log("✅ 检索完成，更新引用:", retrievalResult.references.length);
-					}).catch(error => {
-						console.error("❌ 检索失败:", error);
-					});
+					const retrievalResult = await performRetrieval(queryForRetrieval, retrievalOptions);
+					
+					const retrievalContext = {
+						knowledgeContext: retrievalResult.knowledgeContext,
+						webContext: retrievalResult.webContext,
+						references: retrievalResult.references,
+					};
+					
+					console.log("✅ 检索完成，引用数量:", retrievalResult.references.length);
+					
+					await sendChatMessage(content, options, retrievalContext);
 				} else {
 					await sendChatMessage(content, options, undefined);
 				}

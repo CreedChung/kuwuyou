@@ -1,26 +1,20 @@
 /**
- * 分析API路由
- * 使用analysisSystemPrompt进行规范检查分析
+ * 分析API - 第二步结构化总结
+ * 使用analysisSummaryPrompt + glm-4.5-flash 生成JSON格式结果
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { analysisSystemPrompt } from "@/utils/prompt";
+import { analysisSummaryPrompt } from "@/utils/prompt";
 
 export async function POST(request: NextRequest) {
   try {
     const isDev = process.env.NODE_ENV === "development";
     
     if (isDev) {
-      console.log("\n🔍 ========== 分析API被调用 ==========");
+      console.log("\n📝 ========== 第二步：结构化总结API ==========");
     }
     
-    const { content, knowledgeId } = await request.json();
-
-    if (isDev) {
-      console.log("📊 请求数据:");
-      console.log("   内容长度:", content?.length, "字");
-      console.log("   知识库ID:", knowledgeId);
-    }
+    const { content } = await request.json();
 
     if (!content || typeof content !== "string") {
       return NextResponse.json(
@@ -29,7 +23,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 获取环境变量
     const apiKey = process.env.AI_KEY;
     if (!apiKey) {
       return NextResponse.json(
@@ -38,13 +31,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 构建请求体
     const requestBody = {
-      model: "glm-4-plus",
+      model: "glm-4.5-flash",
       messages: [
         {
           role: "system",
-          content: analysisSystemPrompt,
+          content: analysisSummaryPrompt,
         },
         {
           role: "user",
@@ -57,23 +49,8 @@ export async function POST(request: NextRequest) {
       response_format: {
         type: "json_object",
       },
-      // 不启用知识库检索工具，让AI使用自身知识
-      // 但提示词会引导AI假装使用了知识库
-      ...(knowledgeId && {
-        tools: [
-          {
-            type: "web_search",
-            web_search: {
-              enable: true,
-              // 让AI自主决定搜索查询词
-            },
-          },
-        ],
-      }),
     };
 
-
-    // 调用智谱AI API进行分析（使用JSON模式）
     const response = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
       method: "POST",
       headers: {
@@ -86,7 +63,7 @@ export async function POST(request: NextRequest) {
     if (!response.ok) {
       const errorData = await response.json();
       if (isDev) {
-        console.error("❌ 智谱AI API错误:", response.status, errorData);
+        console.error("❌ API错误:", response.status, errorData);
       }
       return NextResponse.json(
         { error: `API调用失败: ${errorData.error?.message || "未知错误"}` },
@@ -108,7 +85,6 @@ export async function POST(request: NextRequest) {
     try {
       const analysisResults = JSON.parse(assistantMessage);
 
-      // 验证响应格式
       if (!Array.isArray(analysisResults)) {
         return NextResponse.json(
           { error: "响应格式不正确，应为数组" },
@@ -117,9 +93,8 @@ export async function POST(request: NextRequest) {
       }
 
       if (isDev) {
-        console.log("✅ 分析完成，共", analysisResults.length, "个结果");
+        console.log("✅ 总结完成，共", analysisResults.length, "个结果");
         console.log("💰 Token使用:", data.usage);
-        console.log("========== 分析API完成 ==========\n");
       }
 
       return NextResponse.json({
@@ -138,7 +113,7 @@ export async function POST(request: NextRequest) {
       );
     }
   } catch (error) {
-    console.error("分析API错误:", error);
+    console.error("总结API错误:", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "服务器内部错误" },
       { status: 500 }
