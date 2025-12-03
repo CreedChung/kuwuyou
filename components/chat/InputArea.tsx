@@ -48,8 +48,8 @@ export function InputArea({
 	const [showPlaceholder, setShowPlaceholder] = useState(true);
 	const [isActive, setIsActive] = useState(false);
 	const [thinkActive, setThinkActive] = useState(true);
-	const [deepSearchActive, setDeepSearchActive] = useState(true);
-	const [webSearchActive, setWebSearchActive] = useState(true);
+	const [deepSearchActive, setDeepSearchActive] = useState(false);
+	const [webSearchActive, setWebSearchActive] = useState(false);
 	const [inputValue, setInputValue] = useState("");
 	const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 	const [fileContent, setFileContent] = useState<string>("");

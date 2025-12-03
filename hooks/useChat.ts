@@ -246,10 +246,8 @@ export function useChat() {
   ): Promise<void> => {
     if (!content.trim() || isGenerating) return;
 
-    // 检测是否是分析模式
     const isAnalysisMode = options.fileContent && detectAnalysisKeyword(content);
 
-    // 添加用户消息
     const userMessage: Message = {
       id: `user-${Date.now()}`,
       role: "user",
@@ -261,7 +259,6 @@ export function useChat() {
     setMessages((prev) => [...prev, userMessage]);
     setIsGenerating(true);
 
-    // 创建助手消息
     const assistantMessage: Message = {
       id: `assistant-${Date.now()}`,
       role: "assistant",
@@ -277,7 +274,6 @@ export function useChat() {
     setMessages((prev) => [...prev, assistantMessage]);
 
     try {
-      // 如果是分析模式,调用分析API
       if (isAnalysisMode && options.fileContent) {
         const analysisResults = await handleAnalysisMode(
           content,
@@ -290,7 +286,6 @@ export function useChat() {
           currentMessageRef.current.content = `已完成规范检查分析，共发现 ${analysisResults.length} 个问题。`;
           currentMessageRef.current.isStreaming = false;
 
-          // 更新UI
           setMessages((prev) => {
             const updated = [...prev];
             const lastIndex = updated.length - 1;
@@ -306,7 +301,6 @@ export function useChat() {
         }
       }
 
-      // 构建对话上下文并处理对话流
       const contextMessages = buildContextMessages(content, retrievalContext);
       await processChatStream(contextMessages, options);
 

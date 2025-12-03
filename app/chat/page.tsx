@@ -122,48 +122,33 @@ function ChatPageContent() {
 	const handleSendMessage = useCallback(
 		async (content: string, options?: { showThinking?: boolean; showReferences?: boolean; useWebSearch?: boolean; knowledgeId?: string; uploadedFile?: File; fileContent?: string }) => {
 			if (!currentConversationId || isGenerating) return;
-			
-			// 构建检索选项
-			const retrievalOptions = {
-				showReferences: options?.showReferences,
-				useWebSearch: options?.useWebSearch,
-				knowledgeId: options?.knowledgeId,
-			};
 
 			try {
-				console.log("📨 handleSendMessage 调用, options:", options);
+				const needsRetrieval = options?.showReferences || options?.useWebSearch;
 				
-				// 执行检索（如果启用了检索功能）
-				let retrievalContext;
-				if (options?.showReferences || options?.useWebSearch) {
-					console.log("🔍 开始检索流程...", {
+				if (needsRetrieval) {
+					const retrievalOptions = {
 						showReferences: options.showReferences,
 						useWebSearch: options.useWebSearch,
-						knowledgeId: options.knowledgeId
-					});
-					
-					const retrievalResult = await performRetrieval(content, retrievalOptions);
-					
-					retrievalContext = {
-						knowledgeContext: retrievalResult.knowledgeContext,
-						webContext: retrievalResult.webContext,
-						references: retrievalResult.references,
+						knowledgeId: options.knowledgeId,
 					};
-					
-					console.log("✅ 检索流程完成:", {
-						knowledgeResults: retrievalResult.knowledgeSlices.length,
-						webResults: retrievalResult.webResults.length,
-						totalReferences: retrievalResult.references.length,
-						hasKnowledgeContext: !!retrievalResult.knowledgeContext,
-						hasWebContext: !!retrievalResult.webContext
+
+					sendChatMessage(content, options, undefined);
+
+					performRetrieval(content, retrievalOptions).then(retrievalResult => {
+						const retrievalContext = {
+							knowledgeContext: retrievalResult.knowledgeContext,
+							webContext: retrievalResult.webContext,
+							references: retrievalResult.references,
+						};
+						
+						console.log("✅ 检索完成，更新引用:", retrievalResult.references.length);
+					}).catch(error => {
+						console.error("❌ 检索失败:", error);
 					});
 				} else {
-					console.log("⏭️ 跳过检索流程 (showReferences:", options?.showReferences, "useWebSearch:", options?.useWebSearch, ")");
+					await sendChatMessage(content, options, undefined);
 				}
-
-				// 发送消息到聊天系统
-				console.log("💬 调用 sendChatMessage, 有检索上下文:", !!retrievalContext);
-				await sendChatMessage(content, options, retrievalContext);
 				
 			} catch (error) {
 				console.error("❌ 发送消息失败:", error);

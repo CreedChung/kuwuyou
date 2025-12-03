@@ -33,12 +33,18 @@ export default function RootLayout({
 					}}
 				/>
 				{process.env.NODE_ENV === "development" && (
-					<Script
-						src="//unpkg.com/react-grab/dist/index.global.js"
-						crossOrigin="anonymous"
-						strategy="beforeInteractive"
-						data-enabled="true"
-					/>
+					<>
+						<Script
+							src="https://unpkg.com/react-scan/dist/auto.global.js"
+							strategy="beforeInteractive"
+						/>
+						<Script
+							src="//unpkg.com/react-grab/dist/index.global.js"
+							crossOrigin="anonymous"
+							strategy="beforeInteractive"
+							data-enabled="true"
+						/>
+					</>
 				)}
 			</head>
 			<body className="antialiased">
