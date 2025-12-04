@@ -251,7 +251,7 @@ export default function LoginPage() {
 				</Card>
 
 				{/* 底部说明 */}
-				<p className="text-center text-xs text-gray-500 mt-6">
+				<p className="text-center text-xs text-white mt-6">
 					继续即表示您同意我们的{" "}
 					<Link
 						href="/terms"
