@@ -49,10 +49,30 @@ export function sliceText(
 }
 
 /**
- * 将多个文本片段合并成单个字符串
+ * 将多个文本片段合并成单个字符串,确保总长度不超过限制
  */
-export function joinSlices(slices: string[], separator: string = ' '): string {
-  return slices.filter(s => s && s.trim().length > 0).join(separator);
+export function joinSlices(
+  slices: string[],
+  separator: string = ' ',
+  maxLength: number = 1000
+): string {
+  const filtered = slices.filter(s => s && s.trim().length > 0);
+  let result = '';
+  
+  for (const slice of filtered) {
+    const candidate = result ? result + separator + slice : slice;
+    if (candidate.length <= maxLength) {
+      result = candidate;
+    } else {
+      break;
+    }
+  }
+  
+  if (result.length > maxLength) {
+    result = result.slice(0, maxLength);
+  }
+  
+  return result;
 }
 
 /**
