@@ -241,8 +241,48 @@ function getTooltipPosition(
 	targetPosition: { top: number; left: number; width: number; height: number }
 ): React.CSSProperties {
 	const offset = 16;
+	const viewportWidth = typeof window !== "undefined" ? window.innerWidth : 1024;
+	const viewportHeight = typeof window !== "undefined" ? window.innerHeight : 768;
+	const tooltipHeight = 300; // 预估提示框高度
+	const tooltipWidth = 384; // max-w-sm 约为 384px
 
+	let finalPosition = position;
+
+	// 智能调整位置
 	switch (position) {
+		case "bottom":
+			// 如果底部空间不足，且顶部空间充足，则显示在顶部
+			if (
+				viewportHeight - (targetPosition.top + targetPosition.height) < tooltipHeight &&
+				targetPosition.top > tooltipHeight
+			) {
+				finalPosition = "top";
+			}
+			break;
+		case "top":
+			// 如果顶部空间不足，且底部空间充足，则显示在底部
+			if (targetPosition.top < tooltipHeight && viewportHeight - (targetPosition.top + targetPosition.height) > tooltipHeight) {
+				finalPosition = "bottom";
+			}
+			break;
+		case "right":
+			// 如果右侧空间不足，且左侧空间充足，则显示在左侧
+			if (
+				viewportWidth - (targetPosition.left + targetPosition.width) < tooltipWidth &&
+				targetPosition.left > tooltipWidth
+			) {
+				finalPosition = "left";
+			}
+			break;
+		case "left":
+			// 如果左侧空间不足，且右侧空间充足，则显示在右侧
+			if (targetPosition.left < tooltipWidth && viewportWidth - (targetPosition.left + targetPosition.width) > tooltipWidth) {
+				finalPosition = "right";
+			}
+			break;
+	}
+
+	switch (finalPosition) {
 		case "top":
 			return {
 				left: targetPosition.left + targetPosition.width / 2,

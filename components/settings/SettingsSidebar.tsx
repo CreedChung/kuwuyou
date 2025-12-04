@@ -7,6 +7,7 @@ import {
 	Settings,
 	Shield,
 	UserCircle,
+	Plug,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -14,6 +15,7 @@ import { cn } from "@/lib/utils";
 export type SettingSection =
 	| "general"
 	| "notifications"
+	| "connections"
 	| "data"
 	| "security"
 	| "account";
@@ -27,6 +29,7 @@ interface SidebarItem {
 const sidebarItems: SidebarItem[] = [
 	{ id: "general", label: "常规", icon: Settings },
 	{ id: "notifications", label: "通知", icon: Bell },
+	{ id: "connections", label: "连接", icon: Plug },
 	{ id: "data", label: "数据管理", icon: Database },
 	{ id: "security", label: "安全", icon: Shield },
 	{ id: "account", label: "账户", icon: UserCircle },
