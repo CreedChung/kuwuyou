@@ -1,4 +1,4 @@
-import { Moon, Palette, Sun } from "lucide-react";
+import { Moon, Palette, Sun, Sparkles } from "lucide-react";
 import { useId } from "react";
 import {
 	Card,
@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { useThemeStore, type Theme } from "@/stores/themeStore";
 
 interface GeneralSettingsProps {
 	darkMode: boolean;
@@ -20,6 +21,23 @@ export function GeneralSettings({
 	onDarkModeToggle,
 }: GeneralSettingsProps) {
 	const darkModeId = useId();
+	const { theme, setTheme } = useThemeStore();
+
+	const themeOptions: { value: Theme; label: string; icon: React.ReactNode; description: string }[] = [
+		{
+			value: 'default',
+			label: '默认主题',
+			icon: <Palette className="h-5 w-5" />,
+			description: '经典简约风格'
+		},
+		{
+			value: 'tech',
+			label: '科技主题',
+			icon: <Sparkles className="h-5 w-5" />,
+			description: '未来科技感'
+		}
+	];
+
 	return (
 		<div className="space-y-6 animate-in fade-in-50 duration-300">
 			<div>
@@ -36,6 +54,37 @@ export function GeneralSettings({
 					<CardDescription>自定义视觉体验</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-4">
+					<div className="space-y-3">
+						<Label className="text-sm font-medium">主题风格</Label>
+						<div className="grid grid-cols-2 gap-3">
+							{themeOptions.map((option) => (
+								<button
+									key={option.value}
+									type="button"
+									onClick={() => setTheme(option.value)}
+									className={`
+										relative flex flex-col items-start gap-2 p-4 rounded-lg border-2 transition-all
+										${theme === option.value
+											? 'border-primary bg-primary/5 shadow-sm'
+											: 'border-border bg-muted/30 hover:border-primary/50 hover:bg-muted/50'
+										}
+									`}
+								>
+									<div className="flex items-center gap-2 text-foreground">
+										{option.icon}
+										<span className="font-medium">{option.label}</span>
+									</div>
+									<p className="text-xs text-muted-foreground text-left">
+										{option.description}
+									</p>
+									{theme === option.value && (
+										<div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary" />
+									)}
+								</button>
+							))}
+						</div>
+					</div>
+
 					<div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
 						<div className="space-y-0.5">
 							<Label htmlFor={darkModeId} className="text-sm font-medium">

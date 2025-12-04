@@ -15,6 +15,7 @@ import {
 	SettingsSidebar,
 } from "@/components/settings/SettingsSidebar";
 import { Toaster } from "@/components/ui/toaster";
+import { useThemeStore } from "@/stores/themeStore";
 
 export default function SettingsPage() {
 	return (
@@ -26,7 +27,7 @@ export default function SettingsPage() {
 
 function SettingsPageContent() {
 	const [activeSection, setActiveSection] = useState<SettingSection>("general");
-	const [darkMode, setDarkMode] = useState(true);
+	const { isDark, toggleDarkMode } = useThemeStore();
 	const [zhipuApiKey, setZhipuApiKey] = useState("");
 	const [showZhipuApiKey, setShowZhipuApiKey] = useState(false);
 	const [zhipuApiKeySaved, setZhipuApiKeySaved] = useState(false);
@@ -34,7 +35,6 @@ function SettingsPageContent() {
 	const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 	const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>("default");
 
-	// 加载保存的设置
 	useEffect(() => {
 		const savedZhipuApiKey = localStorage.getItem("zhipu_api_key");
 		if (savedZhipuApiKey) {
@@ -46,12 +46,6 @@ function SettingsPageContent() {
 			setNotificationsEnabled(Notification.permission === "granted");
 		}
 	}, []);
-
-	const toggleDarkMode = () => {
-		setDarkMode(!darkMode);
-		document.documentElement.classList.toggle("dark");
-		localStorage.setItem("theme", !darkMode ? "dark" : "light");
-	};
 
 	const handleSaveZhipuApiKey = () => {
 		if (zhipuApiKey.trim()) {
@@ -101,7 +95,7 @@ function SettingsPageContent() {
 				<div className="max-w-3xl mx-auto p-8">
 					{activeSection === "general" && (
 						<GeneralSettings
-							darkMode={darkMode}
+							darkMode={isDark}
 							onDarkModeToggle={toggleDarkMode}
 						/>
 					)}

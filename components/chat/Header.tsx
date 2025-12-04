@@ -1,33 +1,17 @@
 import { Moon, Sun } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { useThemeStore } from "@/stores/themeStore";
 
 export function Header() {
-	const [isDark, setIsDark] = useState(true);
+	const { isDark, toggleDarkMode, theme, applyTheme } = useThemeStore();
 
 	useEffect(() => {
-		// Check initial theme
-		const savedTheme = localStorage.getItem("theme");
-		const isDarkMode =
-			savedTheme === "dark" ||
-			(!savedTheme && document.documentElement.classList.contains("dark"));
-		setIsDark(isDarkMode);
-	}, []);
-
-	const toggleTheme = () => {
-		const newIsDark = !isDark;
-		setIsDark(newIsDark);
-		if (newIsDark) {
-			document.documentElement.classList.add("dark");
-			localStorage.setItem("theme", "dark");
-		} else {
-			document.documentElement.classList.remove("dark");
-			localStorage.setItem("theme", "light");
-		}
-	};
+		applyTheme(theme, isDark);
+	}, [theme, isDark, applyTheme]);
 
 	return (
-		<header className="sticky top-0 z-10 border-b border-border bg-white backdrop-blur supports-[backdrop-filter]:bg-white/95">
+		<header className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
 			<div className="flex h-14 items-center justify-between px-4">
 				<div className="flex items-center gap-2">
 					<SidebarTrigger className="md:hidden" />
@@ -37,7 +21,7 @@ export function Header() {
 					<button
 						id="tutorial-theme-toggle"
 						type="button"
-						onClick={toggleTheme}
+						onClick={toggleDarkMode}
 						className="rounded-lg p-2 text-foreground transition-colors hover:bg-accent"
 						aria-label="切换主题"
 					>
