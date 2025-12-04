@@ -11,7 +11,8 @@ import { useChat } from "@/hooks/useChat";
 import { useRetrieval } from "@/hooks/useRetrieval";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import type { Conversation } from "@/components/chat/types";
-import { Tutorial } from "@/components/chat/Tutorial";
+import { Onboarding } from "@/components/chat/Onboarding";
+
 
 
 export default function ChatPage() {
@@ -220,7 +221,8 @@ function ChatPageContent() {
 
 	return (
 		<SidebarProvider defaultOpen={true}>
-			<Tutorial />
+			<Onboarding />
+
 			<Sidebar
 				conversations={conversations}
 				currentConversationId={currentConversationId}

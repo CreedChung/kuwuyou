@@ -14,7 +14,6 @@ import { cn } from "@/lib/utils";
 export type SettingSection =
 	| "general"
 	| "notifications"
-	| "connections"
 	| "data"
 	| "security"
 	| "account";
@@ -28,7 +27,6 @@ interface SidebarItem {
 const sidebarItems: SidebarItem[] = [
 	{ id: "general", label: "常规", icon: Settings },
 	{ id: "notifications", label: "通知", icon: Bell },
-	{ id: "connections", label: "API 连接", icon: Key },
 	{ id: "data", label: "数据管理", icon: Database },
 	{ id: "security", label: "安全", icon: Shield },
 	{ id: "account", label: "账户", icon: UserCircle },

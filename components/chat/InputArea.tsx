@@ -14,7 +14,7 @@ import {
 	ChevronDown,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useSpeechInput } from "../../hooks/useSpeechInput";
 import { extractTextFromFile, truncateText, formatFileSize } from "@/utils/fileProcessor";
 
@@ -90,23 +90,24 @@ export function InputArea({
 	}, [isActive, inputValue]);
 
 	// Close input when clicking outside
-	useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (
-				wrapperRef.current &&
-				!wrapperRef.current.contains(event.target as Node)
-			) {
-				if (!inputValue) setIsActive(false);
-			}
-		};
-
-		document.addEventListener("mousedown", handleClickOutside);
-		return () => document.removeEventListener("mousedown", handleClickOutside);
+	// Memoize handleClickOutside to avoid recreating the function
+	const handleClickOutside = useCallback((event: MouseEvent) => {
+		if (
+			wrapperRef.current &&
+			!wrapperRef.current.contains(event.target as Node)
+		) {
+			if (!inputValue) setIsActive(false);
+		}
 	}, [inputValue]);
 
-	const handleActivate = () => setIsActive(true);
+	useEffect(() => {
+		document.addEventListener("mousedown", handleClickOutside);
+		return () => document.removeEventListener("mousedown", handleClickOutside);
+	}, [handleClickOutside]);
 
-	const handleSubmit = (e: React.FormEvent) => {
+	const handleActivate = useCallback(() => setIsActive(true), []);
+
+	const handleSubmit = useCallback((e: React.FormEvent) => {
 		e.preventDefault();
 		if (inputValue.trim() && !isGenerating) {
 			// 根据按钮状态决定启用哪些功能
@@ -122,10 +123,10 @@ export function InputArea({
 			setFileContent("");
 			resetTranscript();
 		}
-	};
+	}, [inputValue, isGenerating, thinkActive, deepSearchActive, webSearchActive, uploadedFile, fileContent, onSendMessage, resetTranscript]);
 
-	// 处理文件上传
-	const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+	// 处理文件上传 - memoized to prevent recreation
+	const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
 
@@ -156,21 +157,21 @@ export function InputArea({
 				fileInputRef.current.value = "";
 			}
 		}
-	};
+	}, []);
 
-	// 移除已上传的文件
-	const handleRemoveFile = () => {
+	// 移除已上传的文件 - memoized
+	const handleRemoveFile = useCallback(() => {
 		setUploadedFile(null);
 		setFileContent("");
-	};
+	}, []);
 
-	// 触发文件选择
-	const handleFileButtonClick = () => {
+	// 触发文件选择 - memoized
+	const handleFileButtonClick = useCallback(() => {
 		fileInputRef.current?.click();
-	};
+	}, []);
 
-	// 处理语音输入
-	const handleVoiceInput = () => {
+	// 处理语音输入 - memoized
+	const handleVoiceInput = useCallback(() => {
 		if (!browserSupportsSpeechRecognition) {
 			alert(
 				"您的浏览器不支持语音识别功能。请使用 Chrome、Edge 或 Safari 浏览器。",
@@ -191,14 +192,14 @@ export function InputArea({
 		} catch (error) {
 			alert(error instanceof Error ? error.message : "启动语音识别失败");
 		}
-	};
+	}, [browserSupportsSpeechRecognition, isMicrophoneAvailable, listening, toggleListening]);
 
-	const handleKeyDown = (e: React.KeyboardEvent) => {
+	const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
 		if (e.key === "Enter" && !e.shiftKey) {
 			e.preventDefault();
 			handleSubmit(e);
 		}
-	};
+	}, [handleSubmit]);
 
 	const containerVariants = {
 		default: {
@@ -213,39 +214,6 @@ export function InputArea({
 		},
 	};
 
-	const placeholderContainerVariants = {
-		initial: {},
-		animate: { transition: { staggerChildren: 0.025 } },
-		exit: { transition: { staggerChildren: 0.015, staggerDirection: -1 } },
-	};
-
-	const letterVariants = {
-		initial: {
-			opacity: 0,
-			filter: "blur(12px)",
-			y: 10,
-		},
-		animate: {
-			opacity: 1,
-			filter: "blur(0px)",
-			y: 0,
-			transition: {
-				opacity: { duration: 0.25 },
-				filter: { duration: 0.4 },
-				y: { type: "spring" as const, stiffness: 80, damping: 20 },
-			},
-		},
-		exit: {
-			opacity: 0,
-			filter: "blur(12px)",
-			y: -10,
-			transition: {
-				opacity: { duration: 0.2 },
-				filter: { duration: 0.3 },
-				y: { type: "spring" as const, stiffness: 80, damping: 20 },
-			},
-		},
-	};
 
 	return (
 		<div className="border-t border-border bg-background">
@@ -330,37 +298,27 @@ export function InputArea({
 									disabled={isGenerating}
 								/>
 								<div className="absolute left-0 top-0 w-full h-full pointer-events-none flex items-center px-3 py-2">
-									<AnimatePresence mode="wait">
-										{showPlaceholder && !isActive && !inputValue && (
-											<motion.span
-												key={placeholderIndex}
-												className="absolute left-0 top-1/2 -translate-y-1/2 text-muted-foreground select-none pointer-events-none"
-												style={{
-													whiteSpace: "nowrap",
-													overflow: "hidden",
-													textOverflow: "ellipsis",
-													zIndex: 0,
-												}}
-												variants={placeholderContainerVariants}
-												initial="initial"
-												animate="animate"
-												exit="exit"
-											>
-												{PLACEHOLDERS[placeholderIndex]
-													.split("")
-													.map((char, i) => (
-													        <motion.span
-													                key={`placeholder-${placeholderIndex}-char-${i}`}
-															variants={letterVariants}
-															style={{ display: "inline-block" }}
-														>
-															{char === " " ? "\u00A0" : char}
-														</motion.span>
-													))}
-											</motion.span>
-										)}
-									</AnimatePresence>
-								</div>
+					<AnimatePresence mode="wait">
+						{showPlaceholder && !isActive && !inputValue && (
+							<motion.span
+								key={placeholderIndex}
+								className="absolute left-0 top-1/2 -translate-y-1/2 text-muted-foreground select-none pointer-events-none"
+								style={{
+									whiteSpace: "nowrap",
+									overflow: "hidden",
+									textOverflow: "ellipsis",
+									zIndex: 0,
+								}}
+								initial={{ opacity: 0, y: 5 }}
+								animate={{ opacity: 1, y: 0 }}
+								exit={{ opacity: 0, y: -5 }}
+								transition={{ duration: 0.3 }}
+							>
+								{PLACEHOLDERS[placeholderIndex]}
+							</motion.span>
+						)}
+					</AnimatePresence>
+				</div>
 							</div>
 
 							<button
@@ -423,7 +381,7 @@ export function InputArea({
 
 						{/* 知识库按钮 */}
 						<button
-							id="tutorial-knowledge-base"
+							id="tutorial-knowledge-retrieval"
 							type="button"
 							onClick={() => setDeepSearchActive(!deepSearchActive)}
 							className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${

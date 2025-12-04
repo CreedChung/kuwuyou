@@ -61,10 +61,13 @@ export function PersonalizationSettings({
 										</Badge>
 									</div>
 								</SelectItem>
-								<SelectItem value="glm-4-flash">
+								<SelectItem value="glm-4.5-flash">
 									<div className="flex items-center gap-2">
 										<Zap className="h-4 w-4 text-blue-500" />
-										<span>GLM-4 Flash</span>
+										<span>GLM-4.5 Flash</span>
+										<Badge variant="secondary" className="ml-auto text-xs">
+											免费
+										</Badge>
 									</div>
 								</SelectItem>
 								<SelectItem value="glm-4v-plus">

@@ -9,6 +9,27 @@ import type { Message, AnalysisItem, KnowledgeReference } from "@/components/cha
 import { chatSystemPrompt } from "@/utils/prompt";
 import { detectAnalysisKeyword } from "@/utils/fileProcessor";
 
+async function selectPrompt(userMessage: string): Promise<string> {
+  try {
+    const response = await fetch("/api/prompt-selector", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userMessage }),
+    });
+    
+    if (!response.ok) {
+      console.warn("提示词选择失败，使用默认提示词");
+      return chatSystemPrompt;
+    }
+    
+    const data = await response.json();
+    return data.prompt || chatSystemPrompt;
+  } catch (error) {
+    console.error("提示词选择错误:", error);
+    return chatSystemPrompt;
+  }
+}
+
 export interface ChatOptions {
   showThinking?: boolean;
   showReferences?: boolean;
@@ -225,15 +246,16 @@ export function useChat() {
    */
   const processChatStream = useCallback(async (
     messages: ChatMessage[],
-    options: ChatOptions
+    options: ChatOptions,
+    systemPrompt: string
   ): Promise<void> => {
     const stream = chatService.chatCompletionStream(
       messages,
       {
-        useKnowledge: false, // 不使用API内置的知识库检索
+        useKnowledge: false,
         useWebSearch: false,
-        useThinking: true,   // 启用思维链
-        systemPrompt: chatSystemPrompt,
+        useThinking: true,
+        systemPrompt,
       }
     );
 
@@ -366,8 +388,9 @@ export function useChat() {
         return;
       }
 
+      const selectedPrompt = await selectPrompt(content);
       const contextMessages = buildContextMessages(content, retrievalContext);
-      await processChatStream(contextMessages, options);
+      await processChatStream(contextMessages, options, selectedPrompt);
 
     } catch (error) {
       console.error("发送消息失败:", error);
