@@ -23,6 +23,12 @@ async function selectPrompt(userMessage: string): Promise<string> {
     }
     
     const data = await response.json();
+    
+    // 如果有回退标识，记录日志
+    if (data.fallback) {
+      console.log("提示词选择使用回退模式:", data.error);
+    }
+    
     return data.prompt || chatSystemPrompt;
   } catch (error) {
     console.error("提示词选择错误:", error);
@@ -37,6 +43,7 @@ export interface ChatOptions {
   knowledgeId?: string;
   uploadedFile?: File;
   fileContent?: string;
+  systemPrompt?: string;
 }
 
 export interface RetrievalContext {
@@ -246,8 +253,7 @@ export function useChat() {
    */
   const processChatStream = useCallback(async (
     messages: ChatMessage[],
-    options: ChatOptions,
-    systemPrompt: string
+    options: ChatOptions
   ): Promise<void> => {
     const stream = chatService.chatCompletionStream(
       messages,
@@ -255,7 +261,7 @@ export function useChat() {
         useKnowledge: false,
         useWebSearch: false,
         useThinking: true,
-        systemPrompt,
+        systemPrompt: options.systemPrompt,
       }
     );
 
@@ -388,9 +394,18 @@ export function useChat() {
         return;
       }
 
-      const selectedPrompt = await selectPrompt(content);
+      let selectedPrompt = chatSystemPrompt;
+      try {
+        selectedPrompt = await selectPrompt(content);
+      } catch (error) {
+        console.warn("提示词选择失败，使用默认提示词:", error);
+      }
+      
       const contextMessages = buildContextMessages(content, retrievalContext);
-      await processChatStream(contextMessages, options, selectedPrompt);
+      await processChatStream(contextMessages, {
+        ...options,
+        systemPrompt: selectedPrompt,
+      });
 
     } catch (error) {
       console.error("发送消息失败:", error);

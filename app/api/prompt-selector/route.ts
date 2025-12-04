@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "glm-4.5-flash",
+        model: "glm-4.5-air",
         messages: [
           { role: "system", content: promptSelectorSystemPrompt },
           { role: "user", content: userMessage }
@@ -63,6 +63,18 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.warn(`提示词选择请求失败 (${response.status}): ${errorText}`);
+      
+      // 429错误回退到默认模式
+      if (response.status === 429) {
+        return NextResponse.json({
+          mode: "chat",
+          prompt: promptMap.chat,
+          fallback: true,
+          error: "API请求过多，使用默认提示词",
+        });
+      }
+      
       throw new Error(`请求失败 (${response.status}): ${errorText}`);
     }
 
@@ -83,13 +95,13 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error("提示词选择错误:", error);
-    return NextResponse.json(
-      { 
-        error: error instanceof Error ? error.message : "选择失败",
-        mode: "chat",
-        prompt: promptMap.chat,
-      },
-      { status: 500 }
-    );
+    
+    // 任何错误都回退到默认模式
+    return NextResponse.json({
+      mode: "chat",
+      prompt: promptMap.chat,
+      fallback: true,
+      error: error instanceof Error ? error.message : "选择失败，使用默认提示词",
+    });
   }
 }
