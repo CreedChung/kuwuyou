@@ -45,7 +45,7 @@ export const ChatArea = memo(function ChatArea({
 						<div className="text-center space-y-6 px-4 max-w-3xl">
 							<div className="mx-auto w-20 h-20 rounded-2xl overflow-hidden shadow-lg">
 								<img
-									src="/logo.jpg"
+									src="/icon.jpg"
 									alt="库无忧助手"
 									className="w-full h-full object-cover"
 								/>

@@ -38,14 +38,14 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
 		title: "知识库检索",
 		description: "开启后,我会从您的文档资料中寻找答案",
 		targetId: "tutorial-knowledge-retrieval",
-		position: "bottom",
+		position: "center",
 	},
 	{
 		id: "input",
 		title: "输入问题",
 		description: "在这里输入您的问题,支持联网搜索、深度思考等功能",
 		targetId: "tutorial-input-field",
-		position: "top",
+		position: "center",
 	},
 	{
 		id: "done",
@@ -235,78 +235,91 @@ export function Onboarding() {
 	);
 }
 
-// 计算提示框位置
 function getTooltipPosition(
 	position: "top" | "bottom" | "left" | "right",
 	targetPosition: { top: number; left: number; width: number; height: number }
 ): React.CSSProperties {
 	const offset = 16;
+	const padding = 20;
 	const viewportWidth = typeof window !== "undefined" ? window.innerWidth : 1024;
 	const viewportHeight = typeof window !== "undefined" ? window.innerHeight : 768;
-	const tooltipHeight = 300; // 预估提示框高度
-	const tooltipWidth = 384; // max-w-sm 约为 384px
+	const tooltipHeight = 300;
+	const tooltipWidth = 384;
 
 	let finalPosition = position;
 
-	// 智能调整位置
 	switch (position) {
 		case "bottom":
-			// 如果底部空间不足，且顶部空间充足，则显示在顶部
 			if (
-				viewportHeight - (targetPosition.top + targetPosition.height) < tooltipHeight &&
-				targetPosition.top > tooltipHeight
+				viewportHeight - (targetPosition.top + targetPosition.height) < tooltipHeight + padding &&
+				targetPosition.top > tooltipHeight + padding
 			) {
 				finalPosition = "top";
 			}
 			break;
 		case "top":
-			// 如果顶部空间不足，且底部空间充足，则显示在底部
-			if (targetPosition.top < tooltipHeight && viewportHeight - (targetPosition.top + targetPosition.height) > tooltipHeight) {
+			if (targetPosition.top < tooltipHeight + padding && viewportHeight - (targetPosition.top + targetPosition.height) > tooltipHeight + padding) {
 				finalPosition = "bottom";
 			}
 			break;
 		case "right":
-			// 如果右侧空间不足，且左侧空间充足，则显示在左侧
 			if (
-				viewportWidth - (targetPosition.left + targetPosition.width) < tooltipWidth &&
-				targetPosition.left > tooltipWidth
+				viewportWidth - (targetPosition.left + targetPosition.width) < tooltipWidth + padding &&
+				targetPosition.left > tooltipWidth + padding
 			) {
 				finalPosition = "left";
 			}
 			break;
 		case "left":
-			// 如果左侧空间不足，且右侧空间充足，则显示在右侧
-			if (targetPosition.left < tooltipWidth && viewportWidth - (targetPosition.left + targetPosition.width) > tooltipWidth) {
+			if (targetPosition.left < tooltipWidth + padding && viewportWidth - (targetPosition.left + targetPosition.width) > tooltipWidth + padding) {
 				finalPosition = "right";
 			}
 			break;
 	}
 
+	const style: React.CSSProperties = {};
+
 	switch (finalPosition) {
-		case "top":
+		case "top": {
+			let left = targetPosition.left + targetPosition.width / 2;
+			left = Math.max(tooltipWidth / 2 + padding, Math.min(left, viewportWidth - tooltipWidth / 2 - padding));
+			
 			return {
-				left: targetPosition.left + targetPosition.width / 2,
-				top: targetPosition.top - offset,
+				left,
+				top: Math.max(padding, targetPosition.top - offset),
 				transform: "translate(-50%, -100%)",
 			};
-		case "bottom":
+		}
+		case "bottom": {
+			let left = targetPosition.left + targetPosition.width / 2;
+			left = Math.max(tooltipWidth / 2 + padding, Math.min(left, viewportWidth - tooltipWidth / 2 - padding));
+			
 			return {
-				left: targetPosition.left + targetPosition.width / 2,
-				top: targetPosition.top + targetPosition.height + offset,
+				left,
+				top: Math.min(viewportHeight - tooltipHeight - padding, targetPosition.top + targetPosition.height + offset),
 				transform: "translateX(-50%)",
 			};
-		case "left":
+		}
+		case "left": {
+			let top = targetPosition.top + targetPosition.height / 2;
+			top = Math.max(tooltipHeight / 2 + padding, Math.min(top, viewportHeight - tooltipHeight / 2 - padding));
+			
 			return {
-				left: targetPosition.left - offset,
-				top: targetPosition.top + targetPosition.height / 2,
+				left: Math.max(padding, targetPosition.left - offset),
+				top,
 				transform: "translate(-100%, -50%)",
 			};
-		case "right":
+		}
+		case "right": {
+			let top = targetPosition.top + targetPosition.height / 2;
+			top = Math.max(tooltipHeight / 2 + padding, Math.min(top, viewportHeight - tooltipHeight / 2 - padding));
+			
 			return {
-				left: targetPosition.left + targetPosition.width + offset,
-				top: targetPosition.top + targetPosition.height / 2,
+				left: Math.min(viewportWidth - tooltipWidth - padding, targetPosition.left + targetPosition.width + offset),
+				top,
 				transform: "translateY(-50%)",
 			};
+		}
 		default:
 			return {};
 	}

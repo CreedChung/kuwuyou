@@ -8,9 +8,9 @@ export const metadata: Metadata = {
 	title: "库无忧助手",
 	description: "您的智能AI助手",
 	icons: {
-		icon: "/logo.jpg",
-		shortcut: "/logo.jpg",
-		apple: "/logo.jpg",
+		icon: "/icon.jpg",
+		shortcut: "/icon.jpg",
+		apple: "/icon.jpg",
 	},
 };
 
