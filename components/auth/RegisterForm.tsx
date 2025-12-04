@@ -159,8 +159,8 @@ export function RegisterForm() {
 	};
 
 	return (
-		<Card className="border-gray-200 shadow-2xl backdrop-blur-xl bg-white/90 overflow-hidden">
-			<div className="absolute inset-0 bg-linear-to-br from-purple-50/50 to-pink-50/50 pointer-events-none" />
+		<Card className="border-white/40 shadow-2xl backdrop-blur-xl bg-white/95 overflow-hidden">
+			<div className="absolute inset-0 bg-gradient-to-br from-white/30 to-gray-50/30 pointer-events-none" />
 
 			<CardHeader className="relative">
 				{/* 返回主页按钮 */}
@@ -199,7 +199,7 @@ export function RegisterForm() {
 							用户名
 						</Label>
 						<div className="relative">
-							<User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+							<User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-600" />
 							<Input
 								id={usernameId}
 								type="text"
@@ -211,7 +211,7 @@ export function RegisterForm() {
 										username: e.target.value,
 									})
 								}
-								className="pl-10 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-purple-500 focus:ring-purple-500/20 transition-all"
+								className="pl-10 bg-white/80 border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-600 focus:ring-blue-600/20 transition-all"
 							/>
 						</div>
 					</div>
@@ -222,7 +222,7 @@ export function RegisterForm() {
 							邮箱地址
 						</Label>
 						<div className="relative">
-							<Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+							<Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-600" />
 							<Input
 								id={emailId}
 								type="email"
@@ -234,7 +234,7 @@ export function RegisterForm() {
 										email: e.target.value,
 									})
 								}
-								className="pl-10 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-purple-500 focus:ring-purple-500/20 transition-all"
+								className="pl-10 bg-white/80 border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-600 focus:ring-blue-600/20 transition-all"
 							/>
 						</div>
 					</div>
@@ -245,7 +245,7 @@ export function RegisterForm() {
 							密码
 						</Label>
 						<div className="relative">
-							<Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+							<Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-600" />
 							<Input
 								id={passwordId}
 								type={showPassword ? "text" : "password"}
@@ -257,12 +257,12 @@ export function RegisterForm() {
 										password: e.target.value,
 									})
 								}
-								className="pl-10 pr-10 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-purple-500 focus:ring-purple-500/20 transition-all"
+								className="pl-10 pr-10 bg-white/80 border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-600 focus:ring-blue-600/20 transition-all"
 							/>
 							<button
 								type="button"
 								onClick={() => setShowPassword(!showPassword)}
-								className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+								className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-600 hover:text-blue-800 transition-colors"
 							>
 								{showPassword ? (
 									<EyeOff className="w-4 h-4" />
@@ -290,7 +290,7 @@ export function RegisterForm() {
 							确认密码
 						</Label>
 						<div className="relative">
-							<Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+							<Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-600" />
 							<Input
 								id={confirmPasswordId}
 								type={showConfirmPassword ? "text" : "password"}
@@ -302,12 +302,12 @@ export function RegisterForm() {
 										confirmPassword: e.target.value,
 									})
 								}
-								className="pl-10 pr-10 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-purple-500 focus:ring-purple-500/20 transition-all"
+								className="pl-10 pr-10 bg-white/80 border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-600 focus:ring-blue-600/20 transition-all"
 							/>
 							<button
 								type="button"
 								onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-								className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+								className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-600 hover:text-blue-800 transition-colors"
 							>
 								{showConfirmPassword ? (
 									<EyeOff className="w-4 h-4" />
@@ -336,7 +336,7 @@ export function RegisterForm() {
 				<CardFooter className="flex flex-col gap-4 relative">
 					<Button
 						type="submit"
-						className="w-full bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium shadow-lg shadow-purple-500/25 transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+						className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-medium shadow-lg shadow-blue-600/30 transition-all transform hover:scale-[1.02] active:scale-[0.98]"
 						disabled={isLoading}
 					>
 						{isLoading ? (
@@ -356,7 +356,7 @@ export function RegisterForm() {
 						已有账号?{" "}
 						<Link
 							href="/auth/login"
-							className="text-purple-600 hover:text-purple-700 hover:underline font-medium transition-colors"
+							className="text-blue-600 hover:text-blue-700 hover:underline font-medium transition-colors"
 						>
 							立即登录
 						</Link>

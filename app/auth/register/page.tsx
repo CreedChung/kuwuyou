@@ -14,7 +14,7 @@ export default function RegisterPage() {
 			<div className="w-full max-w-md relative z-10">
 				{/* 标题 */}
 				<div className="text-center mb-8">
-					<h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
+					<h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-cyan-600 to-sky-600 bg-clip-text text-transparent">
 						库无忧助手
 					</h1>
 				</div>
@@ -26,14 +26,14 @@ export default function RegisterPage() {
 					继续即表示您同意我们的{" "}
 					<Link
 						href="/terms"
-						className="text-purple-600 hover:text-purple-700 hover:underline transition-colors"
+						className="text-blue-600 hover:text-blue-700 hover:underline transition-colors"
 					>
 						服务条款
 					</Link>{" "}
 					和{" "}
 					<Link
 						href="/privacy"
-						className="text-purple-600 hover:text-purple-700 hover:underline transition-colors"
+						className="text-blue-600 hover:text-blue-700 hover:underline transition-colors"
 					>
 						隐私政策
 					</Link>
