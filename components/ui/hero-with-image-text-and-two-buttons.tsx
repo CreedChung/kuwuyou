@@ -23,7 +23,7 @@ function Hero() {
 		<div className="w-full pb-10 lg:pb-20">
 			<div className="container mx-auto">
 				<div className="flex flex-col gap-8 items-center">
-					<div className="bg-muted rounded-md w-80 md:w-96 overflow-hidden">
+					<div className=" rounded-md w-80 md:w-96 overflow-hidden">
 						<img
 							src="/logo.jpg"
 							alt="库无忧智能库存管理系统"

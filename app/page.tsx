@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export default function HomePage() {
 	return (
-		<div className="min-h-screen flex flex-col">
+		<div className="min-h-screen flex flex-col bg-[url('/bg.webp')] bg-cover bg-center bg-fixed">
 			<Header />
 			<div className="flex-1">
 				<HeroDemo />
