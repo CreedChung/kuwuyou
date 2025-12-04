@@ -163,6 +163,29 @@ export function RegisterForm() {
 			<div className="absolute inset-0 bg-linear-to-br from-purple-50/50 to-pink-50/50 pointer-events-none" />
 
 			<CardHeader className="relative">
+				{/* 返回主页按钮 */}
+				<Link
+					href="/"
+					className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-4 transition-colors group"
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						className="w-5 h-5 transition-transform group-hover:-translate-x-1"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+						aria-hidden="true"
+					>
+						<title>返回箭头</title>
+						<path
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							strokeWidth={2}
+							d="M10 19l-7-7m0 0l7-7m-7 7h18"
+						/>
+					</svg>
+					<span className="font-medium">返回主页</span>
+				</Link>
 				<CardTitle className="text-2xl text-center text-gray-800">
 					注册账号
 				</CardTitle>
