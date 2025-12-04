@@ -1,6 +1,6 @@
 /**
  * 分析API - 第二步结构化总结
- * 使用analysisSummaryPrompt + glm-4.5-flash 生成JSON格式结果
+ * 使用analysisSummaryPrompt + glm-4.5-air 生成JSON格式结果
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     }
 
     const requestBody = {
-      model: "glm-4.5-flash",
+      model: "glm-4.5-air",
       messages: [
         {
           role: "system",

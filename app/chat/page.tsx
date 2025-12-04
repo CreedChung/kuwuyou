@@ -12,6 +12,7 @@ import { useRetrieval } from "@/hooks/useRetrieval";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import type { Conversation } from "@/components/chat/types";
 import { Onboarding } from "@/components/chat/Onboarding";
+import { sliceText, joinSlices } from "@/utils/textSlicer";
 
 
 
@@ -135,9 +136,28 @@ function ChatPageContent() {
 					};
 
 					const isAnalysisMode = !!options?.fileContent;
-					const queryForRetrieval = isAnalysisMode ? (options.fileContent || content) : content;
+					let queryForRetrieval: string;
 					
-					console.log(isAnalysisMode ? "📊 分析模式：使用文件内容作为检索关键词" : "💬 对话模式：使用用户提问作为检索关键词");
+					if (isAnalysisMode && options.fileContent) {
+						const fileContent = options.fileContent;
+						console.log("📊 分析模式：文件内容长度", fileContent.length, "字符");
+						
+						if (fileContent.length > 1000) {
+							const slices = sliceText(fileContent, {
+								sliceLength: 100,
+								maxSlices: 10,
+								random: true,
+							});
+							queryForRetrieval = joinSlices(slices);
+							console.log("✂️ 文件内容过长，已切片：", slices.length, "片，总长度", queryForRetrieval.length, "字符");
+						} else {
+							queryForRetrieval = fileContent;
+							console.log("✅ 文件内容长度适中，无需切片");
+						}
+					} else {
+						queryForRetrieval = content;
+						console.log("💬 对话模式：使用用户提问作为检索关键词");
+					}
 
 					const retrievalResult = await performRetrieval(queryForRetrieval, retrievalOptions);
 					
