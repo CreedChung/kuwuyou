@@ -63,22 +63,27 @@ export function GeneralSettings({
 									type="button"
 									onClick={() => setTheme(option.value)}
 									className={`
-										relative flex flex-col items-start gap-2 p-4 rounded-lg border-2 transition-all
+										relative flex flex-col items-start gap-2 p-4 rounded-lg border-2 transition-all overflow-hidden group
 										${theme === option.value
-											? 'border-primary bg-primary/5 shadow-sm'
+											? option.value === 'tech'
+												? 'border-primary bg-primary/10 shadow-[0_0_20px_-5px_var(--primary)]'
+												: 'border-primary bg-primary/5 shadow-sm'
 											: 'border-border bg-muted/30 hover:border-primary/50 hover:bg-muted/50'
 										}
 									`}
 								>
-									<div className="flex items-center gap-2 text-foreground">
+									{option.value === 'tech' && theme === 'tech' && (
+										<div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-50" />
+									)}
+									<div className="flex items-center gap-2 text-foreground relative z-10">
 										{option.icon}
 										<span className="font-medium">{option.label}</span>
 									</div>
-									<p className="text-xs text-muted-foreground text-left">
+									<p className="text-xs text-muted-foreground text-left relative z-10">
 										{option.description}
 									</p>
 									{theme === option.value && (
-										<div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary" />
+										<div className={`absolute top-2 right-2 h-2 w-2 rounded-full ${option.value === 'tech' ? 'bg-primary shadow-[0_0_8px_var(--primary)]' : 'bg-primary'}`} />
 									)}
 								</button>
 							))}
