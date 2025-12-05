@@ -31,7 +31,7 @@ export function Footer({
 	copyright,
 }: FooterProps) {
 	return (
-		<footer className="pb-6 pt-16 lg:pb-8 lg:pt-24">
+		<footer className="pb-6 pt-16 lg:pb-8 lg:pt-24 bg-white">
 			<div className="px-4 lg:px-8">
 				<div className="md:flex md:items-start md:justify-between">
 					<ul className="flex list-none mt-6 md:mt-0 space-x-3">
@@ -55,7 +55,7 @@ export function Footer({
 					<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 						<div className="flex items-center space-x-3">
 							{logo}
-							<span className="text-sm font-medium text-white">
+							<span className="text-sm font-medium text-black">
 								{brandName}
 							</span>
 						</div>
@@ -78,9 +78,9 @@ export function Footer({
 									))}
 								</div>
 							)}
-							<div className="whitespace-nowrap text-white">
-								<div className="text-white">{copyright.text}</div>
-								{copyright.license && <div className="text-white">{copyright.license}</div>}
+							<div className="whitespace-nowrap text-black">
+								<div className="text-black">{copyright.text}</div>
+								{copyright.license && <div className="text-black">{copyright.license}</div>}
 							</div>
 						</div>
 					</div>

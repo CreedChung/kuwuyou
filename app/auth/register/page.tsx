@@ -7,9 +7,7 @@ import { RegisterForm } from "@/components/auth/RegisterForm";
 
 export default function RegisterPage() {
 	return (
-		<div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden" style={{ backgroundImage: "url('/bg1.webp')", backgroundSize: "cover", backgroundPosition: "center" }}>
-			{/* 背景遮罩 */}
-			<div className="absolute inset-0 bg-black/20 pointer-events-none" />
+		<div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
 
 			<div className="w-full max-w-md relative z-10">
 				{/* 标题 */}

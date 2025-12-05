@@ -67,9 +67,7 @@ export default function LoginPage() {
 	};
 
 	return (
-		<div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden" style={{ backgroundImage: "url('/bg1.webp')", backgroundSize: "cover", backgroundPosition: "center" }}>
-			{/* 背景遮罩 */}
-			<div className="absolute inset-0 bg-black/20 pointer-events-none" />
+		<div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
 
 			<div className="w-full max-w-md relative z-10">
 				{/* 标题 */}
@@ -251,7 +249,7 @@ export default function LoginPage() {
 				</Card>
 
 				{/* 底部说明 */}
-				<p className="text-center text-xs text-white mt-6">
+				<p className="text-center text-xs text-gray-600 mt-6">
 					继续即表示您同意我们的{" "}
 					<Link
 						href="/terms"
