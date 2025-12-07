@@ -283,7 +283,7 @@ class ChatService {
 
 					try {
 						const parsed: ChatCompletionChunk = JSON.parse(data);
-						
+
 						for (const choice of parsed.choices) {
 							// 处理完成原因
 							if (choice.finish_reason) {

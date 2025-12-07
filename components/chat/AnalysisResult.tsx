@@ -5,13 +5,7 @@
 
 import { Card } from "@/components/ui/card";
 import { AlertCircle, CheckCircle, FileText, Lightbulb } from "lucide-react";
-
-export interface AnalysisItem {
-  origin: string;
-  reason: string;
-  issueDes: string;
-  suggestion: string;
-}
+import { AnalysisItem } from "./types";
 
 interface AnalysisResultProps {
   results: AnalysisItem[];
@@ -34,11 +28,18 @@ export function AnalysisResult({ results }: AnalysisResultProps) {
           <Card key={index} className="p-4 space-y-3 border-l-4 border-l-orange-500">
             {/* 原句 */}
             <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-orange-500 flex-shrink-0" />
-                <span className="text-xs font-semibold text-orange-600 dark:text-orange-400">
-                  原句
-                </span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-orange-500 flex-shrink-0" />
+                  <span className="text-xs font-semibold text-orange-600 dark:text-orange-400">
+                    原句
+                  </span>
+                </div>
+                {item.location && (
+                  <span className="text-xs font-mono font-bold bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300 px-2 py-0.5 rounded border border-orange-200 dark:border-orange-800">
+                    位置: {item.location}
+                  </span>
+                )}
               </div>
               <p className="text-sm bg-orange-50 dark:bg-orange-950/30 p-2 rounded border border-orange-200 dark:border-orange-800">
                 {item.origin}

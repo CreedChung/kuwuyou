@@ -1,21 +1,21 @@
 // 智谱API相关类型定义
 
 // 消息内容类型
-export type MessageContentType = 
-  | "text" 
-  | "image" 
-  | "video" 
-  | "qa" 
-  | "computer_call" 
+export type MessageContentType =
+  | "text"
+  | "image"
+  | "video"
+  | "qa"
+  | "computer_call"
   | "all_tools"
   | "process_thinking"
   | "process_text";
 
 // 节点事件类型
-export type NodeEventType = 
-  | "node_processing" 
-  | "node_finish" 
-  | "tool_processing" 
+export type NodeEventType =
+  | "node_processing"
+  | "node_finish"
+  | "tool_processing"
   | "tool_finish"
   | "loop_processing";
 
@@ -115,7 +115,7 @@ export interface Message {
   timestamp?: number;
   error?: string;
   isStreaming?: boolean;
-  
+
   // 智谱API扩展字段
   contentData?: MessageContentData; // 结构化内容
   events?: NodeEvent[]; // 节点执行事件
@@ -140,6 +140,7 @@ export interface KnowledgeReference {
 
 // 分析结果项
 export interface AnalysisItem {
+  location?: string; // 问题在原文中的定位编号（如 3.1、4.2.1 或 ①）
   origin: string; // 待检测内容中的原句
   reason: string; // 知识库/搜索工具返回的具体依据内容，注明来源
   issueDes: string; // 指出问题的性质、标准缺失或不一致点

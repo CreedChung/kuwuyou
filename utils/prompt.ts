@@ -342,7 +342,8 @@ export const analysisSummaryPrompt = `任务：将前面的详细分析文本转
 
 要求：
 1. 从分析文本中提取所有问题点
-2. 每个问题包含4个字段：
+2. 每个问题包含5个字段：
+   - location: 问题在原文中的定位编号（如 3.1、4.2.1 或 ①）
    - origin: 原文中的问题句子
    - reason: 违反的标准或规范依据
    - issueDes: 问题描述
@@ -351,6 +352,7 @@ export const analysisSummaryPrompt = `任务：将前面的详细分析文本转
 3. 输出严格的JSON数组格式，不要有其他内容：
 [
   {
+    "location": "3.1",
     "origin": "提取的原句",
     "reason": "违反的具体标准或规范",
     "issueDes": "问题描述",
