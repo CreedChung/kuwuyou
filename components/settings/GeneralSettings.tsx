@@ -1,5 +1,5 @@
-import { Moon, Palette, Sun, Sparkles } from "lucide-react";
-import { useId } from "react";
+import { Moon, Palette, Sun, Sparkles, HelpCircle } from "lucide-react";
+import { useId, useState } from "react";
 import {
 	Card,
 	CardContent,
@@ -10,6 +10,9 @@ import {
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useThemeStore, type Theme } from "@/stores/themeStore";
+import { resetTutorial } from "@/utils/tutorialManager";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/useToast";
 
 interface GeneralSettingsProps {
 	darkMode: boolean;
@@ -22,6 +25,15 @@ export function GeneralSettings({
 }: GeneralSettingsProps) {
 	const darkModeId = useId();
 	const { theme, setTheme } = useThemeStore();
+	const { toast } = useToast();
+
+	const handleResetTutorial = () => {
+		resetTutorial();
+		toast({
+			title: "新手教程已重置",
+			description: "下次进入聊天页面时将重新显示新手教程",
+		});
+	};
 
 	const themeOptions: { value: Theme; label: string; icon: React.ReactNode; description: string }[] = [
 		{
@@ -109,6 +121,35 @@ export function GeneralSettings({
 								onCheckedChange={onDarkModeToggle}
 							/>
 						</div>
+					</div>
+				</CardContent>
+			</Card>
+
+			<Card>
+				<CardHeader>
+					<CardTitle className="text-lg flex items-center gap-2">
+						<HelpCircle className="h-5 w-5" />
+						帮助与指引
+					</CardTitle>
+					<CardDescription>管理新手教程和帮助信息</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+						<div className="space-y-0.5">
+							<Label className="text-sm font-medium">
+								重置新手教程
+							</Label>
+							<p className="text-xs text-muted-foreground">
+								下次进入聊天页面时将重新显示新手教程
+							</p>
+						</div>
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={handleResetTutorial}
+						>
+							重置
+						</Button>
 					</div>
 				</CardContent>
 			</Card>

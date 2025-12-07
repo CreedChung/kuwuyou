@@ -107,7 +107,7 @@ export function Sidebar({
 	}
 
 	return (
-		<ShadcnSidebar collapsible="icon">
+		<ShadcnSidebar collapsible="icon" data-tutorial="sidebar">
 			<SidebarHeader className="flex flex-col gap-2">
 				<div className="flex items-center justify-end">
 					<Button
@@ -120,17 +120,16 @@ export function Sidebar({
 					</Button>
 				</div>
 				<Button
-					id="tutorial-new-chat"
 					onClick={onNewConversation}
 					className="w-full justify-start"
 					size="default"
 					variant="outline"
+					data-tutorial="new-conversation"
 				>
 					<MessageSquarePlus className="h-4 w-4" />
 					<span className="ml-2">新建对话</span>
 				</Button>
 				<Button
-					id="tutorial-search"
 					onClick={() => setSearchDialogOpen(true)}
 					className="w-full justify-start"
 					size="default"
@@ -140,11 +139,11 @@ export function Sidebar({
 					<span className="ml-2">搜索对话</span>
 				</Button>
 				<Button
-					id="tutorial-knowledge"
 					onClick={onOpenKnowledgeBase}
 					className="w-full justify-start"
 					size="default"
 					variant="outline"
+					data-tutorial="knowledge-base"
 				>
 					<BookOpen className="h-4 w-4" />
 					<span className="ml-2">知识库</span>
@@ -205,7 +204,6 @@ export function Sidebar({
 				<SidebarMenu>
 					<SidebarMenuItem>
 						<UserProfileDropdown
-							id="tutorial-user-profile"
 							user={{
 								name: userName,
 								handle: userHandle,

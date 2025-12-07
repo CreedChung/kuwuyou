@@ -216,7 +216,7 @@ export function InputArea({
 
 
 	return (
-		<div className="border-t border-border bg-background">
+		<div className="border-t border-border bg-background" data-tutorial="input-area">
 			<div className="mx-auto max-w-4xl px-4 py-6">
 				{/* 文件上传显示 - 移到输入框外部 */}
 				<AnimatePresence>
@@ -271,7 +271,6 @@ export function InputArea({
 								disabled={isGenerating || isProcessingFile}
 							/>
 							<button
-								id="tutorial-file-upload"
 								className={`p-3 rounded-full hover:bg-accent transition ${
 									isProcessingFile ? "opacity-50 cursor-not-allowed" : ""
 								} ${uploadedFile ? "text-primary" : ""}`}
@@ -280,6 +279,7 @@ export function InputArea({
 								tabIndex={-1}
 								onClick={handleFileButtonClick}
 								disabled={isGenerating || isProcessingFile}
+								data-tutorial="file-upload"
 							>
 								<Paperclip size={20} />
 							</button>
@@ -287,7 +287,6 @@ export function InputArea({
 							{/* Text Input & Placeholder */}
 							<div className="relative flex-1">
 								<input
-									id="tutorial-input-field"
 									type="text"
 									value={inputValue}
 									onChange={(e) => setInputValue(e.target.value)}
@@ -322,7 +321,6 @@ export function InputArea({
 							</div>
 
 							<button
-								id="tutorial-voice-input"
 								className={`p-3 rounded-full transition ${
 									listening
 										? "bg-red-500 hover:bg-red-600 text-white animate-pulse"
@@ -333,6 +331,7 @@ export function InputArea({
 								tabIndex={-1}
 								onClick={handleVoiceInput}
 								disabled={isGenerating}
+								data-tutorial="voice-input"
 							>
 								{listening ? <MicOff size={20} /> : <Mic size={20} />}
 							</button>
@@ -365,7 +364,6 @@ export function InputArea({
 					<div className="flex items-center gap-2 flex-wrap">
 						{/* 联网搜索按钮 */}
 						<button
-							id="tutorial-web-search"
 							type="button"
 							onClick={() => setWebSearchActive(!webSearchActive)}
 							className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
@@ -374,6 +372,7 @@ export function InputArea({
 									: "bg-muted text-muted-foreground hover:bg-muted/80"
 							}`}
 							title={webSearchActive ? "关闭联网搜索" : "开启联网搜索"}
+							data-tutorial="web-search"
 						>
 							<Globe size={14} />
 							<span>联网搜索</span>
@@ -381,7 +380,6 @@ export function InputArea({
 
 						{/* 知识库按钮 */}
 						<button
-							id="tutorial-knowledge-retrieval"
 							type="button"
 							onClick={() => setDeepSearchActive(!deepSearchActive)}
 							className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
@@ -390,6 +388,7 @@ export function InputArea({
 									: "bg-muted text-muted-foreground hover:bg-muted/80"
 							}`}
 							title={deepSearchActive ? "关闭知识库检索" : "开启知识库检索"}
+							data-tutorial="knowledge-search"
 						>
 							<BookOpen size={14} />
 							<span>知识库</span>
@@ -397,7 +396,6 @@ export function InputArea({
 
 						{/* 思考按钮 */}
 						<button
-							id="tutorial-deep-thinking"
 							type="button"
 							onClick={() => setThinkActive(!thinkActive)}
 							className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
@@ -406,6 +404,7 @@ export function InputArea({
 									: "bg-muted text-muted-foreground hover:bg-muted/80"
 							}`}
 							title={thinkActive ? "关闭深度思考" : "开启深度思考"}
+							data-tutorial="deep-thinking"
 						>
 							<Brain size={14} />
 							<span>深度思考</span>

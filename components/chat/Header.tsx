@@ -11,7 +11,6 @@ export function Header() {
 
 				<div className="flex items-center gap-2">
 					<button
-						id="tutorial-theme-toggle"
 						type="button"
 						className="rounded-lg p-2 text-black transition-colors hover:bg-accent"
 						aria-label="切换主题"

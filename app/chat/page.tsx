@@ -11,8 +11,9 @@ import { useChat } from "@/hooks/useChat";
 import { useRetrieval } from "@/hooks/useRetrieval";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import type { Conversation } from "@/components/chat/types";
-import { Onboarding } from "@/components/chat/Onboarding";
+
 import { sliceText, joinSlices } from "@/utils/textSlicer";
+import { ChatTutorial } from "@/components/chat/ChatTutorial";
 
 
 
@@ -241,7 +242,7 @@ function ChatPageContent() {
 
 	return (
 		<SidebarProvider defaultOpen={true}>
-			<Onboarding />
+			<ChatTutorial />
 
 			<Sidebar
 				conversations={conversations}
