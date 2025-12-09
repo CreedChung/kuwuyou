@@ -80,7 +80,8 @@ AI_BASE_URL=https://open.bigmodel.cn/api/paas/v4
 
 # 知识库 API 设置
 KNOWLEDGE_API_URL=https://open.bigmodel.cn/api/llm-application/open/knowledge/retrieve
-KNOWLEDGE_ID=your_knowledge_id
+# 支持多个知识库ID，用逗号分隔
+KNOWLEDGE_IDS=1998306783759900672,1998306530415546368,1998306407937675264,1998306239964196864,1998305879870607360
 
 # AI 设置
 DEFAULT_MODEL=glm-4.5-air

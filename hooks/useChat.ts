@@ -71,7 +71,9 @@ export function useChat() {
     console.log("📝 用户输入:", content);
     console.log("📊 文件内容长度:", fileContent.length, "字");
 
-    const knowledgeIdToUse = knowledgeId || process.env.KNOWLEDGE_ID;
+    // 支持多个知识库ID，用逗号分隔
+    const defaultKnowledgeIds = process.env.KNOWLEDGE_IDS?.split(',') || [];
+    const knowledgeIdToUse = knowledgeId || defaultKnowledgeIds[0];
 
     // 构建带检索上下文的文件内容
     const contextParts: string[] = [];

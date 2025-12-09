@@ -55,11 +55,13 @@ export async function POST(request: NextRequest) {
 
 		const params = validationResult.data;
 
-		const defaultKnowledgeId = process.env.KNOWLEDGE_ID;
+		// 支持多个知识库ID，用逗号分隔
+		const defaultKnowledgeIds = process.env.KNOWLEDGE_IDS?.split(',') || [];
+		
 		const knowledge_ids = params.knowledge_ids && params.knowledge_ids.length > 0
 			? params.knowledge_ids
-			: defaultKnowledgeId
-				? [defaultKnowledgeId]
+			: defaultKnowledgeIds.length > 0
+				? defaultKnowledgeIds
 				: undefined;
 
 		if (!knowledge_ids || knowledge_ids.length === 0) {

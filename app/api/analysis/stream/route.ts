@@ -15,6 +15,13 @@ export async function POST(request: NextRequest) {
     }
     
     const { content, knowledgeId } = await request.json();
+    
+    // 支持多个知识库ID，用逗号分隔
+    const defaultKnowledgeIds = process.env.KNOWLEDGE_IDS?.split(',') || [];
+    
+    const knowledgeIds = knowledgeId 
+      ? knowledgeId.split(',').map((id: string) => id.trim())
+      : defaultKnowledgeIds;
 
     if (!content || typeof content !== "string") {
       return NextResponse.json(
@@ -54,10 +61,10 @@ export async function POST(request: NextRequest) {
             enable: true,
           },
         },
-        ...(knowledgeId ? [{
+        ...(knowledgeIds.length > 0 ? [{
           type: "retrieval",
           retrieval: {
-            knowledge_id: knowledgeId,
+            knowledge_id: knowledgeIds[0], // 智谱API目前只支持单个知识库ID
           },
         }] : []),
       ],
