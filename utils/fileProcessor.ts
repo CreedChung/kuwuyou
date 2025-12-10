@@ -16,12 +16,20 @@ export async function extractTextFromFile(file: File): Promise<string> {
   const fileName = file.name?.toLowerCase() || '';
 
   try {
-    // .docx 文件 - 使用 mammoth 解析
+    // .docx 和 .doc 文件 - 使用 mammoth 解析
     if (
       fileName.endsWith('.docx') ||
-      fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      fileName.endsWith('.doc') ||
+      fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      fileType === 'application/msword'
     ) {
-      console.log('🔍 检测到 .docx 文件，使用 mammoth 解析...');
+      const isDoc = fileName.endsWith('.doc') && !fileName.endsWith('.docx');
+      if (isDoc) {
+        console.log('🔍 检测到 .doc 文件，尝试使用 mammoth 解析...');
+        console.warn('⚠️ .doc 格式支持有限，建议转换为 .docx 格式以获得更好的解析效果');
+      } else {
+        console.log('🔍 检测到 .docx 文件，使用 mammoth 解析...');
+      }
       return await extractFromDocx(file);
     }
 
@@ -32,12 +40,6 @@ export async function extractTextFromFile(file: File): Promise<string> {
     ) {
       console.log('📕 检测到 PDF 文件，使用 pdfjs-dist 解析...');
       return await extractFromPdf(file);
-    }
-
-    // .doc 文件 - 旧版 Word 格式提示
-    if (fileName.endsWith('.doc') && !fileName.endsWith('.docx')) {
-      console.warn('⚠️ 检测到旧版 .doc 文件');
-      throw new Error('不支持旧版 .doc 格式，请转换为 .docx 格式后再上传');
     }
 
     // 纯文本文件
@@ -67,14 +69,24 @@ async function extractFromDocx(file: File): Promise<string> {
       console.warn('⚠️ Mammoth 警告:', result.messages);
     }
 
-    console.log('✅ .docx 文件解析成功');
+    const fileType = file.name?.toLowerCase().endsWith('.doc') && !file.name?.toLowerCase().endsWith('.docx')
+      ? '.doc'
+      : '.docx';
+    
+    console.log(`✅ ${fileType} 文件解析成功`);
     console.log('📊 提取的文本长度:', result.value.length, '字符');
     console.log('📋 文本预览:', result.value.substring(0, 200) + '...');
 
     return result.value;
   } catch (error) {
-    console.error('❌ .docx 文件解析失败:', error);
-    throw new Error('无法解析 .docx 文件');
+    console.error('❌ Word 文件解析失败:', error);
+    const fileName = file.name?.toLowerCase() || '';
+    const isDoc = fileName.endsWith('.doc') && !fileName.endsWith('.docx');
+    
+    if (isDoc) {
+      throw new Error('无法解析 .doc 文件。旧版 .doc 格式支持有限，请转换为 .docx 格式后重试');
+    }
+    throw new Error('无法解析 Word 文件');
   }
 }
 

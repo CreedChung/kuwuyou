@@ -16,7 +16,7 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useSpeechInput } from "../../hooks/useSpeechInput";
-import { extractTextFromFile, truncateText, formatFileSize } from "@/utils/fileProcessor";
+import { truncateText, formatFileSize } from "@/utils/fileProcessor";
 
 interface InputAreaProps {
 	onSendMessage: (content: string, options?: {
@@ -130,19 +130,29 @@ export function InputArea({
 		const file = e.target.files?.[0];
 		if (!file) return;
 
-		// 验证文件大小 (最大10MB)
-		if (file.size > 10 * 1024 * 1024) {
-			alert("文件大小不能超过10MB");
+		if (file.size > 100 * 1024 * 1024) {
+			alert("文件大小不能超过100MB");
 			return;
 		}
 
 		setIsProcessingFile(true);
 		try {
-			// 提取文件文本内容
-			const text = await extractTextFromFile(file);
+			const formData = new FormData();
+			formData.append('file', file);
+
+			const response = await fetch('/api/file-parser', {
+				method: 'POST',
+				body: formData,
+			});
+
+			if (!response.ok) {
+				const error = await response.json();
+				throw new Error(error.error || '文件解析失败');
+			}
+
+			const result = await response.json();
 			
-			// 截断到5000字
-			const truncatedText = truncateText(text, 5000);
+			const truncatedText = truncateText(result.content, 5000);
 			
 			setUploadedFile(file);
 			setFileContent(truncatedText);
@@ -152,7 +162,6 @@ export function InputArea({
 			alert(error instanceof Error ? error.message : "文件处理失败");
 		} finally {
 			setIsProcessingFile(false);
-			// 重置文件输入
 			if (fileInputRef.current) {
 				fileInputRef.current.value = "";
 			}
