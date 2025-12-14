@@ -164,37 +164,76 @@ export function useChat() {
     // ========== 第二步：调用总结API生成结构化结果 ==========
     console.log("📝 第二步：生成结构化结果");
     
-    const step2Response = await fetch("/api/analysis/summary", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        content: step1Result,
-      }),
-    });
-
-    if (!step2Response.ok) {
-      throw new Error(`第二步总结失败 (${step2Response.status})`);
-    }
-
-    const step2Data = await step2Response.json();
+    // 重试机制：最多重试3次
+    let step2Success = false;
+    let retryCount = 0;
+    const maxRetries = 3;
     
-    if (step2Data.success && step2Data.results && currentMessageRef.current) {
-      console.log("✅ 第二步完成，结果数量:", step2Data.results.length);
-      
-      // 追加结构化结果
-      currentMessageRef.current.analysisResults = step2Data.results;
-      currentMessageRef.current.content += `\n\n---\n\n已完成规范检查分析，共发现 ${step2Data.results.length} 个问题。`;
-      
-      setMessages((prev) => {
-        const updated = [...prev];
-        const lastIndex = updated.length - 1;
-        if (lastIndex >= 0 && updated[lastIndex].id === currentMessageRef.current?.id) {
-          updated[lastIndex] = { ...currentMessageRef.current };
+    while (!step2Success && retryCount < maxRetries) {
+      try {
+        if (retryCount > 0) {
+          console.log(`🔄 第二步重试 ${retryCount}/${maxRetries}`);
+          // 重试前等待一段时间
+          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
         }
-        return updated;
-      });
+        
+        const step2Response = await fetch("/api/analysis/summary", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            content: step1Result,
+          }),
+        });
+
+        if (!step2Response.ok) {
+          throw new Error(`第二步总结失败 (${step2Response.status})`);
+        }
+
+        const step2Data = await step2Response.json();
+        
+        if (step2Data.success && step2Data.results && currentMessageRef.current) {
+          console.log("✅ 第二步完成，结果数量:", step2Data.results.length);
+          
+          // 追加结构化结果
+          currentMessageRef.current.analysisResults = step2Data.results;
+          currentMessageRef.current.content += `\n\n---\n\n已完成规范检查分析，共发现 ${step2Data.results.length} 个问题。`;
+          
+          setMessages((prev) => {
+            const updated = [...prev];
+            const lastIndex = updated.length - 1;
+            if (lastIndex >= 0 && updated[lastIndex].id === currentMessageRef.current?.id) {
+              updated[lastIndex] = { ...currentMessageRef.current };
+            }
+            return updated;
+          });
+          
+          step2Success = true;
+        } else {
+          throw new Error("第二步返回数据格式错误");
+        }
+      } catch (error) {
+        retryCount++;
+        console.error(`❌ 第二步失败 (尝试 ${retryCount}/${maxRetries}):`, error);
+        
+        if (retryCount >= maxRetries) {
+          console.log("⚠️ 第二步重试次数已达上限，跳过结构化总结");
+          // 不抛出错误，继续执行后续流程
+          if (currentMessageRef.current) {
+            currentMessageRef.current.content += `\n\n---\n\n分析完成，但结构化总结暂时不可用。`;
+            
+            setMessages((prev) => {
+              const updated = [...prev];
+              const lastIndex = updated.length - 1;
+              if (lastIndex >= 0 && updated[lastIndex].id === currentMessageRef.current?.id) {
+                updated[lastIndex] = { ...currentMessageRef.current };
+              }
+              return updated;
+            });
+          }
+        }
+      }
     }
 
     console.log("========== 分析模式完成 ==========\n");

@@ -54,7 +54,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'X-Frame-Options',
-            value: 'SAMEORIGIN'
+            value: 'ALLOWALL'
           },
           {
             key: 'X-Content-Type-Options',
