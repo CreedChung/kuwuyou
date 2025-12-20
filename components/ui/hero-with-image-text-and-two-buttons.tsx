@@ -1,5 +1,5 @@
 "use client";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@tanstack/react-router";
 import { MoveRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,10 +12,10 @@ function Hero() {
 	const handleGetStarted = () => {
 		if (user) {
 			// 已登录，跳转到聊天页面
-			router.push("/chat");
+			router.navigate({ to: "/chat" });
 		} else {
 			// 未登录，跳转到登录页面
-			router.push("/auth/login");
+			router.navigate({ to: "/auth/login" });
 		}
 	};
 

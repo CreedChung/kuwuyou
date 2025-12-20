@@ -5,7 +5,7 @@
 
 export type ToolType = 'lite' | 'expert' | 'prime';
 
-export type FileType = 
+export type FileType =
   | 'pdf' | 'docx' | 'doc' | 'xls' | 'xlsx' | 'ppt' | 'pptx'
   | 'png' | 'jpg' | 'jpeg' | 'csv' | 'txt' | 'md' | 'html'
   | 'epub' | 'bmp' | 'gif' | 'webp' | 'heic' | 'eps' | 'icns'
@@ -42,7 +42,7 @@ class FileParserService {
 
   constructor(apiKey?: string) {
     this.apiKey = apiKey || 'server-side-key';
-    this.baseURL = process.env.ZHIPU_BASE_URL || 'https://open.bigmodel.cn/api/paas/v4';
+    this.baseURL = 'https://open.bigmodel.cn/api/llm-application/open';
   }
 
   /**
@@ -160,7 +160,7 @@ class FileParserService {
 
     for (let i = 0; i < maxRetries; i++) {
       const result = await this.getTaskResult(taskId, formatType);
-      
+
       console.log(`📊 第 ${i + 1} 次轮询, 状态: ${result.status}`);
 
       if (result.status === 'succeeded') {
@@ -198,13 +198,13 @@ class FileParserService {
     const { toolType = 'lite' } = options;
 
     console.log('🎯 开始一键解析文件');
-    
+
     // 1. 创建任务
     const createResult = await this.createTask(file, fileType, toolType);
-    
+
     // 2. 轮询结果
     const result = await this.pollTaskResult(createResult.task_id, options);
-    
+
     return result;
   }
 
@@ -247,15 +247,15 @@ class FileParserService {
   getSupportedFileTypes(toolType: ToolType): FileType[] {
     switch (toolType) {
       case 'lite':
-        return ['pdf', 'docx', 'doc', 'xls', 'xlsx', 'ppt', 'pptx', 
-                'png', 'jpg', 'jpeg', 'csv', 'txt', 'md'];
+        return ['pdf', 'docx', 'doc', 'xls', 'xlsx', 'ppt', 'pptx',
+          'png', 'jpg', 'jpeg', 'csv', 'txt', 'md'];
       case 'expert':
         return ['pdf'];
       case 'prime':
         return ['pdf', 'docx', 'doc', 'xls', 'xlsx', 'ppt', 'pptx',
-                'png', 'jpg', 'jpeg', 'csv', 'txt', 'md', 'html',
-                'bmp', 'gif', 'webp', 'heic', 'eps', 'icns',
-                'im', 'pcx', 'ppm', 'tiff', 'xbm', 'heif', 'jp2'];
+          'png', 'jpg', 'jpeg', 'csv', 'txt', 'md', 'html',
+          'bmp', 'gif', 'webp', 'heic', 'eps', 'icns',
+          'im', 'pcx', 'ppm', 'tiff', 'xbm', 'heif', 'jp2'];
       default:
         return [];
     }

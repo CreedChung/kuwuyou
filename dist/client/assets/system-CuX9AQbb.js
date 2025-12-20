@@ -1,0 +1,1 @@
+async function n(){try{const e={version:"1.0.0",uptime:"5 days",memory:"2.1 GB",cpu:"15%",status:"healthy"};return new Response(JSON.stringify(e),{headers:{"Content-Type":"application/json"}})}catch{return new Response(JSON.stringify({error:"Failed to fetch system info"}),{status:500,headers:{"Content-Type":"application/json"}})}}const t=()=>null;export{n as GET,t as component};

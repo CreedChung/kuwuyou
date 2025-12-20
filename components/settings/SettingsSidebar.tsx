@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 import {
 	ArrowLeft,
 	Bell,
@@ -48,7 +48,7 @@ export function SettingsSidebar({
 		<div className="w-64 border-r border-border/40 bg-muted/30 flex flex-col">
 			{/* 返回按钮 */}
 			<div className="p-4 border-b border-border/40">
-				<Link href="/chat">
+				<Link to="/chat">
 					<Button
 						variant="ghost"
 						size="sm"

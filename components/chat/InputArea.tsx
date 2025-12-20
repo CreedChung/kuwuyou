@@ -16,7 +16,7 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useSpeechInput } from "../../hooks/useSpeechInput";
-import { truncateText, formatFileSize } from "@/utils/fileProcessor";
+import { truncateText, formatFileSize } from "@/utils/textUtils";
 
 interface InputAreaProps {
 	onSendMessage: (content: string, options?: {
@@ -54,6 +54,7 @@ export function InputArea({
 	const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 	const [fileContent, setFileContent] = useState<string>("");
 	const [isProcessingFile, setIsProcessingFile] = useState(false);
+	const [isSending, setIsSending] = useState(false);
 	const [showOptions, setShowOptions] = useState(false);
 	const wrapperRef = useRef<HTMLDivElement>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -107,26 +108,74 @@ export function InputArea({
 
 	const handleActivate = useCallback(() => setIsActive(true), []);
 
-	const handleSubmit = useCallback((e: React.FormEvent) => {
+	const handleSubmit = useCallback(async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (inputValue.trim() && !isGenerating) {
-			// 根据按钮状态决定启用哪些功能
-			onSendMessage(inputValue.trim(), {
-				showThinking: thinkActive,      // 思考按钮控制
-				showReferences: deepSearchActive,    // 知识库按钮控制
-				useWebSearch: webSearchActive,      // 联网搜索按钮控制
-				uploadedFile: uploadedFile || undefined,
-				fileContent: fileContent || undefined,
-			});
-			setInputValue("");
-			setUploadedFile(null);
-			setFileContent("");
-			resetTranscript();
-		}
-	}, [inputValue, isGenerating, thinkActive, deepSearchActive, webSearchActive, uploadedFile, fileContent, onSendMessage, resetTranscript]);
+		if ((!inputValue.trim() && !uploadedFile) || isGenerating || isSending) return;
 
-	// 处理文件上传 - memoized to prevent recreation
-	const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+		setIsSending(true);
+		let parsedContent = fileContent;
+
+		// 如果有文件但还没解析，先解析文件
+		if (uploadedFile && !fileContent) {
+			setIsProcessingFile(true);
+			try {
+				// 将文件转为 base64
+				const fileData = await new Promise<string>((resolve) => {
+					const reader = new FileReader();
+					reader.onload = () => resolve((reader.result as string).split(',')[1]);
+					reader.readAsDataURL(uploadedFile);
+				});
+
+				const response = await fetch('/api/file-parser', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						fileName: uploadedFile.name,
+						fileData,
+						fileType: uploadedFile.name.split('.').pop(),
+					}),
+				});
+
+				const text = await response.text();
+				let result;
+				try {
+					result = JSON.parse(text);
+				} catch {
+					console.error('服务器返回非JSON:', text);
+					throw new Error('服务器错误，请稍后重试');
+				}
+
+				if (!response.ok) {
+					throw new Error(result.error || '文件解析失败');
+				}
+
+				parsedContent = truncateText(result.content, 5000);
+			} catch (error) {
+				console.error("文件处理失败:", error);
+				alert(error instanceof Error ? error.message : "文件处理失败");
+				setIsProcessingFile(false);
+				setIsSending(false);
+				return;
+			}
+			setIsProcessingFile(false);
+		}
+
+		onSendMessage(inputValue.trim(), {
+			showThinking: thinkActive,
+			showReferences: deepSearchActive,
+			useWebSearch: webSearchActive,
+			uploadedFile: uploadedFile || undefined,
+			fileContent: parsedContent || undefined,
+		});
+		setInputValue("");
+		setUploadedFile(null);
+		setFileContent("");
+		setIsSending(false);
+		resetTranscript();
+	}, [inputValue, isGenerating, isSending, thinkActive, deepSearchActive, webSearchActive, uploadedFile, fileContent, onSendMessage, resetTranscript]);
+
+	// 处理文件上传 - 只保存文件，不解析
+	const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
 
@@ -135,36 +184,12 @@ export function InputArea({
 			return;
 		}
 
-		setIsProcessingFile(true);
-		try {
-			const formData = new FormData();
-			formData.append('file', file);
-
-			const response = await fetch('/api/file-parser', {
-				method: 'POST',
-				body: formData,
-			});
-
-			if (!response.ok) {
-				const error = await response.json();
-				throw new Error(error.error || '文件解析失败');
-			}
-
-			const result = await response.json();
-			
-			const truncatedText = truncateText(result.content, 5000);
-			
-			setUploadedFile(file);
-			setFileContent(truncatedText);
-			setIsActive(true);
-		} catch (error) {
-			console.error("文件处理失败:", error);
-			alert(error instanceof Error ? error.message : "文件处理失败");
-		} finally {
-			setIsProcessingFile(false);
-			if (fileInputRef.current) {
-				fileInputRef.current.value = "";
-			}
+		setUploadedFile(file);
+		setFileContent(""); // 清空之前的内容，等发送时再解析
+		setIsActive(true);
+		
+		if (fileInputRef.current) {
+			fileInputRef.current.value = "";
 		}
 	}, []);
 
@@ -357,7 +382,7 @@ export function InputArea({
 							) : (
 								<button
 									type="submit"
-									disabled={!inputValue.trim()}
+									disabled={(!inputValue.trim() && !uploadedFile) || isGenerating || isProcessingFile || isSending}
 									className="flex items-center gap-1 bg-primary hover:bg-primary/90 text-primary-foreground p-3 rounded-full font-medium justify-center disabled:opacity-40 disabled:cursor-not-allowed"
 									title="发送"
 								>

@@ -1,0 +1,1 @@
+import{d as o,e as i}from"./main--f0sO-hz.js";function a(){const{toast:n}=o(),t=i();return{user:t.user,loading:t.loading,signUp:(s,r,e)=>t.signUp(s,r,e,n),signIn:(s,r)=>t.signIn(s,r,n),signInWithProvider:s=>t.signInWithProvider(s,n),signOut:()=>t.signOut(n),resetPassword:s=>t.resetPassword(s,n),updatePassword:s=>t.updatePassword(s,n)}}export{a as u};

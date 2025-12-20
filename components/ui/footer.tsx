@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 
 interface FooterProps {
@@ -43,7 +43,7 @@ export function Footer({
 									className="h-10 w-10 rounded-full"
 									asChild
 								>
-									<Link href={link.href} target="_blank" aria-label={link.label}>
+									<Link to={link.href} target="_blank" aria-label={link.label}>
 										{link.icon}
 									</Link>
 								</Button>
@@ -68,7 +68,7 @@ export function Footer({
 											className="flex items-center gap-2"
 										>
 											<Link
-												href={link.href}
+												to={link.href}
 												className="hover:text-foreground transition-colors"
 											>
 												{link.label}

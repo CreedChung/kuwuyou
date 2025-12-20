@@ -1,5 +1,5 @@
 import { AlertCircle, BookOpen, CheckCheck, ChevronDown, ChevronUp, Copy, FileText, Globe, Lightbulb, Loader2, ExternalLink, RefreshCw } from "lucide-react";
-import Image from "next/image";
+// import Image from "next/image"; // 暂时注释掉，使用普通 img 标签
 import { useState } from "react";
 import { Streamdown } from "streamdown";
 import type { Message as MessageType } from "./types";
@@ -108,12 +108,10 @@ export function Message({ message, onRegenerate }: MessageProps) {
 						{hasError ? (
 							<AlertCircle className="h-5 w-5" />
 						) : (
-							<Image
+							<img
 								src="/logo.jpg"
 								alt="库无忧助手"
-								width={36}
-								height={36}
-								className="object-cover"
+								className="w-9 h-9 object-cover rounded-full"
 							/>
 						)}
 					</div>

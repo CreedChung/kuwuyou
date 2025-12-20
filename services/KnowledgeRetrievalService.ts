@@ -48,7 +48,7 @@ class KnowledgeRetrievalService {
   private apiKey: string;
 
   constructor(config?: KnowledgeRetrievalConfig) {
-    this.apiKey = config?.apiKey || process.env.AI_KEY || "";
+    this.apiKey = config?.apiKey || process.env.AI_API_KEY || "";
   }
 
   /**
@@ -66,7 +66,7 @@ class KnowledgeRetrievalService {
       recall_method: params.recall_method || "embedding",
     });
 
-    const apiKey = this.apiKey || process.env.NEXT_PUBLIC_AI_KEY || "client-key";
+    const apiKey = this.apiKey || "client-key";
 
     try {
       const response = await fetch("/api/knowledge/retrieve", {

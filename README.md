@@ -31,7 +31,7 @@
 - **状态管理**：Zustand
 - **数据库**：Turso (LibSQL)
 - **ORM**：Drizzle ORM
-- **AI 集成**：智谱 AI (GLM-4.5)
+- **AI 集成**：SiliconFlow AI (DeepSeek-V3.2)
 - **验证**：Zod
 - **加密**：bcryptjs
 
@@ -74,9 +74,9 @@ SEARCH_API_URL=https://api.bocha.cn/v1/web-search
 TURSO_AUTH_TOKEN=your_turso_token
 TURSO_DATABASE_URL=your_turso_database_url
 
-# Zhipu AI 设置
-AI_KEY=your_zhipu_api_key
-AI_BASE_URL=https://open.bigmodel.cn/api/paas/v4
+# SiliconFlow AI 设置
+AI_KEY=your_siliconflow_api_key
+AI_BASE_URL=https://api.siliconflow.cn/v1
 
 # 知识库 API 设置
 KNOWLEDGE_API_URL=https://open.bigmodel.cn/api/llm-application/open/knowledge/retrieve
@@ -84,7 +84,7 @@ KNOWLEDGE_API_URL=https://open.bigmodel.cn/api/llm-application/open/knowledge/re
 KNOWLEDGE_IDS=1998306783759900672,1998306530415546368,1998306407937675264,1998306239964196864,1998305879870607360
 
 # AI 设置
-DEFAULT_MODEL=glm-4.5-air
+DEFAULT_MODEL=deepseek-ai/DeepSeek-V3.2
 TEMPERATURE=0.7
 MAX_TOKENS=12800
 ```

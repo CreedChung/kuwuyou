@@ -1,6 +1,5 @@
 "use client";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link, useRouter } from "@tanstack/react-router";
 import {
 	Check,
 	Eye,
@@ -144,7 +143,7 @@ export function RegisterForm() {
 				// 将注册信息存储到 localStorage,供登录页面使用
 				savePendingLogin(email, password);
 
-				router.push("/auth/login");
+				router.navigate({ to: "/auth/login" });
 			}
 		} catch (error) {
 			console.error("注册错误:", error);
@@ -165,7 +164,7 @@ export function RegisterForm() {
 			<CardHeader className="relative">
 				{/* 返回主页按钮 */}
 				<Link
-					href="/"
+					to="/"
 					className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-4 transition-colors group"
 				>
 					<svg
@@ -355,7 +354,7 @@ export function RegisterForm() {
 					<p className="text-sm text-center text-gray-600">
 						已有账号?{" "}
 						<Link
-							href="/auth/login"
+							to="/auth/login"
 							className="text-blue-600 hover:text-blue-700 hover:underline font-medium transition-colors"
 						>
 							立即登录

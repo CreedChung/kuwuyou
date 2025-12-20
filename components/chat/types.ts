@@ -157,7 +157,7 @@ export interface Conversation {
 }
 
 // 智谱API请求消息
-export interface ZhipuRequestMessage {
+export interface SiliconflowRequestMessage {
   role: "user" | "assistant";
   content: Array<{
     type: "input" | "upload_file" | "upload_audio" | "upload_image" | "upload_video" | "selection_list";
@@ -169,7 +169,7 @@ export interface ZhipuRequestMessage {
 }
 
 // 智谱API流式响应
-export interface ZhipuStreamResponse {
+export interface SiliconflowStreamResponse {
   request_id: string;
   conversation_id: string;
   app_id?: string;

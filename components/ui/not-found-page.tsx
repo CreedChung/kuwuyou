@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 import { FileQuestion } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {

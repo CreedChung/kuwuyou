@@ -1,5 +1,5 @@
 "use client";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@tanstack/react-router";
 import {
 	BookOpen,
 	ChevronLeft,
@@ -75,7 +75,7 @@ export function Sidebar({
 	const handleLogout = async () => {
 		setLogoutDialogOpen(false);
 		await signOut();
-		router.push("/");
+		router.navigate({ to: "/" });
 	};
 
 	const handleDeleteClick = (conversationId: string) => {

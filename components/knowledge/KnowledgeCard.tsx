@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
 import {
 	Card,
@@ -65,7 +65,7 @@ export function KnowledgeCard({ knowledge, onClick }: KnowledgeCardProps) {
 	);
 
 	return (
-		<Link href={`/knowledge/${knowledge.id}`}>
+		<Link to={`/knowledge/${knowledge.id}`}>
 			<Card
 				className={cn(
 					"group hover:border-primary/50 transition-all hover:shadow-lg cursor-pointer border-2",

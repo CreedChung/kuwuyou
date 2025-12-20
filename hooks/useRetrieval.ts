@@ -63,16 +63,14 @@ export function useRetrieval() {
     query: string,
     knowledgeId?: string
   ): Promise<RetrievalSlice[]> => {
-// 支持多个知识库ID，用逗号分隔
-    const defaultKnowledgeIds = process.env.KNOWLEDGE_IDS?.split(',') || [];
-    
+    // 如果没有指定知识库ID，传递特殊标识让服务端使用默认值
     const knowledgeIds = knowledgeId 
       ? knowledgeId.split(',').map((id: string) => id.trim())
-      : defaultKnowledgeIds;
+      : ['使用默认'];
 
     const retrievalResult = await knowledgeRetrievalService.retrieve({
       query: query.trim(),
-      knowledge_ids: knowledgeIds.length > 0 ? knowledgeIds : undefined,
+      knowledge_ids: knowledgeIds,
       top_k: 10,
       recall_method: "mixed",
     });

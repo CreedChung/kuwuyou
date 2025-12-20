@@ -7,34 +7,7 @@ import { useState, useCallback, useRef } from "react";
 import { chatService, type ChatMessage } from "../services/ChatService";
 import type { Message, AnalysisItem, KnowledgeReference } from "@/components/chat/types";
 import { chatSystemPrompt } from "@/utils/prompt";
-import { detectAnalysisKeyword } from "@/utils/fileProcessor";
-
-async function selectPrompt(userMessage: string): Promise<string> {
-  try {
-    const response = await fetch("/api/prompt-selector", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userMessage }),
-    });
-    
-    if (!response.ok) {
-      console.warn("提示词选择失败，使用默认提示词");
-      return chatSystemPrompt;
-    }
-    
-    const data = await response.json();
-    
-    // 如果有回退标识，记录日志
-    if (data.fallback) {
-      console.log("提示词选择使用回退模式:", data.error);
-    }
-    
-    return data.prompt || chatSystemPrompt;
-  } catch (error) {
-    console.error("提示词选择错误:", error);
-    return chatSystemPrompt;
-  }
-}
+import { detectAnalysisKeyword } from "@/utils/textUtils";
 
 export interface ChatOptions {
   showThinking?: boolean;
@@ -435,17 +408,10 @@ export function useChat() {
         return;
       }
 
-      let selectedPrompt = chatSystemPrompt;
-      try {
-        selectedPrompt = await selectPrompt(content);
-      } catch (error) {
-        console.warn("提示词选择失败，使用默认提示词:", error);
-      }
-      
       const contextMessages = buildContextMessages(content, retrievalContext);
       await processChatStream(contextMessages, {
         ...options,
-        systemPrompt: selectedPrompt,
+        systemPrompt: chatSystemPrompt,
       });
 
     } catch (error) {

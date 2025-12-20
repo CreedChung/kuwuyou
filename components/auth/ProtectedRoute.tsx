@@ -1,17 +1,19 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@tanstack/react-router";
 import { useAuthStore } from "@/stores/authStore";
 
 interface ProtectedRouteProps {
 	children: React.ReactNode;
 	redirectTo?: string;
+	requireAdmin?: boolean;
 }
 
 export function ProtectedRoute({
 	children,
 	redirectTo = "/auth/login",
+	requireAdmin = false,
 }: ProtectedRouteProps) {
 	const router = useRouter();
 	const { user, loading, initialized } = useAuthStore();
@@ -22,9 +24,14 @@ export function ProtectedRoute({
 		}
 
 		if (!user) {
-			router.push(redirectTo);
+			router.navigate({ to: redirectTo });
+			return;
 		}
-	}, [user, loading, initialized, router, redirectTo]);
+
+		if (requireAdmin && user.role !== 'admin') {
+			router.navigate({ to: '/chat' });
+		}
+	}, [user, loading, initialized, router, redirectTo, requireAdmin]);
 
 	if (!initialized || loading) {
 		return (
@@ -48,6 +55,15 @@ export function ProtectedRoute({
 		);
 	}
 
-	// 用户已登录，渲染子组件
+	if (requireAdmin && user.role !== 'admin') {
+		return (
+			<div className="flex items-center justify-center min-h-screen">
+				<div className="text-center">
+					<p className="text-muted-foreground">无权限访问</p>
+				</div>
+			</div>
+		);
+	}
+
 	return <>{children}</>;
 }

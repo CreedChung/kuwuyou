@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 import {
 	BarChart,
 	Brain,
@@ -64,7 +64,7 @@ export function Header() {
 		>
 			<nav className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between px-4">
 				<div className="flex items-center gap-5">
-					<Link href="/" className="flex items-center">
+					<Link to="/" className="flex items-center">
 						<img
 							src="/logo.jpg"
 							alt="库无忧助手"
@@ -219,7 +219,7 @@ function ListItem({
 			{...props}
 			asChild
 		>
-			<Link href={href}>
+			<Link to={href}>
 				<div className="bg-background/40 flex aspect-square size-12 items-center justify-center rounded-md border shadow-sm">
 					<Icon className="text-foreground size-5" />
 				</div>

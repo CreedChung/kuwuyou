@@ -5,7 +5,7 @@
 
 import { type LanguageModel, generateText, streamText } from "ai";
 import type { UserModelMessage, AssistantModelMessage, SystemModelMessage } from "ai";
-import { createZhipu } from "zhipu-ai-provider";
+import { createOpenAI } from "@ai-sdk/openai";
 import type { KnowledgeReference } from "../components/chat/types";
 
 export interface ChatServiceMessage {
@@ -49,15 +49,15 @@ class ChatService {
 	private apiKey: string;
 	private baseURL: string;
 	private model: string;
-	private providerInstance: ReturnType<typeof createZhipu> | null = null;
+	private providerInstance: ReturnType<typeof createOpenAI> | null = null;
 	private abortController: AbortController | null = null;
 
 	constructor(apiKey?: string, model?: string) {
 		this.apiKey = apiKey || "server-side-key";
 		this.baseURL =
-			process.env.AI_BASE_URL ||
-			"https://open.bigmodel.cn/api/paas/v4";
-		this.model = model || "glm-4.5-air";
+			process.env.AI_API_URL ||
+			"https://api.siliconflow.cn/v1";
+		this.model = model || "deepseek-ai/DeepSeek-V3.2";
 		this.initializeProvider();
 	}
 
@@ -66,7 +66,7 @@ class ChatService {
 	 */
 	private initializeProvider() {
 		if (this.apiKey) {
-			this.providerInstance = createZhipu({
+			this.providerInstance = createOpenAI({
 				baseURL: this.baseURL,
 				apiKey: this.apiKey,
 			});
@@ -117,7 +117,7 @@ class ChatService {
 		}
 
 		const coreMessages = this.convertMessages(messages);
-		const model = this.providerInstance(options.model || "glm-4.5-air") as unknown as LanguageModel;
+		const model = this.providerInstance(options.model || "deepseek-ai/DeepSeek-V3.2") as unknown as LanguageModel;
 
 		const { text } = await generateText({
 			model,
@@ -146,7 +146,7 @@ class ChatService {
 
 		try {
 			const coreMessages = this.convertMessages(messages);
-			const model = this.providerInstance(options.model || "glm-4.5-air") as unknown as LanguageModel;
+			const model = this.providerInstance(options.model || "deepseek-ai/DeepSeek-V3.2") as unknown as LanguageModel;
 
 			const result = await streamText({
 				model,
@@ -181,7 +181,7 @@ class ChatService {
 	 */
 	getAvailableModels(): string[] {
 		return [
-			"glm-4.5-air",
+			"deepseek-ai/DeepSeek-V3.2",
 		];
 	}
 
@@ -226,16 +226,15 @@ class ChatService {
 		}
 
 		const requestBody: Record<string, unknown> = {
-			model: this.model || "glm-4.5-air",
 			messages: finalMessages,
 			stream: true,
-			temperature: options.temperature ?? 0.95,
-			max_tokens: options.maxTokens ?? 12800,
 		};
 
-		if (options.useThinking) {
-			requestBody.thinking = { type: "enabled" };
-		}
+		// 只有明确指定时才传递，否则使用服务端环境变量默认值
+		if (this.model) requestBody.model = this.model;
+		if (options.temperature !== undefined) requestBody.temperature = options.temperature;
+		if (options.maxTokens !== undefined) requestBody.max_tokens = options.maxTokens;
+		if (options.useThinking) requestBody.thinking = { type: "enabled" };
 
 		this.abortController = new AbortController();
 
