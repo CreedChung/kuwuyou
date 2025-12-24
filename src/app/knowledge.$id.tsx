@@ -1,6 +1,6 @@
 import { createFileRoute, useParams, useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import { ArrowLeft, Plus } from 'lucide-react'
+import { ArrowLeft, Plus, RefreshCw } from 'lucide-react'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -30,14 +30,20 @@ function KnowledgeDocumentsContent() {
 
   const [documents, setDocuments] = useState<KnowledgeDocument[]>([])
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [total, setTotal] = useState(0)
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false)
 
-  const fetchDocuments = async (page: number = 1, word: string = '') => {
+  const fetchDocuments = async (page: number = 1, word: string = '', isRefresh: boolean = false) => {
     try {
-      setLoading(true)
+      if (isRefresh) {
+        setRefreshing(true)
+      } else {
+        setLoading(true)
+      }
+      
       const params = new URLSearchParams({
         knowledge_id: knowledgeId,
         page: page.toString(),
@@ -58,6 +64,7 @@ function KnowledgeDocumentsContent() {
       toast({ title: '请求错误', description: '网络错误，请稍后重试', variant: 'destructive' })
     } finally {
       setLoading(false)
+      setRefreshing(false)
     }
   }
 
@@ -67,7 +74,11 @@ function KnowledgeDocumentsContent() {
 
   const handleSearch = () => {
     setCurrentPage(1)
-    fetchDocuments(1, searchQuery)
+    fetchDocuments(1, searchQuery, false)
+  }
+
+  const handleRefresh = () => {
+    fetchDocuments(currentPage, searchQuery, true)
   }
 
   return (
@@ -93,6 +104,15 @@ function KnowledgeDocumentsContent() {
                 <Button onClick={handleSearch}>搜索</Button>
               </div>
               <Badge variant="secondary" className="h-10 px-4">共 {total} 个文档</Badge>
+              <Button 
+                variant="outline" 
+                className="gap-2" 
+                onClick={handleRefresh}
+                disabled={refreshing}
+              >
+                <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+                刷新
+              </Button>
               <Button className="gap-2" onClick={() => setUploadDialogOpen(true)}>
                 <Plus className="h-4 w-4" />
                 上传文档
@@ -104,6 +124,7 @@ function KnowledgeDocumentsContent() {
         <div className="flex-1 overflow-y-auto p-6">
           <DocumentList
             loading={loading}
+            refreshing={refreshing}
             documents={documents}
             searchQuery={searchQuery}
             onDocumentClick={(doc) => console.log('点击文档:', doc)}
@@ -124,7 +145,7 @@ function KnowledgeDocumentsContent() {
         open={uploadDialogOpen}
         onOpenChange={setUploadDialogOpen}
         knowledgeId={knowledgeId}
-        onUploadSuccess={() => fetchDocuments(currentPage, searchQuery)}
+        onUploadSuccess={() => fetchDocuments(currentPage, searchQuery, true)}
       />
     </div>
   )
