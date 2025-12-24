@@ -57,7 +57,7 @@ class ChatService {
 		this.baseURL =
 			process.env.AI_API_URL ||
 			"https://api.siliconflow.cn/v1";
-		this.model = model || "deepseek-ai/DeepSeek-V3.2";
+		this.model = model || "MiniMaxAI/MiniMax-M2";
 		this.initializeProvider();
 	}
 
@@ -117,7 +117,7 @@ class ChatService {
 		}
 
 		const coreMessages = this.convertMessages(messages);
-		const model = this.providerInstance(options.model || "deepseek-ai/DeepSeek-V3.2") as unknown as LanguageModel;
+		const model = this.providerInstance(options.model || "MiniMaxAI/MiniMax-M2") as unknown as LanguageModel;
 
 		const { text } = await generateText({
 			model,
@@ -146,7 +146,7 @@ class ChatService {
 
 		try {
 			const coreMessages = this.convertMessages(messages);
-			const model = this.providerInstance(options.model || "deepseek-ai/DeepSeek-V3.2") as unknown as LanguageModel;
+			const model = this.providerInstance(options.model || "MiniMaxAI/MiniMax-M2") as unknown as LanguageModel;
 
 			const result = await streamText({
 				model,
@@ -181,7 +181,7 @@ class ChatService {
 	 */
 	getAvailableModels(): string[] {
 		return [
-			"deepseek-ai/DeepSeek-V3.2",
+			"MiniMaxAI/MiniMax-M2",
 		];
 	}
 

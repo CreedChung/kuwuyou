@@ -2,7 +2,7 @@
 
 import { Link, useRouter } from "@tanstack/react-router";
 import { Eye, EyeOff, Lock, LogIn, Mail } from "lucide-react";
-import { useId, useState } from "react";
+import { useId, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
+import { useAuthStore } from "@/stores/authStore";
 
 export function LoginPageContent() {
 	const router = useRouter();
@@ -24,7 +25,24 @@ export function LoginPageContent() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [showPassword, setShowPassword] = useState(false);
 	const [loginForm, setLoginForm] = useState({ email: "", password: "" });
-	const { signIn } = useAuth();
+	const { signIn, user, loading } = useAuth();
+	const authStore = useAuthStore();
+
+	// 初始化认证状态
+	useEffect(() => {
+		if (!authStore.initialized) {
+			console.log("登录页面：正在初始化认证状态...");
+			authStore.initialize();
+		}
+	}, [authStore]);
+
+	// 如果用户已登录，重定向到聊天页面
+	useEffect(() => {
+		if (user && !loading && authStore.initialized) {
+			console.log("用户已登录，重定向到聊天页面");
+			router.navigate({ to: "/chat" });
+		}
+	}, [user, loading, authStore.initialized, router]);
 
 	const handleLogin = async (e: React.FormEvent) => {
 		e.preventDefault();

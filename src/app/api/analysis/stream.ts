@@ -14,7 +14,7 @@ export const Route = createFileRoute('/api/analysis/stream')({
 
           const apiKey = process.env.AI_API_KEY
           const apiUrl = process.env.AI_API_URL || 'https://api.siliconflow.cn/v1'
-          const model = process.env.DEFAULT_MODEL || 'deepseek-ai/DeepSeek-V3.2'
+          const model = process.env.DEFAULT_MODEL || 'MiniMaxAI/MiniMax-M2'
 
           if (!apiKey) {
             return Response.json({ error: '未配置API密钥' }, { status: 500 })

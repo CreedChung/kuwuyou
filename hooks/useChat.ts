@@ -5,9 +5,8 @@
 
 import { useState, useCallback, useRef } from "react";
 import { chatService, type ChatMessage } from "../services/ChatService";
-import type { Message, AnalysisItem, KnowledgeReference } from "@/components/chat/types";
+import type { Message, KnowledgeReference } from "@/components/chat/types";
 import { chatSystemPrompt } from "@/utils/prompt";
-import { detectAnalysisKeyword } from "@/utils/textUtils";
 
 export interface ChatOptions {
   showThinking?: boolean;
@@ -50,12 +49,12 @@ export function useChat() {
 
     // 构建带检索上下文的文件内容
     const contextParts: string[] = [];
-    
+
     if (retrievalContext?.knowledgeContext) {
       console.log("📚 知识库上下文长度:", retrievalContext.knowledgeContext.length);
       contextParts.push(retrievalContext.knowledgeContext);
     }
-    
+
     if (retrievalContext?.webContext) {
       console.log("🌐 网络搜索上下文长度:", retrievalContext.webContext.length);
       contextParts.push(retrievalContext.webContext);
@@ -68,7 +67,7 @@ export function useChat() {
 
     // ========== 第一步：流式显示详细分析 ==========
     console.log("📝 第一步：流式调用分析API");
-    
+
     const step1Response = await fetch("/api/analysis/stream", {
       method: "POST",
       headers: {
@@ -106,11 +105,11 @@ export function useChat() {
               try {
                 const parsed = JSON.parse(data);
                 const content = parsed.choices?.[0]?.delta?.content;
-                
+
                 if (content && currentMessageRef.current) {
                   step1Result += content;
                   currentMessageRef.current.content += content;
-                  
+
                   // 实时更新UI
                   setMessages((prev) => {
                     const updated = [...prev];
@@ -121,7 +120,7 @@ export function useChat() {
                     return updated;
                   });
                 }
-              } catch (e) {
+              } catch {
                 // 忽略解析错误
               }
             }
@@ -136,12 +135,12 @@ export function useChat() {
 
     // ========== 第二步：调用总结API生成结构化结果 ==========
     console.log("📝 第二步：生成结构化结果");
-    
+
     // 重试机制：最多重试3次
     let step2Success = false;
     let retryCount = 0;
     const maxRetries = 3;
-    
+
     while (!step2Success && retryCount < maxRetries) {
       try {
         if (retryCount > 0) {
@@ -149,7 +148,7 @@ export function useChat() {
           // 重试前等待一段时间
           await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
         }
-        
+
         const step2Response = await fetch("/api/analysis/summary", {
           method: "POST",
           headers: {
@@ -165,14 +164,14 @@ export function useChat() {
         }
 
         const step2Data = await step2Response.json();
-        
+
         if (step2Data.success && step2Data.results && currentMessageRef.current) {
           console.log("✅ 第二步完成，结果数量:", step2Data.results.length);
-          
+
           // 追加结构化结果
           currentMessageRef.current.analysisResults = step2Data.results;
           currentMessageRef.current.content += `\n\n---\n\n已完成规范检查分析，共发现 ${step2Data.results.length} 个问题。`;
-          
+
           setMessages((prev) => {
             const updated = [...prev];
             const lastIndex = updated.length - 1;
@@ -181,7 +180,7 @@ export function useChat() {
             }
             return updated;
           });
-          
+
           step2Success = true;
         } else {
           throw new Error("第二步返回数据格式错误");
@@ -189,13 +188,13 @@ export function useChat() {
       } catch (error) {
         retryCount++;
         console.error(`❌ 第二步失败 (尝试 ${retryCount}/${maxRetries}):`, error);
-        
+
         if (retryCount >= maxRetries) {
           console.log("⚠️ 第二步重试次数已达上限，跳过结构化总结");
           // 不抛出错误，继续执行后续流程
           if (currentMessageRef.current) {
             currentMessageRef.current.content += `\n\n---\n\n分析完成，但结构化总结暂时不可用。`;
-            
+
             setMessages((prev) => {
               const updated = [...prev];
               const lastIndex = updated.length - 1;
@@ -365,6 +364,7 @@ export function useChat() {
     // 只要上传了文件，就进入分析模式，不需要检测关键词
     const isAnalysisMode = !!options.fileContent;
 
+    // 传统模式：创建用户消息和助手消息
     const userMessage: Message = {
       id: `user-${Date.now()}`,
       role: "user",
@@ -373,8 +373,7 @@ export function useChat() {
       uploadedFileName: options.uploadedFile?.name,
     };
 
-    setMessages((prev) => [...prev, userMessage]);
-    setIsGenerating(true);
+    setMessages(prev => [...prev, userMessage]);
 
     const assistantMessage: Message = {
       id: `assistant-${Date.now()}`,
@@ -388,7 +387,8 @@ export function useChat() {
     };
 
     currentMessageRef.current = assistantMessage;
-    setMessages((prev) => [...prev, assistantMessage]);
+    setMessages(prev => [...prev, assistantMessage]);
+    setIsGenerating(true);
 
     try {
       if (isAnalysisMode && options.fileContent) {

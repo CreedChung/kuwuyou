@@ -115,6 +115,7 @@ export interface Message {
   timestamp?: number;
   error?: string;
   isStreaming?: boolean;
+  isLoading?: boolean; // 乐观UI加载状态
 
   // 智谱API扩展字段
   contentData?: MessageContentData; // 结构化内容

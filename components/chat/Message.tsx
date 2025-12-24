@@ -60,6 +60,7 @@ export function Message({ message, onRegenerate }: MessageProps) {
 	const isUser = message.role === "user";
 	const hasError = !!message.error;
 	const isStreaming = message.isStreaming;
+	const isLoading = message.isLoading && !message.content; // 乐观UI加载状态
 	const [showThinking, setShowThinking] = useState(true);
 	const [showKnowledge, setShowKnowledge] = useState(false);
 	const [showWebSearch, setShowWebSearch] = useState(false);
@@ -122,7 +123,15 @@ export function Message({ message, onRegenerate }: MessageProps) {
 					<div className="font-semibold text-sm text-foreground">
 						{isUser ? "你" : "库无忧助手"}
 					</div>
-					{isStreaming && !isUser && !message.content && !message.thinking && knowledgeRefs.length === 0 && webRefs.length === 0 && (
+					{/* 乐观UI加载状态 */}
+					{isLoading && !isUser && (
+						<div className="flex items-center gap-1 text-xs text-muted-foreground">
+							<Loader2 className="h-3 w-3 animate-spin" />
+							<span>正在准备回答...</span>
+						</div>
+					)}
+					{/* 流式生成状态 */}
+					{isStreaming && !isUser && !message.content && !message.thinking && knowledgeRefs.length === 0 && webRefs.length === 0 && !isLoading && (
 						<div className="flex items-center gap-1 text-xs text-muted-foreground">
 							<Loader2 className="h-3 w-3 animate-spin" />
 							<span>正在无忧思考...</span>

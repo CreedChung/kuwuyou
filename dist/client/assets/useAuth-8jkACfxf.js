@@ -1,1 +1,0 @@
-import{u as e,a as i}from"./main-ARwKK-j-.js";function a(){const{toast:n}=e(),t=i();return{user:t.user,loading:t.loading,signUp:(s,r,o)=>t.signUp(s,r,o,n),signIn:(s,r)=>t.signIn(s,r,n),signInWithProvider:s=>t.signInWithProvider(s,n),signOut:()=>t.signOut(n),resetPassword:s=>t.resetPassword(s,n),updatePassword:s=>t.updatePassword(s,n)}}export{a as u};

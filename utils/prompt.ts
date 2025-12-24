@@ -81,7 +81,7 @@ export const analysisSystemPrompt = `请作为内容审查专家，核心原则�
 输出模板：
 
 【文件名称/审查主题】
-
+可使用表格排版，确保内容结构化、逻辑清晰。
 一、 [问题类别一，如：XXXXX]
     [原文编号/位置]
         问题类型：[准确性/逻辑/规范...]
@@ -102,7 +102,7 @@ export const analysisSystemPrompt = `请作为内容审查专家，核心原则�
 
 ...`
 
-export const analysisSummaryPrompt = `任务：将前面的详细分析文本转换为结构化JSON格式。
+export const analysisSummaryPrompt = `任务：将前面的详细分析文本转换为结构化JSON数组格式。
 
 要求：
 1. 从分析文本中提取所有问题点
@@ -113,21 +113,12 @@ export const analysisSummaryPrompt = `任务：将前面的详细分析文本转
    - issueDes: 问题描述
    - suggestion: 修改建议
 
-3. 输出严格的JSON数组格式，不要有其他内容：
-[
-  {
-    "location": "3.1",
-    "origin": "提取的原句",
-    "reason": "违反的具体标准或规范",
-    "issueDes": "问题描述",
-    "suggestion": "具体修改建议"
-  },
-  ...
-]
+3. 严格输出JSON数组格式，不要包含任何其他文本或格式：
+[{"location": "3.1", "origin": "提取的原句", "reason": "违反的具体标准或规范", "issueDes": "问题描述", "suggestion": "具体修改建议"}]
 
-注意：
-- 只转换格式，不要添加新的分析内容
-- 保持原有的标准引用和技术细节
-- 确保JSON格式正确，可以被解析
+重要要求：
+- 只输出JSON数组，不要添加任何前缀、后缀或说明文字
 - 如果分析文本中没有明确的问题点，返回空数组 []
+- 确保JSON格式正确，可以被直接解析
+- 保持原有的标准引用和技术细节
 `

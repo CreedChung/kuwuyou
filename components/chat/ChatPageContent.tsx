@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate, useLocation } from "@tanstack/react-router";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { ChatArea } from "@/components/chat/ChatArea";
 import { Header } from "@/components/chat/Header";
@@ -14,6 +15,9 @@ import { ChatTutorial } from "@/components/chat/ChatTutorial";
 export function ChatPageContent() {
 	const [conversations, setConversations] = useState<Conversation[]>([]);
 	const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+	
+	const navigate = useNavigate();
+	const location = useLocation();
 
 	const {
 		messages,
@@ -106,56 +110,74 @@ export function ChatPageContent() {
 		async (content: string, options?: { showThinking?: boolean; showReferences?: boolean; useWebSearch?: boolean; knowledgeId?: string; uploadedFile?: File; fileContent?: string }) => {
 			if (!currentConversationId || isGenerating) return;
 
-			try {
-				const needsRetrieval = options?.showReferences || options?.useWebSearch;
+			// 乐观UI: 立即跳转到聊天页面（如果不在聊天页面）
+			if (location.pathname !== "/chat") {
+				console.log("🚀 乐观UI: 立即跳转到聊天页面");
+				navigate({ to: "/chat" });
 				
-				if (needsRetrieval) {
-					const retrievalOptions = {
-						showReferences: options.showReferences,
-						useWebSearch: options.useWebSearch,
-						knowledgeId: options.knowledgeId,
-					};
-
-					const isAnalysisMode = !!options?.fileContent;
-					let queryForRetrieval: string;
-					
-					if (isAnalysisMode && options.fileContent) {
-						const fileContent = options.fileContent;
-						
-						if (fileContent.length > 1000) {
-							const slices = sliceText(fileContent, {
-								sliceLength: 100,
-								maxSlices: 10,
-								random: true,
-							});
-							queryForRetrieval = joinSlices(slices);
-						} else {
-							queryForRetrieval = fileContent;
-						}
-					} else {
-						queryForRetrieval = content;
-					}
-
-					const retrievalResult = await performRetrieval(queryForRetrieval, retrievalOptions);
-					
-					const retrievalContext = {
-						knowledgeContext: retrievalResult.knowledgeContext,
-						webContext: retrievalResult.webContext,
-						references: retrievalResult.references,
-					};
-					
-					await sendChatMessage(content, options, retrievalContext);
-				} else {
-					await sendChatMessage(content, options, undefined);
-				}
-				
-			} catch (error) {
-				console.error("❌ 发送消息失败:", error);
-				throw error;
+				// 延迟执行，让跳转先完成
+				setTimeout(async () => {
+					await processMessage(content, options);
+				}, 100);
+			} else {
+				// 如果已经在聊天页面，直接处理消息
+				await processMessage(content, options);
 			}
 		},
-		[currentConversationId, isGenerating, sendChatMessage, performRetrieval]
+		[currentConversationId, isGenerating, sendChatMessage, performRetrieval, navigate, location.pathname]
 	);
+
+	const processMessage = useCallback(async (
+		content: string,
+		options?: { showThinking?: boolean; showReferences?: boolean; useWebSearch?: boolean; knowledgeId?: string; uploadedFile?: File; fileContent?: string }
+	) => {
+		try {
+			const needsRetrieval = options?.showReferences || options?.useWebSearch;
+			let retrievalContext;
+			
+			if (needsRetrieval) {
+				const retrievalOptions = {
+					showReferences: options.showReferences,
+					useWebSearch: options.useWebSearch,
+					knowledgeId: options.knowledgeId,
+				};
+
+				const isAnalysisMode = !!options?.fileContent;
+				let queryForRetrieval: string;
+				
+				if (isAnalysisMode && options.fileContent) {
+					const fileContent = options.fileContent;
+					
+					if (fileContent.length > 1000) {
+						const slices = sliceText(fileContent, {
+							sliceLength: 100,
+							maxSlices: 10,
+							random: true,
+						});
+						queryForRetrieval = joinSlices(slices);
+					} else {
+						queryForRetrieval = fileContent;
+					}
+				} else {
+					queryForRetrieval = content;
+				}
+
+				const retrievalResult = await performRetrieval(queryForRetrieval, retrievalOptions);
+				
+				retrievalContext = {
+					knowledgeContext: retrievalResult.knowledgeContext,
+					webContext: retrievalResult.webContext,
+					references: retrievalResult.references,
+				};
+			}
+			
+			// 正常调用 sendChatMessage
+			await sendChatMessage(content, options, retrievalContext);
+			
+		} catch (error) {
+			console.error("❌ 发送消息失败:", error);
+		}
+	}, [sendChatMessage, performRetrieval]);
 
 	const handleStopGenerating = useCallback(() => {
 		stopGenerating();
