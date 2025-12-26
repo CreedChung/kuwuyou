@@ -6,6 +6,7 @@ import { DocumentCard } from "./DocumentCard";
 
 interface DocumentListProps {
 	loading: boolean;
+	refreshing?: boolean;
 	documents: KnowledgeDocument[];
 	searchQuery: string;
 	onDocumentClick?: (document: KnowledgeDocument) => void;
@@ -13,11 +14,12 @@ interface DocumentListProps {
 
 export function DocumentList({
 	loading,
+	refreshing = false,
 	documents,
 	searchQuery,
 	onDocumentClick,
 }: DocumentListProps) {
-	if (loading) {
+	if (loading && !refreshing) {
 		return (
 			<div className="flex flex-col items-center justify-center h-full">
 				<Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />

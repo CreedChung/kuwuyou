@@ -108,8 +108,27 @@ export function UploadDocumentDialog({
 					});
 				}
 
-				onUploadSuccess();
-				handleClose();
+				// 延迟刷新，给文档解析时间
+				if (successCount > 0) {
+					// 显示解析中的提示
+					toast({
+						title: "正在解析文档",
+						description: "文档上传成功，正在后台解析中，请稍等...",
+					});
+
+					// 延迟刷新列表，给文档解析时间
+					setTimeout(() => {
+						onUploadSuccess();
+					}, 3000);
+
+					// 延迟关闭对话框，让用户看到解析提示
+					setTimeout(() => {
+						handleClose();
+					}, 5000);
+				} else {
+					// 没有成功上传的文件，立即关闭
+					handleClose();
+				}
 			} else {
 				toast({
 					title: "上传失败",
