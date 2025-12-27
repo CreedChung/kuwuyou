@@ -4,9 +4,11 @@
  */
 class NotificationService {
 	private permission: NotificationPermission = "default";
+	private isClient: boolean;
 
 	constructor() {
-		if ("Notification" in window) {
+		this.isClient = typeof window !== "undefined" && "Notification" in window;
+		if (this.isClient) {
 			this.permission = Notification.permission;
 		}
 	}
@@ -15,8 +17,8 @@ class NotificationService {
 	 * 请求通知权限
 	 */
 	async requestPermission(): Promise<boolean> {
-		if (!("Notification" in window)) {
-			console.warn("此浏览器不支持桌面通知");
+		if (!this.isClient) {
+			console.warn("浏览器通知仅支持客户端");
 			return false;
 		}
 
@@ -36,8 +38,8 @@ class NotificationService {
 		title: string,
 		options?: NotificationOptions,
 	): Promise<Notification | null> {
-		if (!("Notification" in window)) {
-			console.warn("此浏览器不支持桌面通知");
+		if (!this.isClient) {
+			console.warn("浏览器通知仅支持客户端");
 			return null;
 		}
 
@@ -62,7 +64,7 @@ class NotificationService {
 	 * 检查是否支持通知
 	 */
 	isSupported(): boolean {
-		return "Notification" in window;
+		return this.isClient;
 	}
 
 	/**
@@ -76,7 +78,7 @@ class NotificationService {
 	 * 更新权限状态（用于监听权限变化）
 	 */
 	updatePermission(): void {
-		if ("Notification" in window) {
+		if (this.isClient) {
 			this.permission = Notification.permission;
 		}
 	}

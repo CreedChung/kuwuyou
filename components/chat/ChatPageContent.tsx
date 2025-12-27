@@ -11,11 +11,12 @@ import { useRetrieval } from "@/hooks/useRetrieval";
 import type { Conversation } from "@/components/chat/types";
 import { sliceText, joinSlices } from "@/utils/textSlicer";
 import { ChatTutorial } from "@/components/chat/ChatTutorial";
+import { useNotification } from "@/hooks/useNotification";
 
 export function ChatPageContent() {
 	const [conversations, setConversations] = useState<Conversation[]>([]);
 	const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
-	
+
 	const navigate = useNavigate();
 	const location = useLocation();
 
@@ -26,8 +27,23 @@ export function ChatPageContent() {
 		stopGenerating,
 		startNewConversation,
 	} = useChat();
-	
+
 	const { performRetrieval } = useRetrieval();
+	const { showNotification } = useNotification();
+
+	// 监听对话完成，发送通知
+	useEffect(() => {
+		if (!isGenerating && messages.length > 0) {
+			const lastMessage = messages[messages.length - 1];
+			if (lastMessage?.role === "assistant" && lastMessage?.content && !lastMessage?.isStreaming) {
+				showNotification("对话完成", {
+					body: "任务已完成",
+					icon: "/icon.jpg",
+					badge: "/icon.jpg",
+				});
+			}
+		}
+	}, [isGenerating, messages, showNotification]);
 
 	useEffect(() => {
 		if (conversations.length === 0) {
