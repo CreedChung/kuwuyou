@@ -2,7 +2,7 @@
 export interface AdminUser {
   id: string;
   email: string;
-  role: 'admin' | 'super_admin';
+  role: "admin" | "super_admin";
 }
 
 /**
@@ -12,28 +12,23 @@ export async function verifyAdminAuth(): Promise<AdminUser | null> {
   try {
     // 在 TanStack Start 中，我们可以使用 localStorage 或其他客户端存储
     // 或者通过 API 调用来验证 token
-    
+
     // 临时实现：检查 localStorage 中的 token
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('admin_token');
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("admin_token");
       if (token) {
         // 这里应该验证 token 的有效性
         return {
-          id: '1',
-          email: 'admin@example.com',
-          role: 'admin',
+          id: "1",
+          email: "admin@example.com",
+          role: "admin",
         };
       }
     }
-    
+
     return null;
   } catch (error) {
-    console.error('验证管理员权限失败:', error);
-    return null;
-  }
-}
-  } catch (error) {
-    console.error('验证管理员权限失败:', error);
+    console.error("验证管理员权限失败:", error);
     return null;
   }
 }
@@ -51,5 +46,5 @@ export async function isAdmin(): Promise<boolean> {
  */
 export async function isSuperAdmin(): Promise<boolean> {
   const admin = await verifyAdminAuth();
-  return admin?.role === 'super_admin';
+  return admin?.role === "super_admin";
 }

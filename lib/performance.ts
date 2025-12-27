@@ -33,7 +33,7 @@ class PerformanceMonitor {
     }
 
     // 开发环境下输出到控制台
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === "development") {
       console.log(`[Performance] ${name}: ${value}ms`, tags);
     }
   }
@@ -44,7 +44,7 @@ class PerformanceMonitor {
   async measure<T>(
     name: string,
     fn: () => Promise<T>,
-    tags?: Record<string, string>
+    tags?: Record<string, string>,
   ): Promise<T> {
     const start = performance.now();
     try {
@@ -54,7 +54,7 @@ class PerformanceMonitor {
       return result;
     } catch (error) {
       const duration = performance.now() - start;
-      this.record(name, duration, { ...tags, error: 'true' });
+      this.record(name, duration, { ...tags, error: "true" });
       throw error;
     }
   }
@@ -62,11 +62,7 @@ class PerformanceMonitor {
   /**
    * 测量同步函数执行时间
    */
-  measureSync<T>(
-    name: string,
-    fn: () => T,
-    tags?: Record<string, string>
-  ): T {
+  measureSync<T>(name: string, fn: () => T, tags?: Record<string, string>): T {
     const start = performance.now();
     try {
       const result = fn();
@@ -75,7 +71,7 @@ class PerformanceMonitor {
       return result;
     } catch (error) {
       const duration = performance.now() - start;
-      this.record(name, duration, { ...tags, error: 'true' });
+      this.record(name, duration, { ...tags, error: "true" });
       throw error;
     }
   }
@@ -94,15 +90,15 @@ class PerformanceMonitor {
   } | null {
     let filtered = this.metrics;
     if (name) {
-      filtered = this.metrics.filter(m => m.name === name);
+      filtered = this.metrics.filter((m) => m.name === name);
     }
 
     if (filtered.length === 0) return null;
 
-    const values = filtered.map(m => m.value).sort((a, b) => a - b);
+    const values = filtered.map((m) => m.value).sort((a, b) => a - b);
     const count = values.length;
     const sum = values.reduce((a, b) => a + b, 0);
-    
+
     const getPercentile = (p: number) => {
       const index = Math.ceil(count * p) - 1;
       return values[Math.max(0, index)];
@@ -123,7 +119,7 @@ class PerformanceMonitor {
    * 获取所有指标名称
    */
   getMetricNames(): string[] {
-    return Array.from(new Set(this.metrics.map(m => m.name)));
+    return Array.from(new Set(this.metrics.map((m) => m.name)));
   }
 
   /**
@@ -145,17 +141,17 @@ class PerformanceMonitor {
 export const performanceMonitor = new PerformanceMonitor();
 
 // Web Vitals 监控（仅客户端）
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   // 监控 Largest Contentful Paint (LCP)
   const observeLCP = () => {
     try {
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries();
         const lastEntry = entries[entries.length - 1];
-        performanceMonitor.record('web-vitals.lcp', lastEntry.startTime);
+        performanceMonitor.record("web-vitals.lcp", lastEntry.startTime);
       });
-      observer.observe({ entryTypes: ['largest-contentful-paint'] });
-    } catch (e) {
+      observer.observe({ entryTypes: ["largest-contentful-paint"] });
+    } catch {
       // PerformanceObserver 不支持
     }
   };
@@ -167,11 +163,11 @@ if (typeof window !== 'undefined') {
         const entries = list.getEntries();
         entries.forEach((entry: any) => {
           const delay = entry.processingStart - entry.startTime;
-          performanceMonitor.record('web-vitals.fid', delay);
+          performanceMonitor.record("web-vitals.fid", delay);
         });
       });
-      observer.observe({ entryTypes: ['first-input'] });
-    } catch (e) {
+      observer.observe({ entryTypes: ["first-input"] });
+    } catch {
       // PerformanceObserver 不支持
     }
   };
@@ -185,23 +181,23 @@ if (typeof window !== 'undefined') {
         entries.forEach((entry: any) => {
           if (!entry.hadRecentInput) {
             clsValue += entry.value;
-            performanceMonitor.record('web-vitals.cls', clsValue);
+            performanceMonitor.record("web-vitals.cls", clsValue);
           }
         });
       });
-      observer.observe({ entryTypes: ['layout-shift'] });
-    } catch (e) {
+      observer.observe({ entryTypes: ["layout-shift"] });
+    } catch {
       // PerformanceObserver 不支持
     }
   };
 
   // 页面加载完成后开始监控
-  if (document.readyState === 'complete') {
+  if (document.readyState === "complete") {
     observeLCP();
     observeFID();
     observeCLS();
   } else {
-    window.addEventListener('load', () => {
+    window.addEventListener("load", () => {
       observeLCP();
       observeFID();
       observeCLS();
