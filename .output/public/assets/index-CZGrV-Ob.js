@@ -1,1 +1,0 @@
-import{r as s,R as o,b as u}from"./main-Cueo9Gmc.js";var i=o[" useId ".trim().toString()]||(()=>{}),c=0;function n(r){const[t,e]=s.useState(i());return u(()=>{e(a=>a??String(c++))},[r]),t?`radix-${t}`:""}export{n as u};

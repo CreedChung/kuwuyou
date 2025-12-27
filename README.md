@@ -29,7 +29,7 @@
 - **样式**：Tailwind CSS 4
 - **UI 组件**：shadcn/ui + Radix UI
 - **状态管理**：Zustand
-- **数据库**：Turso (LibSQL)
+- **数据库**：Bun SQLite
 - **ORM**：Drizzle ORM
 - **AI 集成**：SiliconFlow AI (DeepSeek-V3.2)
 - **验证**：Zod
@@ -70,10 +70,6 @@ cp .env .env.local
 SEARCH_API_KEY=your_search_api_key
 SEARCH_API_URL=https://api.bocha.cn/v1/web-search
 
-# 数据库设置
-TURSO_AUTH_TOKEN=your_turso_token
-TURSO_DATABASE_URL=your_turso_database_url
-
 # SiliconFlow AI 设置
 AI_KEY=your_siliconflow_api_key
 AI_BASE_URL=https://api.siliconflow.cn/v1
@@ -113,13 +109,6 @@ bun run dev
 2. 注册并登录账号
 3. 在控制台创建 API 密钥
 4. 将密钥配置到 `AI_KEY` 环境变量
-
-#### Turso 数据库
-
-1. 访问 [Turso](https://turso.tech/)
-2. 创建数据库实例
-3. 获取数据库 URL 和认证令牌
-4. 配置到对应的环境变量
 
 #### 搜索 API
 
@@ -261,9 +250,7 @@ bun install
 
 ### 2. 数据库连接失败
 
-检查 `.env` 文件中的数据库配置是否正确：
-- `TURSO_DATABASE_URL`
-- `TURSO_AUTH_TOKEN`
+数据库文件 `sqlite.db` 会自动创建在项目根目录。如果遇到权限问题，确保目录有写入权限。
 
 ### 3. AI API 调用失败
 

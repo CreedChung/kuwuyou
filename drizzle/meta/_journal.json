@@ -1,47 +1,12 @@
 {
   "version": "7",
-  "dialect": "sqlite",
+  "dialect": "postgresql",
   "entries": [
     {
       "idx": 0,
-      "version": "6",
-      "when": 1764040835528,
-      "tag": "0000_pretty_longshot",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1764040888706,
-      "tag": "0001_rainy_puppet_master",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1764040933290,
-      "tag": "0002_little_shriek",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1764041061655,
-      "tag": "0003_typical_mimic",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "6",
-      "when": 1764589911918,
-      "tag": "0004_common_bromley",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "6",
-      "when": 1764596051735,
-      "tag": "0005_abnormal_boomer",
+      "version": "7",
+      "when": 1766812472243,
+      "tag": "0000_slimy_human_fly",
       "breakpoints": true
     }
   ]

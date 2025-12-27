@@ -13,34 +13,56 @@ node_modules/
 # Bun
 bun.lockb
 .bun/
+bun-debug.log*
+bunx
 
 # Vite
 dist/
 dist-ssr/
 *.local
+.vite/
 
 # Testing
 /coverage
+.nyc_output
 
 # Data
 /disk
+*.db
+*.sqlite
+*.sqlite3
 
 # Production build
 /build
 /output
+.next/
+out/
+
+# Database
+*.sql
+!drizzle/**/*.sql
+!scripts/**/*.sql
+drizzle/*.sql
+
+# Drizzle ORM
+drizzle/migrations/
+drizzle/.temp/
+drizzle/meta/_journal.json
+drizzle/meta/000*.json
 
 # Misc
 .DS_Store
 *.pem
 *.local
 Thumbs.db
+*.tmp
+*.temp
 
 # Debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-bun-debug.log*
 
 # Environment files
 .env
@@ -49,9 +71,12 @@ bun-debug.log*
 
 # Vercel
 .vercel
+.netlify/
 
 # TypeScript
 *.tsbuildinfo
+dist/
+build/
 
 # Editor
 .vscode/*
@@ -59,11 +84,84 @@ bun-debug.log*
 !.vscode/settings.json
 !.vscode/tasks.json
 .idea/
+*.swp
+*.swo
+*~
 
 # OS files
 .DS_Store
 .AppleDouble
 .LSOverride
+Icon?
+ehthumbs.db
 
-# Drizzle
-drizzle/meta/_journal.json
+# Logs
+logs
+*.log
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Runtime data
+tmp/
+temp/
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# ESLint cache
+.eslintcache
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Storybook build outputs
+.out
+.storybook-out
+
+# Temporary folders
+tmp/
+temp/
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Scripts
+scripts/*.js
+!scripts/migrate.ts
+!scripts/seed.ts
+
+# Documentation
+docs/
+*.md
+!README.md
