@@ -35,6 +35,7 @@ dist-ssr/
 # Production build
 /build
 /output
+/.output
 .next/
 out/
 
