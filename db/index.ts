@@ -8,10 +8,7 @@ const pool = new Pool({
   user: process.env.DB_USER || "postgres",
   password: process.env.DB_PASSWORD || "",
   database: process.env.DB_NAME || "kuwuyou",
-  ssl:
-    process.env.NODE_ENV === "production"
-      ? { rejectUnauthorized: false }
-      : false,
+  ssl: false,
 });
 
 export const db = drizzle(pool, { schema });
