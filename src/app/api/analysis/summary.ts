@@ -15,7 +15,10 @@ export const Route = createFileRoute("/api/analysis/summary")({
           const apiKey = process.env.AI_API_KEY;
           const apiUrl =
             process.env.AI_API_URL || "https://api.siliconflow.cn/v1";
-          const model = process.env.DEFAULT_MODEL || "zai-org/GLM-4.6";
+          // 分析模式的 summary 使用专用模型配置
+          const model =
+            process.env.ANALYSIS_SUMMARY_MODEL ||
+            "Qwen/Qwen3-30B-A3B-Instruct-2507";
 
           if (!apiKey) {
             return Response.json({ error: "未配置API密钥" }, { status: 500 });
